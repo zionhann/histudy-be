@@ -16,8 +16,8 @@ public class Group {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private Integer tag;
+    private long totalMinutes;
 
     @OneToMany(mappedBy = "group")
     private List<Report> reports = new ArrayList<>();
@@ -27,5 +27,9 @@ public class Group {
 
     public Group(Integer tag) {
         this.tag = tag;
+    }
+
+    public void increase(long totalMinutes) {
+        this.totalMinutes += totalMinutes;
     }
 }

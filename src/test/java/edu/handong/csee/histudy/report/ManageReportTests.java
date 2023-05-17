@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @ActiveProfiles("dev")
 public class ManageReportTests {
 
-    @DisplayName("참여한 인원을 선택할 수 있다.")
+    @DisplayName("보고서 작성시 참여한 인원을 선택할 수 있다.")
     @Test
     public void ManageReportTests_16() {
         // given
@@ -36,23 +36,64 @@ public class ManageReportTests {
                 .name("user2")
                 .role(Role.USER)
                 .build();
+        Group group = new Group(1);
         Report report = Report.builder()
                 .title("title")
                 .content("content")
                 .startTime(LocalTime.of(12, 30))
                 .endTime(LocalTime.of(13, 30))
+                .group(group)
+                .participants(List.of(user1))
                 .build();
-
-        Group group = new Group(1);
         user1.belongTo(group);
         user2.belongTo(group);
-        report.writtenBy(group);
-
-        // when
-        report.addParticipants(List.of(user1));
 
         // then
         assertEquals(2, report.getGroup().getUsers().size());
         assertEquals(1, report.getParticipants().size());
+    }
+
+    @DisplayName("보고서 작성시 활동 시간을 저장할 수 있다.")
+    @Test
+    public void ManageReportTests_61() {
+        // given
+        Report report = Report.builder()
+                .title("title")
+                .content("content")
+                .startTime(LocalTime.of(12, 30))
+                .endTime(LocalTime.of(13, 30))
+                .group(new Group(1))
+                .participants(List.of(User.builder().build()))
+                .build();
+
+        // then
+        assertEquals(60, report.getTotalMinutes());
+    }
+
+    @DisplayName("활동 시간은 그룹 전체 활동 시간에도 집계되어야 한다.")
+    @Test
+    public void ManageReportTests_76() {
+        // given
+        Group group = new Group(1);
+
+        Report report1 = Report.builder()
+                .title("title")
+                .content("content")
+                .startTime(LocalTime.of(12, 30))
+                .endTime(LocalTime.of(13, 30))
+                .group(group)
+                .participants(List.of(User.builder().build()))
+                .build();
+        Report report2 = Report.builder()
+                .title("title")
+                .content("content")
+                .startTime(LocalTime.of(15, 30))
+                .endTime(LocalTime.of(16, 0))
+                .group(group)
+                .participants(List.of(User.builder().build()))
+                .build();
+
+        // then
+        assertEquals(90, group.getTotalMinutes());
     }
 }
