@@ -15,7 +15,7 @@ public class ReportDto {
         public Response(Report entity) {
             this.id = entity.getId();
             this.title = entity.getTitle();
-            this.group = entity.getGroup().getTag();
+            this.group = entity.getTeam().getTag();
             this.totalMinutes = entity.getTotalMinutes();
             this.participants = entity.getParticipants()
                     .stream()

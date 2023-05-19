@@ -33,7 +33,7 @@ public class Report {
     private BaseTime baseTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private Group group;
+    private Team team;
 
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL)
     private List<Participates> participants = new ArrayList<>();
@@ -43,7 +43,7 @@ public class Report {
                   String content,
                   LocalTime startTime,
                   LocalTime endTime,
-                  Group group,
+                  Team team,
                   List<User> participants) {
         this.title = title;
         this.content = content;
@@ -51,9 +51,9 @@ public class Report {
         this.endTime = endTime;
 
         totalMinutes = Duration.between(startTime, endTime).toMinutes();
-        writtenBy(group);
+        writtenBy(team);
         addParticipants(participants);
-        group.increase(totalMinutes);
+        team.increase(totalMinutes);
     }
 
     public void addParticipants(List<User> users) {
@@ -63,8 +63,8 @@ public class Report {
         this.participants.addAll(participates);
     }
 
-    public void writtenBy(Group group) {
-        this.group = group;
-        group.getReports().add(this);
+    public void writtenBy(Team team) {
+        this.team = team;
+        team.getReports().add(this);
     }
 }

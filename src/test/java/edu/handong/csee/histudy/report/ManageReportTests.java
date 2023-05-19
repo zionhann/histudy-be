@@ -1,6 +1,6 @@
 package edu.handong.csee.histudy.report;
 
-import edu.handong.csee.histudy.domain.Group;
+import edu.handong.csee.histudy.domain.Team;
 import edu.handong.csee.histudy.domain.Report;
 import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.domain.User;
@@ -36,20 +36,20 @@ public class ManageReportTests {
                 .name("user2")
                 .role(Role.USER)
                 .build();
-        Group group = new Group(1);
+        Team team = new Team(1);
         Report report = Report.builder()
                 .title("title")
                 .content("content")
                 .startTime(LocalTime.of(12, 30))
                 .endTime(LocalTime.of(13, 30))
-                .group(group)
+                .team(team)
                 .participants(List.of(user1))
                 .build();
-        user1.belongTo(group);
-        user2.belongTo(group);
+        user1.belongTo(team);
+        user2.belongTo(team);
 
         // then
-        assertEquals(2, report.getGroup().getUsers().size());
+        assertEquals(2, report.getTeam().getUsers().size());
         assertEquals(1, report.getParticipants().size());
     }
 
@@ -62,7 +62,7 @@ public class ManageReportTests {
                 .content("content")
                 .startTime(LocalTime.of(12, 30))
                 .endTime(LocalTime.of(13, 30))
-                .group(new Group(1))
+                .team(new Team(1))
                 .participants(List.of(User.builder().build()))
                 .build();
 
@@ -74,14 +74,14 @@ public class ManageReportTests {
     @Test
     public void ManageReportTests_76() {
         // given
-        Group group = new Group(1);
+        Team team = new Team(1);
 
         Report report1 = Report.builder()
                 .title("title")
                 .content("content")
                 .startTime(LocalTime.of(12, 30))
                 .endTime(LocalTime.of(13, 30))
-                .group(group)
+                .team(team)
                 .participants(List.of(User.builder().build()))
                 .build();
         Report report2 = Report.builder()
@@ -89,11 +89,11 @@ public class ManageReportTests {
                 .content("content")
                 .startTime(LocalTime.of(15, 30))
                 .endTime(LocalTime.of(16, 0))
-                .group(group)
+                .team(team)
                 .participants(List.of(User.builder().build()))
                 .build();
 
         // then
-        assertEquals(90, group.getTotalMinutes());
+        assertEquals(90, team.getTotalMinutes());
     }
 }

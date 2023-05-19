@@ -3,7 +3,7 @@ package edu.handong.csee.histudy.report;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.handong.csee.histudy.controller.ReportController;
 import edu.handong.csee.histudy.controller.form.ReportForm;
-import edu.handong.csee.histudy.domain.Group;
+import edu.handong.csee.histudy.domain.Team;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.ReportDto;
 import edu.handong.csee.histudy.repository.ReportRepository;
@@ -60,12 +60,12 @@ public class ReportControllerTests {
                 .name("user")
                 .sid("21800123")
                 .build();
-        user.belongTo(new Group(1));
+        user.belongTo(new Team(1));
 
         when(userRepository.findUserByAccessToken(any()))
                 .thenReturn(Optional.of(user));
         when(userRepository.findUserBySid(any())).thenReturn(Optional.of(user));
-        when(reportRepository.save(any())).thenReturn(form.toEntity(user.getGroup(), List.of(Optional.of(user))));
+        when(reportRepository.save(any())).thenReturn(form.toEntity(user.getTeam(), List.of(Optional.of(user))));
 
         // when
         MvcResult mvcResult = mvc

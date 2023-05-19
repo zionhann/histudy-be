@@ -31,7 +31,7 @@ public class User {
     private Role role;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private Group group;
+    private Team team;
 
     @OneToMany(mappedBy = "user")
     private List<Participates> participates;
@@ -46,8 +46,8 @@ public class User {
         this.role = role;
     }
 
-    public void belongTo(Group group) {
-        this.group = group;
-        group.getUsers().add(this);
+    public void belongTo(Team team) {
+        this.team = team;
+        team.getUsers().add(this);
     }
 }

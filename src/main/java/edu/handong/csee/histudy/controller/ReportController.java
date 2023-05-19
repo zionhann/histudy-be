@@ -30,7 +30,7 @@ public class ReportController {
         List<Optional<User>> participants = form.getParticipants().stream()
                 .map(userRepository::findUserBySid)
                 .toList();
-        Report report = form.toEntity(user.getGroup(), participants);
+        Report report = form.toEntity(user.getTeam(), participants);
 
         return new ReportDto.Response(reportRepository.save(report));
     }
