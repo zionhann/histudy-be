@@ -29,6 +29,8 @@ public class Report {
     @Nonnull
     private LocalTime endTime;
     private long totalMinutes;
+    @Embedded
+    private BaseTime baseTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Group group;
