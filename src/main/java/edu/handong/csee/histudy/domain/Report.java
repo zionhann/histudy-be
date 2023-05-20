@@ -38,13 +38,17 @@ public class Report {
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL)
     private List<Participates> participants = new ArrayList<>();
 
+    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL)
+    private List<Image> images = new ArrayList<>();
+
     @Builder
     public Report(String title,
                   String content,
                   LocalTime startTime,
                   LocalTime endTime,
                   Team team,
-                  List<User> participants) {
+                  List<User> participants,
+                  List<String> images) {
         this.title = title;
         this.content = content;
         this.startTime = startTime;
@@ -53,6 +57,7 @@ public class Report {
         totalMinutes = Duration.between(startTime, endTime).toMinutes();
         writtenBy(team);
         addParticipants(participants);
+        insert(images);
         team.increase(totalMinutes);
     }
 
@@ -66,5 +71,15 @@ public class Report {
     public void writtenBy(Team team) {
         this.team = team;
         team.getReports().add(this);
+    }
+
+    public void insert(List<String> images) {
+        if (images == null) {
+            return;
+        }
+        List<Image> paths = images.stream()
+                .map(img -> new Image(img, this))
+                .toList();
+        this.images.addAll(paths);
     }
 }

@@ -1,7 +1,7 @@
 package edu.handong.csee.histudy.controller.form;
 
-import edu.handong.csee.histudy.domain.Team;
 import edu.handong.csee.histudy.domain.Report;
+import edu.handong.csee.histudy.domain.Team;
 import edu.handong.csee.histudy.domain.User;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,6 +21,7 @@ public class ReportForm {
     private final LocalTime startTime;
     private final LocalTime endTime;
     private final List<String> participants;
+    private final List<String> images;
 
     public Report toEntity(Team team, List<Optional<User>> participants) {
         return Report.builder()
@@ -33,6 +34,7 @@ public class ReportForm {
                         .filter(Optional::isPresent)
                         .map(Optional::get)
                         .toList())
+                .images(images)
                 .build();
     }
 }
