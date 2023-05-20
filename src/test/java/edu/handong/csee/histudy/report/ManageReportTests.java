@@ -1,15 +1,13 @@
 package edu.handong.csee.histudy.report;
 
-import edu.handong.csee.histudy.domain.Team;
-import edu.handong.csee.histudy.domain.Report;
-import edu.handong.csee.histudy.domain.Role;
-import edu.handong.csee.histudy.domain.User;
+import edu.handong.csee.histudy.domain.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalTime;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -95,5 +93,50 @@ public class ManageReportTests {
 
         // then
         assertEquals(90, team.getTotalMinutes());
+    }
+
+    @DisplayName("이미지를 1개 이상 첨부할 수 있다.")
+    @Test
+    public void ManageReportTests_102() {
+        // given
+        Report report = Report.builder()
+                .title("title")
+                .content("content")
+                .startTime(LocalTime.now())
+                .endTime(LocalTime.now())
+                .team(new Team(1))
+                .participants(List.of(User.builder().build()))
+                .images(List.of("pathA", "pathB", "pathC"))
+                .build();
+
+        // then
+        assertEquals(3, report.getImages().size());
+        assertEquals(Collections.nCopies(3, report), report.getImages()
+                .stream()
+                .map(Image::getReport)
+                .toList());
+    }
+
+    @DisplayName("이미지의 순서는 보장되어야 한다.")
+    @Test
+    public void ManageReportTests_122() {
+        // given
+        Report report = Report.builder()
+                .title("title")
+                .content("content")
+                .startTime(LocalTime.now())
+                .endTime(LocalTime.now())
+                .team(new Team(1))
+                .participants(List.of(User.builder().build()))
+                .images(List.of("pathA", "pathB", "pathC"))
+                .build();
+
+        // then
+        assertEquals(3, report.getImages().size());
+        assertEquals(List.of("pathA", "pathB", "pathC"),
+                report.getImages()
+                        .stream()
+                        .map(Image::getPath)
+                        .toList());
     }
 }
