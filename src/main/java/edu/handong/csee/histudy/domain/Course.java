@@ -1,22 +1,26 @@
 package edu.handong.csee.histudy.domain;
 
+import com.opencsv.bean.CsvBindByName;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Course {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
+    @CsvBindByName
     private String code;
+    @CsvBindByName(column = "class")
+    private String name;
+    @CsvBindByName
     private String professor;
+    @CsvBindByName
     private int year;
+    @CsvBindByName
     private int semester;
 
     @Builder
