@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Service
@@ -20,7 +21,7 @@ public class CourseService {
     private final CourseRepository courseRepository;
 
     public String uploadFile(MultipartFile file) {
-        try(Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream(),"UTF-8"))) {
+        try(Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
             CsvToBean<Course> csvToBean = new CsvToBeanBuilder<Course>(reader)
                     .withType(Course.class)
                     .withSeparator(',')
