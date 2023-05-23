@@ -1,10 +1,8 @@
 package edu.handong.csee.histudy.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -21,4 +19,12 @@ public class Course {
     private int year;
     private int semester;
 
+    @Builder
+    public Course(String name, String code, String professor, int year, int semester) {
+        this.name = name;
+        this.code = code;
+        this.professor = professor;
+        this.year = year;
+        this.semester = semester;
+    }
 }
