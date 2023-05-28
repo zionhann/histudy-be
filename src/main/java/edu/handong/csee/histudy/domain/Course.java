@@ -19,7 +19,7 @@ public class Course {
     private String name;
     @CsvBindByName
     private String professor;
-    @CsvBindByName(column = "course")
+    @CsvBindByName(column = "year")
     private int courseYear;
     @CsvBindByName
     private int semester;
@@ -37,7 +37,7 @@ public class Course {
         dto.setName(this.name);
         dto.setCode(this.code);
         dto.setProfessor(this.professor);
-        dto.setYear(this.year);
+        dto.setCourseYear(this.courseYear);
         dto.setSemester(this.semester);
 
         return dto;

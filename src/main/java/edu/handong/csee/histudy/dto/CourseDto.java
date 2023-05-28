@@ -13,6 +13,6 @@ public class CourseDto {
     private String name;
     private String professor;
     private String code;
-    private int year;
+    private int courseYear;
     private int semester;
 }
