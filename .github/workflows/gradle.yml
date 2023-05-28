@@ -27,7 +27,7 @@ jobs:
     
     - name: Apply configuration
       run: |
-        touch ./src/main/resources/application.yml
+        mkdir $GITHUB_WORKSPACE/src/main/resources
         echo "${{ secrets.APP_CONFIG }}" > ./src/main/resources/application.yml
     
     - name: Set JDK 17
