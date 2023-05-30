@@ -5,6 +5,9 @@ import edu.handong.csee.histudy.dto.CourseDto;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @NoArgsConstructor
@@ -23,6 +26,11 @@ public class Course {
     private int courseYear;
     @CsvBindByName
     private int semester;
+    // 관계 설정해주기
+    @OneToMany(mappedBy = "course")
+    private List<Choice> choices = new ArrayList<>();
+    @OneToMany(mappedBy="course")
+    private List<Study> studies = new ArrayList<>();
 
     @Builder
     public Course(String name, String code, String professor, int courseYear, int semester) {
@@ -39,7 +47,6 @@ public class Course {
         dto.setProfessor(this.professor);
         dto.setCourseYear(this.courseYear);
         dto.setSemester(this.semester);
-
         return dto;
     }
 }
