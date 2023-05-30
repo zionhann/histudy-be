@@ -1,10 +1,9 @@
 package edu.handong.csee.histudy.service;
 
-import edu.handong.csee.histudy.controller.form.UserInfo;
 import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.jwt.GrantType;
+import edu.handong.csee.histudy.jwt.JwtPair;
 import edu.handong.csee.histudy.jwt.JwtProperties;
-import edu.handong.csee.histudy.jwt.JwtSecret;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
@@ -13,60 +12,42 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.SecretKey;
 import java.time.Instant;
-import java.util.Date;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class JwtService {
 
-    private final JwtSecret jwtSecret;
     private final JwtProperties jwtProperties;
 
     public String issueToken(String email, String name, GrantType typ) {
-        SecretKey secretKey = jwtSecret.getKey();
-        Instant now = Instant.now();
+        Map<String, Date> pair = calcExpiry(jwtProperties.getTokenExpiry(typ));
 
-        Date iat = new Date(now.toEpochMilli());
-        Date exp = calcExpiry(now, jwtProperties.getTokenExpiry(typ));
-
-        return Jwts.builder()
-                .setHeaderParam("typ", "JWT")
-                .setIssuer(jwtProperties.getIssuer())
-                .setSubject(email)
-                .claim("name", name)
-                .claim("rol", Role.USER.name())
-                .setIssuedAt(iat)
-                .setExpiration(exp)
-                .signWith(secretKey)
-                .compact();
+        return build(
+                email, name,
+                pair.get(Claims.ISSUED_AT),
+                pair.get(Claims.EXPIRATION));
     }
 
-    public String issueToken(UserInfo userInfo, GrantType typ) {
-        SecretKey secretKey = jwtSecret.getKey();
-        Instant now = Instant.now();
+    public JwtPair issueToken(String email, String name) {
+        List<String> tokens = Arrays.stream(GrantType.values())
+                .map(jwtProperties::getTokenExpiry)
+                .map(this::calcExpiry)
+                .map(pair -> this.build(
+                        email, name,
+                        pair.get(Claims.ISSUED_AT),
+                        pair.get(Claims.EXPIRATION)))
+                .toList();
 
-        Date iat = new Date(now.toEpochMilli());
-        Date exp = calcExpiry(now, jwtProperties.getTokenExpiry(typ));
-
-        return Jwts.builder()
-                .setHeaderParam("typ", "JWT")
-                .setIssuer(jwtProperties.getIssuer())
-                .setSubject(userInfo.getEmail())
-                .claim("name", userInfo.getName())
-                .claim("rol", Role.USER.name())
-                .setIssuedAt(iat)
-                .setExpiration(exp)
-                .signWith(secretKey)
-                .compact();
+        assert tokens.size() == 2;
+        return new JwtPair(tokens);
     }
 
     public Optional<Claims> validate(Optional<String> token) {
         JwtParser parser = Jwts.parserBuilder()
-                .setSigningKey(jwtSecret.getKey())
+                .setSigningKey(jwtProperties.getKey())
                 .requireIssuer(jwtProperties.getIssuer())
                 .build();
 
@@ -82,8 +63,28 @@ public class JwtService {
         return Optional.empty();
     }
 
-    private Date calcExpiry(Instant now, String expiryAsString) {
+    private Map<String, Date> calcExpiry(String expiryAsString) {
+        Instant now = Instant.now();
         long expiry = Long.parseLong(expiryAsString);
-        return new Date(now.plusSeconds(expiry).toEpochMilli());
+
+        Date iat = new Date(now.toEpochMilli());
+        Date exp = new Date(now.plusSeconds(expiry).toEpochMilli());
+
+        return Map.of(
+                Claims.ISSUED_AT, iat,
+                Claims.EXPIRATION, exp);
+    }
+
+    private String build(String email, String name, Date iat, Date exp) {
+        return Jwts.builder()
+                .setHeaderParam("typ", "JWT")
+                .setIssuer(jwtProperties.getIssuer())
+                .setSubject(email)
+                .claim("name", name)
+                .claim("rol", Role.USER.name())
+                .setIssuedAt(iat)
+                .setExpiration(exp)
+                .signWith(jwtProperties.getKey())
+                .compact();
     }
 }

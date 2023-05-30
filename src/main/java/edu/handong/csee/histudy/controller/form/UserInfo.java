@@ -12,4 +12,5 @@ public class UserInfo {
     private String sub;
     private String name;
     private String email;
+    private String sid; // Student ID
 }
