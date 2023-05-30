@@ -43,6 +43,9 @@ public class User {
     @OneToMany(mappedBy = "received", cascade = CascadeType.ALL)
     private List<Friendship> receivedRequests = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user")
+    private List<Choice> choices;
+
     @Builder
     public User(String id, String sid, String email, String name, String accessToken, Role role) {
         this.id = id;

@@ -35,6 +35,8 @@ public class Report {
 
     @OneToMany(mappedBy = "report", cascade = CascadeType.ALL)
     private List<Image> images = new ArrayList<>();
+    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL)
+    private List<Study> studies = new ArrayList<>();
 
     @Builder
     public Report(String title,
