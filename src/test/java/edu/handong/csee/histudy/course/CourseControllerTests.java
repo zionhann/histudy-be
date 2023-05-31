@@ -72,7 +72,7 @@ public class CourseControllerTests {
 
         // when
         MvcResult mvcResult = mvc
-                .perform(get("/api/course")
+                .perform(get("/api/courses")
                         .queryParam("search", "soft"))
                 .andExpect(status().isOk())
                 .andDo(print())
@@ -90,7 +90,7 @@ public class CourseControllerTests {
     @Test
     void CourseControllerTests_88() throws Exception {
         MvcResult mvcResult = mvc
-                .perform(get("/api/course"))
+                .perform(get("/api/courses"))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andReturn();
@@ -125,7 +125,7 @@ public class CourseControllerTests {
 
         // when
         MvcResult mvcResult = mvc
-                .perform(get("/api/course"))
+                .perform(get("/api/courses"))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andReturn();
