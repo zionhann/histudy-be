@@ -37,16 +37,23 @@ public class CourseController {
                 return ResponseEntity.ok(status);
         }
     }
+
     @PostMapping("/delete")
-    public int deleteCourse(@RequestBody CourseIdDto dto, @RequestHeader(HttpHeaders.AUTHORIZATION) String accessToken) {
+    public int deleteCourse(@RequestBody CourseIdDto dto) {
         return courseService.deleteCourse(dto);
     }
+
     @GetMapping
-    public ResponseEntity<List<CourseDto>> getCourses() {
-        return ResponseEntity.ok(courseService.getCourses());
+    public ResponseEntity<CourseDto> getCourses(@RequestParam(name = "search", required = false) String keyword) {
+        List<CourseDto.Info> courses = (keyword == null)
+                ? courseService.getCourses()
+                : courseService.search(keyword);
+
+        return ResponseEntity.ok(new CourseDto(courses));
     }
+
     @GetMapping("/team")
-    public ResponseEntity<List<CourseDto>> getTeamCourses(@RequestHeader(HttpHeaders.AUTHORIZATION) String accessToken) {
-        return ResponseEntity.ok(courseService.getTeamCourses(accessToken));
+    public ResponseEntity<CourseDto> getTeamCourses(@RequestHeader(HttpHeaders.AUTHORIZATION) String accessToken) {
+        return ResponseEntity.ok(new CourseDto(courseService.getTeamCourses(accessToken)));
     }
 }

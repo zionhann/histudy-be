@@ -5,9 +5,7 @@ import lombok.*;
 
 @Entity
 @Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Choice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,10 +14,10 @@ public class Choice {
     private User user;
     @ManyToOne(fetch = FetchType.LAZY)
     private Course course;
+  
     @Builder
     public Choice(User user, Course course) {
         this.user = user;
         this.course = course;
     }
-
 }
