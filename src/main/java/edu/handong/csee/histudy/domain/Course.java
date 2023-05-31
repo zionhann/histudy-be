@@ -1,8 +1,12 @@
 package edu.handong.csee.histudy.domain;
 
 import com.opencsv.bean.CsvBindByName;
+import edu.handong.csee.histudy.dto.CourseDto;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -18,17 +22,31 @@ public class Course {
     private String name;
     @CsvBindByName
     private String professor;
-    @CsvBindByName
-    private int year;
+    @CsvBindByName(column = "year")
+    private int courseYear;
     @CsvBindByName
     private int semester;
+    // 관계 설정해주기
+    @OneToMany(mappedBy = "course")
+    private List<Choice> choices = new ArrayList<>();
+    @OneToMany(mappedBy="course")
+    private List<Study> studies = new ArrayList<>();
 
     @Builder
-    public Course(String name, String code, String professor, int year, int semester) {
+    public Course(String name, String code, String professor, int courseYear, int semester) {
         this.name = name;
         this.code = code;
         this.professor = professor;
-        this.year = year;
+        this.courseYear = courseYear;
         this.semester = semester;
+    }
+    public CourseDto toDto() {
+        CourseDto dto = new CourseDto();
+        dto.setName(this.name);
+        dto.setCode(this.code);
+        dto.setProfessor(this.professor);
+        dto.setCourseYear(this.courseYear);
+        dto.setSemester(this.semester);
+        return dto;
     }
 }
