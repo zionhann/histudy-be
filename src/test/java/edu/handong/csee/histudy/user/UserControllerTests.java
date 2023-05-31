@@ -28,6 +28,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.io.IOException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -67,7 +68,7 @@ public class UserControllerTests {
     AuthenticationInterceptor interceptor;
 
     @BeforeEach
-    void init() {
+    void init() throws IOException {
         mockMvc = MockMvcBuilders
                 .standaloneSetup(userController)
                 .addInterceptors(interceptor)
