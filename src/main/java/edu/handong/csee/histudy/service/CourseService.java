@@ -7,6 +7,7 @@ import edu.handong.csee.histudy.domain.Course;
 import edu.handong.csee.histudy.domain.Team;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.CourseDto;
+import edu.handong.csee.histudy.dto.CourseIdDto;
 import edu.handong.csee.histudy.repository.CourseRepository;
 import edu.handong.csee.histudy.repository.TeamRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
@@ -89,5 +90,13 @@ public class CourseService {
         List<User> users = team.getUsers();
         Set<Course> courses = users.stream().flatMap(u -> u.getChoices().stream().map(Choice::getCourse)).collect(Collectors.toSet());
         return courses.stream().map(Course::toDto).collect(Collectors.toList());
+    }
+
+    public int deleteCourse(CourseIdDto dto) {
+        if(courseRepository.existsById(dto.getId())) {
+            courseRepository.deleteById(dto.getId());
+            return 1;
+        }
+        return 0;
     }
 }

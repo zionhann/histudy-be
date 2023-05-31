@@ -39,4 +39,15 @@ public class Course {
         this.courseYear = courseYear;
         this.semester = semester;
     }
+  
+    public CourseDto toDto() {
+        CourseDto dto = new CourseDto();
+        dto.setId(this.id);
+        dto.setName(this.name);
+        dto.setCode(this.code);
+        dto.setProfessor(this.professor);
+        dto.setCourseYear(this.courseYear);
+        dto.setSemester(this.semester);
+        return dto;
+    }
 }

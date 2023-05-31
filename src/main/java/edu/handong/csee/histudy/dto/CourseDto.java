@@ -12,7 +12,6 @@ import java.util.List;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CourseDto {
-
     private List<Info> courses;
 
     @AllArgsConstructor
