@@ -23,7 +23,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     private String client;
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         Optional<String> token = Optional.ofNullable(request.getHeader(HttpHeaders.AUTHORIZATION))
                 .filter(value -> value.startsWith(BEARER))
                 .map(value -> value.substring(BEARER.length()));
@@ -38,7 +38,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
             request.setAttribute("claims", claims.get());
             return true;
         }
-        response.sendError(HttpStatus.UNAUTHORIZED.value());
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
         return false;
     }
 }
