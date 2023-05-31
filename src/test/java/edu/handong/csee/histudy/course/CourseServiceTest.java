@@ -62,6 +62,10 @@ public class CourseServiceTest {
                 .build();
         courseRepository.save(courseC);
     }
+    @AfterEach
+    void cleanup() {
+        courseRepository.deleteAll();
+    }
 
     @DisplayName("팀내에 인원들의 과목들을 불러들여야 한다")
     @Test
@@ -109,7 +113,7 @@ public class CourseServiceTest {
     @DisplayName("수업을 삭제할 수 있어야 한다")
     @Test
     public void deleteCourseTest() {
-        int result = courseService.deleteCourse(new CourseIdDto(3L));
+        int result = courseService.deleteCourse(new CourseIdDto(6L));
         int result2 = courseService.deleteCourse(new CourseIdDto(20L));
         assertThat(result).isEqualTo(1);
         assertThat(result2).isEqualTo(0);
