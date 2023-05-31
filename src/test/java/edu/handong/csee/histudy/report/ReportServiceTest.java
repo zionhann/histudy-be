@@ -13,8 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
@@ -35,8 +33,7 @@ public class ReportServiceTest {
         ReportForm form = ReportForm.builder()
                 .title("title")
                 .content("content")
-                .startTime(LocalTime.of(10, 30))
-                .endTime(LocalTime.of(11, 30))
+                .totalMinutes(60)
                 .participants(List.of("22000328"))
                 .courses(List.of(1L,2L,3L))
                 .build();

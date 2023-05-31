@@ -77,8 +77,7 @@ public class ReportControllerTests {
         ReportForm form = ReportForm.builder()
                 .title("title")
                 .content("content")
-                .startTime(LocalTime.of(10, 30))
-                .endTime(LocalTime.of(11, 30))
+                .totalMinutes(60)
                 .participants(List.of("a12"))
                 .build();
         User user = User.builder()

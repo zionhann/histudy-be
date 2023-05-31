@@ -6,6 +6,7 @@ import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.ReportDto;
 import edu.handong.csee.histudy.repository.ReportRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
+import edu.handong.csee.histudy.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +22,7 @@ import java.util.Optional;
 public class ReportController {
 
     private final ReportRepository reportRepository;
+    private final ReportService reportService;
     private final UserRepository userRepository;
 
     @PostMapping("/api/v1/report")
@@ -33,5 +35,10 @@ public class ReportController {
         Report report = form.toEntity(user.getTeam(), participants);
 
         return new ReportDto.Response(reportRepository.save(report));
+    }
+    @PostMapping("/api/v1/reportCourse")
+    public ReportDto.Response createReportCourse(@RequestBody ReportForm form,
+                                                 @RequestHeader(HttpHeaders.AUTHORIZATION) String accessToken) {
+        return reportService.createReport(form,accessToken);
     }
 }
