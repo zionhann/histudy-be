@@ -14,8 +14,7 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/course")
-@CrossOrigin(origins = "*")
+@RequestMapping("/api/courses")
 @RequiredArgsConstructor
 public class CourseController {
 
