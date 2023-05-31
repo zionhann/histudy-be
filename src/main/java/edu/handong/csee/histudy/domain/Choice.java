@@ -1,16 +1,13 @@
 package edu.handong.csee.histudy.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Choice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,5 +17,8 @@ public class Choice {
     @ManyToOne(fetch = FetchType.LAZY)
     private Course course;
 
-
+    public Choice(User user, Course course) {
+        this.user = user;
+        this.course = course;
+    }
 }

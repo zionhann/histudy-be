@@ -43,8 +43,8 @@ public class User {
     @OneToMany(mappedBy = "received", cascade = CascadeType.ALL)
     private List<Friendship> receivedRequests = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user")
-    private List<Choice> choices;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Choice> choices = new ArrayList<>();
 
     @Builder
     public User(String id, String sid, String email, String name, String accessToken, Role role) {
@@ -65,5 +65,22 @@ public class User {
         Friendship friendship = new Friendship(this, user);
         this.sentRequests.add(friendship);
         user.receivedRequests.add(friendship);
+    }
+
+    public void add(List<User> users) {
+        users
+                .forEach(u -> {
+                    Friendship friendship = new Friendship(this, u);
+                    this.sentRequests.add(friendship);
+                    u.receivedRequests.add(friendship);
+                });
+    }
+
+    public void select(List<Course> courses) {
+        courses
+                .forEach(c -> {
+                    Choice choice = new Choice(this, c);
+                    this.choices.add(choice);
+                });
     }
 }
