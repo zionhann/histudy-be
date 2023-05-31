@@ -29,12 +29,13 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
                 .map(value -> value.substring(BEARER.length()));
         Optional<Claims> claims = jwtService.validate(token);
 
+        response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, client);
+        response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "POST, GET, DELETE, PATCH, OPTIONS");
+        response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, "Origin, Content-Type, Authorization");
+        response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
+
         if (claims.isPresent()) {
             request.setAttribute("claims", claims.get());
-            response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, client);
-            response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "POST, GET, DELETE, PATCH, OPTIONS");
-            response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, "Origin, Content-Type, Authorization");
-            response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
             return true;
         }
         response.sendError(HttpStatus.UNAUTHORIZED.value());
