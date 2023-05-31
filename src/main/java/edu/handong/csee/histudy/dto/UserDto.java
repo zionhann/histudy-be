@@ -1,8 +1,10 @@
 package edu.handong.csee.histudy.dto;
 
 import edu.handong.csee.histudy.jwt.JwtPair;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class UserDto {
 
@@ -13,4 +15,27 @@ public class UserDto {
         private final String tokenType;
         private final JwtPair tokens;
     }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class Info {
+        private String id;
+        private String name;
+        private String sid;
+        List<Basic> friends = new ArrayList<>();
+        List<String> 
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class Basic {
+        private String id;
+        private String name;
+        private String sid;
+    }
+
 }
