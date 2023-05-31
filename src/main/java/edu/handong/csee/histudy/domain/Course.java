@@ -42,6 +42,7 @@ public class Course {
     }
     public CourseDto toDto() {
         CourseDto dto = new CourseDto();
+        dto.setId(this.id);
         dto.setName(this.name);
         dto.setCode(this.code);
         dto.setProfessor(this.professor);
