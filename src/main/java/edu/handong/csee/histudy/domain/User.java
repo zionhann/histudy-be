@@ -44,7 +44,7 @@ public class User {
     private List<Friendship> receivedRequests = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
-    private List<Choice> choices;
+    private List<Choice> choices = new ArrayList<>();
 
     @Builder
     public User(String id, String sid, String email, String name, String accessToken, Role role) {
