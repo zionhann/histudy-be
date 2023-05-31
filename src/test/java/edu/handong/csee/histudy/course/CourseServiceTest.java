@@ -2,6 +2,7 @@ package edu.handong.csee.histudy.course;
 
 import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.CourseDto;
+import edu.handong.csee.histudy.dto.CourseIdDto;
 import edu.handong.csee.histudy.repository.ChoiceRepository;
 import edu.handong.csee.histudy.repository.CourseRepository;
 import edu.handong.csee.histudy.repository.TeamRepository;
@@ -35,9 +36,8 @@ public class CourseServiceTest {
     @Autowired
     ChoiceRepository choiceRepository;
 
-    @DisplayName("팀내에 인원들의 과목들을 불러들여야 한다")
-    @Test
-    public void teamCourseTest() {
+    @BeforeEach
+    void setup(){
         Course course = Course.builder()
                 .name("기초전자공학실험")
                 .code("ECE20007")
@@ -61,6 +61,15 @@ public class CourseServiceTest {
                 .semester(1)
                 .build();
         courseRepository.save(courseC);
+    }
+    @AfterEach
+    void cleanup() {
+        courseRepository.deleteAll();
+    }
+
+    @DisplayName("팀내에 인원들의 과목들을 불러들여야 한다")
+    @Test
+    public void teamCourseTest() {
         User user = User.builder()
                 .id("123")
                 .sid("22000328")
@@ -77,7 +86,7 @@ public class CourseServiceTest {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
-        List<Choice> choices = courses.stream().map(c -> choiceRepository.save(new Choice(saved,c))).toList();
+        List<Choice> choices = courses.stream().map(c -> choiceRepository.save(new Choice(saved, c))).toList();
         saved.getChoices().addAll(choices);
         User userB = User.builder()
                 .id("124")
@@ -88,16 +97,26 @@ public class CourseServiceTest {
                 .build();
         User savedB = userRepository.save(userB);
         savedB.belongTo(team);
-        List<Long> courseIdxListB = List.of(1L,2L);
+        List<Long> courseIdxListB = List.of(1L, 2L);
         List<Course> coursesB = courseIdxListB.stream()
                 .map(courseRepository::findById)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
-        List<Choice> choicesB = coursesB.stream().map(c -> choiceRepository.save(new Choice(savedB,c))).toList();
+        List<Choice> choicesB = coursesB.stream().map(c -> choiceRepository.save(new Choice(savedB, c))).toList();
         savedB.getChoices().addAll(choicesB);
         List<CourseDto> result = courseService.getTeamCourses("1234");
 //        assertThat(result.size()).isEqualTo(2);
         System.out.println("result = " + result);
+    }
+
+    @DisplayName("수업을 삭제할 수 있어야 한다")
+    @Test
+    public void deleteCourseTest() {
+        int result = courseService.deleteCourse(new CourseIdDto(6L));
+        int result2 = courseService.deleteCourse(new CourseIdDto(20L));
+//        assertThat(result).isEqualTo(1);
+//        assertThat(result2).isEqualTo(0);
+//        assertThat(courseRepository.findAll().size()).isEqualTo(2);
     }
 }

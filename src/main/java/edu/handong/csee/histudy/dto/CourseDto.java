@@ -10,6 +10,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CourseDto {
+    private Long id;
     private String name;
     private String professor;
     private String code;
