@@ -17,18 +17,16 @@ public class ReportForm {
 
     private String title;
     private String content;
-    private LocalTime startTime;
-    private LocalTime endTime;
+    private long totalMinutes;
     private List<String> participants;
     private List<String> images;
-    private List<Integer> courses; // courseId 넘겨줘야할 것 같아요
+    private List<Long> courses; // courseId 넘겨줘야할 것 같아요
 
     public Report toEntity(Team team, List<Optional<User>> participants) {
         return Report.builder()
                 .title(title)
                 .content(content)
-                .startTime(startTime)
-                .endTime(endTime)
+                .totalMinutes(totalMinutes)
                 .team(team)
                 .participants(participants.stream()
                         .filter(Optional::isPresent)

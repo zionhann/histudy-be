@@ -3,6 +3,7 @@ package edu.handong.csee.histudy.user;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.handong.csee.histudy.controller.UserController;
 import edu.handong.csee.histudy.controller.form.BuddyForm;
+import edu.handong.csee.histudy.controller.form.UserInfo;
 import edu.handong.csee.histudy.domain.Friendship;
 import edu.handong.csee.histudy.domain.FriendshipStatus;
 import edu.handong.csee.histudy.domain.Role;
@@ -10,6 +11,7 @@ import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.FriendshipDto;
 import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
+import edu.handong.csee.histudy.jwt.JwtPair;
 import edu.handong.csee.histudy.service.JwtService;
 import edu.handong.csee.histudy.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +31,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -53,6 +56,9 @@ public class UserControllerTests {
 
     @Autowired
     UserService userService;
+
+    @Autowired
+    JwtService jwtService;
 
     @Autowired
     UserController userController;
@@ -241,6 +247,24 @@ public class UserControllerTests {
         MvcResult mvcResult = mockMvc
                 .perform(get("/api/users")
                         .queryParam("search", "218"))
+      }
+  
+    @DisplayName("신규 유저는 회원가입시 토큰을 받아야 한다.")
+    @Test
+    void UserControllerTests_196() throws Exception {
+        // given
+        UserInfo userInfo = new UserInfo("1234", "username", "user@test", "21800123");
+        List<String> tokens = List.of("access_token", "refresh_token");
+        String form = mapper.writeValueAsString(userInfo);
+
+        // when
+        when(userService.signUp(any())).thenReturn(true);
+        when(jwtService.issueToken(any(), any())).thenReturn(new JwtPair(tokens));
+
+        MvcResult mvcResult = mockMvc
+                .perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(form))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andReturn();
@@ -293,6 +317,30 @@ public class UserControllerTests {
                 .perform(get("/api/users"))
                 .andExpect(status().isBadRequest())
                 .andDo(print());
+
+        UserDto.Login res = mapper.readValue(
+                mvcResult.getResponse().getContentAsString(),
+                UserDto.Login.class);
+
+        // then
+        assertTrue(res.getIsRegistered());
+        assertEquals("Bearer ", res.getTokenType());
+        assertEquals("access_token", res.getTokens().getAccessToken());
     }
 
+    @DisplayName("기존 유저는 회원가입 요청이 거부되어야 한다.")
+    @Test
+    void UserControllerTests_206() throws Exception {
+        UserInfo userInfo = new UserInfo("1234", "username", "user@test", "21800123");
+        String form = mapper.writeValueAsString(userInfo);
+
+        when(userService.signUp(any())).thenReturn(false);
+
+        mockMvc
+                .perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(form))
+                .andExpect(status().isBadRequest())
+                .andDo(print());
+    }
 }

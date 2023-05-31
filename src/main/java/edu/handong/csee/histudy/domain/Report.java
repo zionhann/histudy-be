@@ -21,8 +21,6 @@ public class Report {
     private Long id;
     private String title;
     private String content;
-    private LocalTime startTime;
-    private LocalTime endTime;
     private long totalMinutes;
     @Embedded
     private BaseTime baseTime;
@@ -41,17 +39,14 @@ public class Report {
     @Builder
     public Report(String title,
                   String content,
-                  LocalTime startTime,
-                  LocalTime endTime,
+                  long totalMinutes,
                   Team team,
                   List<User> participants,
                   List<String> images) {
         this.title = title;
         this.content = content;
-        this.startTime = startTime;
-        this.endTime = endTime;
+        this.totalMinutes = totalMinutes;
 
-        totalMinutes = Duration.between(startTime, endTime).toMinutes();
         writtenBy(team);
         addParticipants(participants);
         insert(images);
@@ -78,5 +73,11 @@ public class Report {
                 .map(img -> new Image(img, this))
                 .toList();
         this.images.addAll(paths);
+    }
+    public void setStudies(List<Study> studies) {
+        if(studies==null) {
+            return;
+        }
+        this.studies.addAll(studies);
     }
 }

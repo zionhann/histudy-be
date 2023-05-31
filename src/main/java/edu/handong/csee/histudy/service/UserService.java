@@ -3,7 +3,9 @@ package edu.handong.csee.histudy.service;
 import edu.handong.csee.histudy.controller.form.ApplyForm;
 import edu.handong.csee.histudy.controller.form.BuddyForm;
 import edu.handong.csee.histudy.domain.Course;
+import edu.handong.csee.histudy.controller.form.UserInfo;
 import edu.handong.csee.histudy.domain.Friendship;
+import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.repository.CourseRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
@@ -78,5 +80,26 @@ public class UserService {
         });
 
         return !courses.isEmpty() && userOr.isPresent();
+    }
+  
+    public boolean signUp(UserInfo userInfo) {
+        Optional<User> userOr = userRepository.findById(userInfo.getSub());
+
+        if (userOr.isEmpty()) {
+            User user = User.builder()
+                    .id(userInfo.getSub())
+                    .sid(userInfo.getSid())
+                    .email(userInfo.getEmail())
+                    .name(userInfo.getName())
+                    .role(Role.USER)
+                    .build();
+            userRepository.save(user);
+            return true;
+        }
+        return false;
+    }
+
+    public Optional<User> isPresent(String sub) {
+        return userRepository.findById(sub);
     }
 }

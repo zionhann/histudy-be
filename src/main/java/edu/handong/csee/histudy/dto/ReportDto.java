@@ -24,6 +24,10 @@ public class ReportDto {
                     .stream()
                     .map(p -> p.getUser().getSid())
                     .toList();
+            this.courses = entity.getStudies()
+                    .stream()
+                    .map(s -> s.getCourse().getName())
+                    .toList();
         }
 
         private Long id;
@@ -31,5 +35,6 @@ public class ReportDto {
         private Integer group;
         private long totalMinutes;
         private List<String> participants;
+        private List<String> courses;
     }
 }

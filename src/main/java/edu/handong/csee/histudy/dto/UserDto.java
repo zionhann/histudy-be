@@ -1,6 +1,7 @@
 package edu.handong.csee.histudy.dto;
 
 import edu.handong.csee.histudy.domain.User;
+import edu.handong.csee.histudy.jwt.JwtPair;
 import lombok.*;
 
 import java.util.List;
@@ -24,5 +25,13 @@ public class UserDto {
             this.sid = user.getSid();
             this.email = user.getEmail();
         }
+    }
+      
+    @Builder
+    @Getter
+    public static class Login {
+        private final Boolean isRegistered;
+        private final String tokenType;
+        private final JwtPair tokens;
     }
 }

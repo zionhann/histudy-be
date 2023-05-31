@@ -38,8 +38,7 @@ public class ManageReportTests {
         Report report = Report.builder()
                 .title("title")
                 .content("content")
-                .startTime(LocalTime.of(12, 30))
-                .endTime(LocalTime.of(13, 30))
+                .totalMinutes(60)
                 .team(team)
                 .participants(List.of(user1))
                 .build();
@@ -58,8 +57,7 @@ public class ManageReportTests {
         Report report = Report.builder()
                 .title("title")
                 .content("content")
-                .startTime(LocalTime.of(12, 30))
-                .endTime(LocalTime.of(13, 30))
+                .totalMinutes(60)
                 .team(new Team(1))
                 .participants(List.of(User.builder().build()))
                 .build();
@@ -77,20 +75,17 @@ public class ManageReportTests {
         Report report1 = Report.builder()
                 .title("title")
                 .content("content")
-                .startTime(LocalTime.of(12, 30))
-                .endTime(LocalTime.of(13, 30))
+                .totalMinutes(30)
                 .team(team)
                 .participants(List.of(User.builder().build()))
                 .build();
         Report report2 = Report.builder()
                 .title("title")
                 .content("content")
-                .startTime(LocalTime.of(15, 30))
-                .endTime(LocalTime.of(16, 0))
+                .totalMinutes(60)
                 .team(team)
                 .participants(List.of(User.builder().build()))
                 .build();
-
         // then
         assertEquals(90, team.getTotalMinutes());
     }
@@ -102,8 +97,7 @@ public class ManageReportTests {
         Report report = Report.builder()
                 .title("title")
                 .content("content")
-                .startTime(LocalTime.now())
-                .endTime(LocalTime.now())
+                .totalMinutes(0)
                 .team(new Team(1))
                 .participants(List.of(User.builder().build()))
                 .images(List.of("pathA", "pathB", "pathC"))
@@ -124,8 +118,7 @@ public class ManageReportTests {
         Report report = Report.builder()
                 .title("title")
                 .content("content")
-                .startTime(LocalTime.now())
-                .endTime(LocalTime.now())
+                .totalMinutes(0)
                 .team(new Team(1))
                 .participants(List.of(User.builder().build()))
                 .images(List.of("pathA", "pathB", "pathC"))
