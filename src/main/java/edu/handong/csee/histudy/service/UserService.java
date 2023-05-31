@@ -47,4 +47,8 @@ public class UserService {
                 .findAny()
                 .ifPresent(Friendship::decline);
     }
+
+    public List<User> search(String keyword) {
+        return userRepository.findUserByNameOrSidOrEmail(keyword);
+    }
 }
