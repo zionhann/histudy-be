@@ -1,16 +1,17 @@
 package edu.handong.csee.histudy.dto;
 
 import edu.handong.csee.histudy.domain.Course;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
 @AllArgsConstructor
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
+@Setter
 public class CourseDto {
 
     private List<Info> courses;
@@ -18,6 +19,7 @@ public class CourseDto {
     @AllArgsConstructor
     @Getter
     public static class Info {
+        private Long id;
         private String name;
         private String prof;
         private String code;
@@ -25,6 +27,7 @@ public class CourseDto {
         private int semester;
 
         public Info(Course course) {
+            this.id = course.getId();
             this.name = course.getName();
             this.prof = course.getProfessor();
             this.code = course.getCode();

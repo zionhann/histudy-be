@@ -1,6 +1,7 @@
 package edu.handong.csee.histudy.domain;
 
 import com.opencsv.bean.CsvBindByName;
+import edu.handong.csee.histudy.dto.CourseDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -38,5 +39,9 @@ public class Course {
         this.professor = professor;
         this.courseYear = courseYear;
         this.semester = semester;
+    }
+
+    public CourseDto.Info toDto() {
+        return new CourseDto.Info(this);
     }
 }

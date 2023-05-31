@@ -1,6 +1,7 @@
 package edu.handong.csee.histudy.controller;
 
 import edu.handong.csee.histudy.dto.CourseDto;
+import edu.handong.csee.histudy.dto.CourseIdDto;
 import edu.handong.csee.histudy.service.CourseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -37,6 +38,11 @@ public class CourseController {
         }
     }
 
+    @PostMapping("/delete")
+    public int deleteCourse(@RequestBody CourseIdDto dto) {
+        return courseService.deleteCourse(dto);
+    }
+
     @GetMapping
     public ResponseEntity<CourseDto> getCourses(@RequestParam(name = "search", required = false) String keyword) {
         List<CourseDto.Info> courses = (keyword == null)
@@ -45,8 +51,9 @@ public class CourseController {
 
         return ResponseEntity.ok(new CourseDto(courses));
     }
+
     @GetMapping("/team")
-    public ResponseEntity<List<CourseDto>> getTeamCourses(@RequestHeader(HttpHeaders.AUTHORIZATION) String accessToken) {
-        return ResponseEntity.ok(courseService.getTeamCourses(accessToken));
+    public ResponseEntity<CourseDto> getTeamCourses(@RequestHeader(HttpHeaders.AUTHORIZATION) String accessToken) {
+        return ResponseEntity.ok(new CourseDto(courseService.getTeamCourses(accessToken)));
     }
 }

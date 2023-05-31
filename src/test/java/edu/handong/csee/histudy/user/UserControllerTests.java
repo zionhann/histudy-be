@@ -67,7 +67,7 @@ public class UserControllerTests {
     AuthenticationInterceptor interceptor;
 
     @BeforeEach
-    void init() throws Exception {
+    void init() {
         mockMvc = MockMvcBuilders
                 .standaloneSetup(userController)
                 .addInterceptors(interceptor)
@@ -247,11 +247,22 @@ public class UserControllerTests {
         MvcResult mvcResult = mockMvc
                 .perform(get("/api/users")
                         .queryParam("search", "218"))
-      }
-  
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        UserDto res = mapper.readValue(mvcResult.getResponse().getContentAsString(),
+                UserDto.class);
+
+        //then
+        assertEquals(1, res.getUsers().size());
+        assertEquals("username", res.getUsers().get(0).getName());
+        assertEquals("21800123", res.getUsers().get(0).getSid());
+    }
+
     @DisplayName("신규 유저는 회원가입시 토큰을 받아야 한다.")
     @Test
-    void UserControllerTests_196() throws Exception {
+    void UserControllerTests_254() throws Exception {
         // given
         UserInfo userInfo = new UserInfo("1234", "username", "user@test", "21800123");
         List<String> tokens = List.of("access_token", "refresh_token");
@@ -269,14 +280,14 @@ public class UserControllerTests {
                 .andDo(print())
                 .andReturn();
 
-        UserDto res = mapper.readValue(mvcResult.getResponse().getContentAsString(),
-                UserDto.class);
+        UserDto.Login res = mapper.readValue(
+                mvcResult.getResponse().getContentAsString(),
+                UserDto.Login.class);
 
         // then
-        assertEquals(1, res.getUsers().size());
-        assertEquals("username", res.getUsers().get(0).getName());
-        assertEquals("21800123", res.getUsers().get(0).getSid());
-        assertEquals("test@example.com", res.getUsers().get(0).getEmail());
+        assertTrue(res.getIsRegistered());
+        assertEquals("Bearer ", res.getTokenType());
+        assertEquals("access_token", res.getTokens().getAccessToken());
     }
 
     @DisplayName("스터디 친구를 검색한다: 이메일")
@@ -316,16 +327,8 @@ public class UserControllerTests {
         mockMvc
                 .perform(get("/api/users"))
                 .andExpect(status().isBadRequest())
-                .andDo(print());
-
-        UserDto.Login res = mapper.readValue(
-                mvcResult.getResponse().getContentAsString(),
-                UserDto.Login.class);
-
-        // then
-        assertTrue(res.getIsRegistered());
-        assertEquals("Bearer ", res.getTokenType());
-        assertEquals("access_token", res.getTokens().getAccessToken());
+                .andDo(print())
+                .andReturn();
     }
 
     @DisplayName("기존 유저는 회원가입 요청이 거부되어야 한다.")
