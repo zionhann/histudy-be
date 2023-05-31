@@ -15,7 +15,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +22,7 @@ public class CourseService {
     private final CourseRepository courseRepository;
 
     public String uploadFile(MultipartFile file) {
-        try(Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+        try (Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
             CsvToBean<Course> csvToBean = new CsvToBeanBuilder<Course>(reader)
                     .withType(Course.class)
                     .withSeparator(',')
@@ -37,11 +36,19 @@ public class CourseService {
         }
         return "SUCCESS";
     }
-    public List<CourseDto> getCourses() {
+
+    public List<CourseDto.Info> getCourses() {
         return courseRepository
                 .findAll()
                 .stream()
-                .map(Course::toDto)
-                .collect(Collectors.toList());
+                .map(CourseDto.Info::new)
+                .toList();
+    }
+
+    public List<CourseDto.Info> search(String keyword) {
+        return courseRepository.findAllByNameContainingIgnoreCase(keyword)
+                .stream()
+                .map(CourseDto.Info::new)
+                .toList();
     }
 }

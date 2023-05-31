@@ -34,8 +34,13 @@ public class CourseController {
                 return ResponseEntity.ok(status);
         }
     }
+
     @GetMapping
-    public ResponseEntity<List<CourseDto>> getCourses() {
-        return ResponseEntity.ok(courseService.getCourses());
+    public ResponseEntity<CourseDto> getCourses(@RequestParam(name = "search", required = false) String keyword) {
+        List<CourseDto.Info> courses = (keyword == null)
+                ? courseService.getCourses()
+                : courseService.search(keyword);
+
+        return ResponseEntity.ok(new CourseDto(courses));
     }
 }

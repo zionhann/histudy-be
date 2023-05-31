@@ -1,7 +1,6 @@
 package edu.handong.csee.histudy.domain;
 
 import com.opencsv.bean.CsvBindByName;
-import edu.handong.csee.histudy.dto.CourseDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,7 +28,7 @@ public class Course {
     // 관계 설정해주기
     @OneToMany(mappedBy = "course")
     private List<Choice> choices = new ArrayList<>();
-    @OneToMany(mappedBy="course")
+    @OneToMany(mappedBy = "course")
     private List<Study> studies = new ArrayList<>();
 
     @Builder
@@ -39,14 +38,5 @@ public class Course {
         this.professor = professor;
         this.courseYear = courseYear;
         this.semester = semester;
-    }
-    public CourseDto toDto() {
-        CourseDto dto = new CourseDto();
-        dto.setName(this.name);
-        dto.setCode(this.code);
-        dto.setProfessor(this.professor);
-        dto.setCourseYear(this.courseYear);
-        dto.setSemester(this.semester);
-        return dto;
     }
 }
