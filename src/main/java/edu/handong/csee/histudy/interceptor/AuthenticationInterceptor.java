@@ -27,6 +27,9 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
 
         if (claims.isPresent()) {
             request.setAttribute("claims", claims.get());
+            response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+            response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "POST, GET, DELETE, PUT, PATCH, OPTIONS");
+            response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, "Origin, Content-Type, Authorization");
             return true;
         }
         response.sendError(HttpStatus.UNAUTHORIZED.value());
