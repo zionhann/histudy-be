@@ -1,15 +1,20 @@
 package edu.handong.csee.histudy.controller;
 
 import edu.handong.csee.histudy.controller.form.BuddyForm;
+import edu.handong.csee.histudy.controller.form.UserInfo;
 import edu.handong.csee.histudy.domain.Friendship;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.FriendshipDto;
 import edu.handong.csee.histudy.dto.FriendshipRequest;
+import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.impl.ReceivedFriendshipRequest;
 import edu.handong.csee.histudy.impl.SentFriendshipRequest;
+import edu.handong.csee.histudy.jwt.JwtPair;
+import edu.handong.csee.histudy.service.JwtService;
 import edu.handong.csee.histudy.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +26,21 @@ import java.util.stream.Collectors;
 public class UserController {
 
     private final UserService userService;
+    private final JwtService jwtService;
+
+    @PostMapping
+    public ResponseEntity<UserDto.Login> createUser(@RequestBody UserInfo userInfo) {
+        if (userService.signUp(userInfo)) {
+            JwtPair tokens = jwtService.issueToken(userInfo.getEmail(), userInfo.getName());
+
+            return ResponseEntity.ok(UserDto.Login.builder()
+                    .isRegistered(true)
+                    .tokenType("Bearer ")
+                    .tokens(tokens)
+                    .build());
+        }
+        return ResponseEntity.badRequest().build();
+    }
 
     @PostMapping("/me/friends")
     public FriendshipDto sendFriendRequest(@RequestHeader(HttpHeaders.AUTHORIZATION) String accessToken,
