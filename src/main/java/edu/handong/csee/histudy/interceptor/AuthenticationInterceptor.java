@@ -5,7 +5,6 @@ import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -21,16 +20,9 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     private final static String BEARER = "Bearer ";
     private final JwtService jwtService;
 
-    @Value("${custom.origin.allowed}")
-    private String client;
-
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws IOException {
         if (CorsUtils.isPreFlightRequest(request)) {
-            response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, client);
-            response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "POST, GET, DELETE, PATCH, OPTIONS");
-            response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, "Content-Type, Authorization");
-            response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
             return true;
         }
         Optional<String> token = Optional.ofNullable(request.getHeader(HttpHeaders.AUTHORIZATION))
