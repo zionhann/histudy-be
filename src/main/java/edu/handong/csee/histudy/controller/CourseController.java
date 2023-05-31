@@ -3,6 +3,7 @@ package edu.handong.csee.histudy.controller;
 import edu.handong.csee.histudy.dto.CourseDto;
 import edu.handong.csee.histudy.service.CourseService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,5 +38,9 @@ public class CourseController {
     @GetMapping
     public ResponseEntity<List<CourseDto>> getCourses() {
         return ResponseEntity.ok(courseService.getCourses());
+    }
+    @GetMapping("/team")
+    public ResponseEntity<List<CourseDto>> getTeamCourses(@RequestHeader(HttpHeaders.AUTHORIZATION) String accessToken) {
+        return ResponseEntity.ok(courseService.getTeamCourses(accessToken));
     }
 }
