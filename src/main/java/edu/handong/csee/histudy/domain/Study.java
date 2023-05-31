@@ -1,10 +1,7 @@
 package edu.handong.csee.histudy.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Getter
@@ -19,4 +16,11 @@ public class Study {
     private Report report;
     @ManyToOne(fetch = FetchType.LAZY)
     private Course course;
+
+    @Builder
+    public Study(Report report, Course course) {
+        this.course = course;
+        this.report = report;
+    }
+
 }

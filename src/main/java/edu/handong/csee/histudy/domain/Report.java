@@ -79,4 +79,10 @@ public class Report {
                 .toList();
         this.images.addAll(paths);
     }
+    public void setStudies(List<Study> studies) {
+        if(studies==null) {
+            return;
+        }
+        this.studies.addAll(studies);
+    }
 }
