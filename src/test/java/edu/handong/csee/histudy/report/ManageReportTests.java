@@ -75,7 +75,7 @@ public class ManageReportTests {
         Report report1 = Report.builder()
                 .title("title")
                 .content("content")
-                .totalMinutes(60)
+                .totalMinutes(30)
                 .team(team)
                 .participants(List.of(User.builder().build()))
                 .build();
