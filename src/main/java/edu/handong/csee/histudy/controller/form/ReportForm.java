@@ -21,7 +21,7 @@ public class ReportForm {
     private LocalTime endTime;
     private List<String> participants;
     private List<String> images;
-    private List<Integer> courses; // courseId 넘겨줘야할 것 같아요
+    private List<Long> courses; // courseId 넘겨줘야할 것 같아요
 
     public Report toEntity(Team team, List<Optional<User>> participants) {
         return Report.builder()
