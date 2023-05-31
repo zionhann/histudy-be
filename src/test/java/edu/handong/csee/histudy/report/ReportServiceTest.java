@@ -37,6 +37,7 @@ public class ReportServiceTest {
                 .participants(List.of("22000328"))
                 .courses(List.of(1L,2L,3L))
                 .build();
+
         User user = User.builder()
                 .id("123")
                 .sid("22000328")
