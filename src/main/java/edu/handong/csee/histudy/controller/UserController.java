@@ -13,6 +13,7 @@ import edu.handong.csee.histudy.impl.SentFriendshipRequest;
 import edu.handong.csee.histudy.jwt.JwtPair;
 import edu.handong.csee.histudy.service.JwtService;
 import edu.handong.csee.histudy.service.UserService;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -97,5 +98,9 @@ public class UserController {
 
         return ResponseEntity.ok(
                 new UserDto(users));
+    }
+    @GetMapping("/manageUsers")
+    public List<UserDto.Info> userList(@RequestAttribute Claims claims) {
+        return userService.getUsers(claims.getSubject());
     }
 }
