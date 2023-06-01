@@ -16,7 +16,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
-@CrossOrigin(origins = "*")
+@CrossOrigin(
+        origins = "${custom.origin.allowed}",
+        allowedHeaders = "POST, GET, DELETE, PATCH, OPTIONS",
+        allowCredentials = "true")
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor

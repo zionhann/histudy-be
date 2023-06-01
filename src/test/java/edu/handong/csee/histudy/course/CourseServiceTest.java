@@ -8,7 +8,6 @@ import edu.handong.csee.histudy.repository.CourseRepository;
 import edu.handong.csee.histudy.repository.TeamRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import edu.handong.csee.histudy.service.CourseService;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -19,8 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
@@ -37,7 +34,7 @@ public class CourseServiceTest {
     ChoiceRepository choiceRepository;
 
     @BeforeEach
-    void setup(){
+    void setup() {
         Course course = Course.builder()
                 .name("기초전자공학실험")
                 .code("ECE20007")
@@ -62,6 +59,7 @@ public class CourseServiceTest {
                 .build();
         courseRepository.save(courseC);
     }
+
     @AfterEach
     void cleanup() {
         courseRepository.deleteAll();
@@ -105,7 +103,7 @@ public class CourseServiceTest {
                 .toList();
         List<Choice> choicesB = coursesB.stream().map(c -> choiceRepository.save(new Choice(savedB, c))).toList();
         savedB.getChoices().addAll(choicesB);
-        List<CourseDto> result = courseService.getTeamCourses("1234");
+        List<CourseDto.Info> result = courseService.getTeamCourses("1234");
 //        assertThat(result.size()).isEqualTo(2);
         System.out.println("result = " + result);
     }

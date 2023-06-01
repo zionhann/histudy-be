@@ -6,6 +6,7 @@ import edu.handong.csee.histudy.controller.form.BuddyForm;
 import edu.handong.csee.histudy.controller.form.UserInfo;
 import edu.handong.csee.histudy.domain.Friendship;
 import edu.handong.csee.histudy.domain.FriendshipStatus;
+import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.FriendshipDto;
 import edu.handong.csee.histudy.dto.UserDto;
@@ -27,6 +28,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.io.IOException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -66,7 +68,7 @@ public class UserControllerTests {
     AuthenticationInterceptor interceptor;
 
     @BeforeEach
-    void init() throws Exception {
+    void init() throws IOException {
         mockMvc = MockMvcBuilders
                 .standaloneSetup(userController)
                 .addInterceptors(interceptor)
@@ -198,9 +200,70 @@ public class UserControllerTests {
         assertEquals(0, res.getRequests().size());
     }
 
-    @DisplayName("신규 유저는 회원가입시 토큰을 받아야 한다.")
+    @DisplayName("스터디 친구를 검색한다: 이름")
     @Test
     void UserControllerTests_196() throws Exception {
+        // given
+        when(userService.search(any()))
+                .thenReturn(List.of(
+                        User.builder()
+                                .name("username")
+                                .sid("21800123")
+                                .email("test@example.com")
+                                .role(Role.USER)
+                                .build()));
+
+        // when
+        MvcResult mvcResult = mockMvc
+                .perform(get("/api/users")
+                        .queryParam("search", "username"))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        UserDto res = mapper.readValue(mvcResult.getResponse().getContentAsString(),
+                UserDto.class);
+
+        // then
+        assertEquals(1, res.getUsers().size());
+        assertEquals("username", res.getUsers().get(0).getName());
+        assertEquals("21800123", res.getUsers().get(0).getSid());
+        assertEquals("test@example.com", res.getUsers().get(0).getEmail());
+    }
+
+    @DisplayName("스터디 친구를 검색한다: 학번")
+    @Test
+    void UserControllerTests_229() throws Exception {
+        // given
+        when(userService.search(any()))
+                .thenReturn(List.of(
+                        User.builder()
+                                .name("username")
+                                .sid("21800123")
+                                .email("test@example.com")
+                                .role(Role.USER)
+                                .build()));
+
+        // when
+        MvcResult mvcResult = mockMvc
+                .perform(get("/api/users")
+                        .queryParam("search", "218"))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        UserDto res = mapper.readValue(mvcResult.getResponse().getContentAsString(),
+                UserDto.class);
+
+        //then
+        assertEquals(1, res.getUsers().size());
+        assertEquals("username", res.getUsers().get(0).getName());
+        assertEquals("21800123", res.getUsers().get(0).getSid());
+    }
+
+    @DisplayName("신규 유저는 회원가입시 토큰을 받아야 한다.")
+    @Test
+    void UserControllerTests_254() throws Exception {
         // given
         UserInfo userInfo = new UserInfo("1234", "username", "user@test", "21800123");
         List<String> tokens = List.of("access_token", "refresh_token");
@@ -226,6 +289,47 @@ public class UserControllerTests {
         assertTrue(res.getIsRegistered());
         assertEquals("Bearer ", res.getTokenType());
         assertEquals("access_token", res.getTokens().getAccessToken());
+    }
+
+    @DisplayName("스터디 친구를 검색한다: 이메일")
+    @Test
+    void UserControllerTests_260() throws Exception {
+        // given
+        when(userService.search(any()))
+                .thenReturn(List.of(
+                        User.builder()
+                                .name("username")
+                                .sid("21800123")
+                                .email("test@example.com")
+                                .role(Role.USER)
+                                .build()));
+
+        // when
+        MvcResult mvcResult = mockMvc
+                .perform(get("/api/users")
+                        .queryParam("search", "test"))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        UserDto res = mapper.readValue(mvcResult.getResponse().getContentAsString(),
+                UserDto.class);
+
+        // then
+        assertEquals(1, res.getUsers().size());
+        assertEquals("username", res.getUsers().get(0).getName());
+        assertEquals("21800123", res.getUsers().get(0).getSid());
+        assertEquals("test@example.com", res.getUsers().get(0).getEmail());
+    }
+
+    @DisplayName("스터디 친구를 검색한다: 유효하지 않은 요청")
+    @Test
+    void UserControllerTests_291() throws Exception {
+        mockMvc
+                .perform(get("/api/users"))
+                .andExpect(status().isBadRequest())
+                .andDo(print())
+                .andReturn();
     }
 
     @DisplayName("기존 유저는 회원가입 요청이 거부되어야 한다.")
