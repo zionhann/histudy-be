@@ -37,4 +37,23 @@ public class ReportDto {
         private List<String> participants;
         private List<String> courses;
     }
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @Getter
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class Basic {
+        public Basic(Report report) {
+            this.id = report.getId();
+            this.title = report.getTitle();
+            this.regDate = report.getBaseTime().getLastModifiedDate().toString();
+            this.time = report.getTotalMinutes();
+
+        }
+
+        private long id;
+        private String title;
+        private String regDate;
+        private long time;
+    }
+
+
 }

@@ -1,16 +1,14 @@
 package edu.handong.csee.histudy.service;
 
 import edu.handong.csee.histudy.domain.*;
-import edu.handong.csee.histudy.dto.CourseIdNameDto;
-import edu.handong.csee.histudy.dto.TeamDto;
-import edu.handong.csee.histudy.dto.TeamIdDto;
-import edu.handong.csee.histudy.dto.UserDto;
+import edu.handong.csee.histudy.dto.*;
 import edu.handong.csee.histudy.repository.TeamRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -64,4 +62,18 @@ public class TeamService {
         }
         return 0;
     }
+    public TeamReportDto getTeamReports(TeamIdDto dto, String email) {
+        Team team = teamRepository.findById(dto.getGroupId()).orElseThrow();
+        List<UserDto.Basic> users = team.getUsers().stream()
+                                                        .map(u -> UserDto.Basic.builder()
+                                                                .id(u.getId())
+                                                                .sid(u.getSid())
+                                                                .name(u.getName())
+                                                                .build()).toList();
+        List<ReportDto.Basic> reports = team.getReports()
+                                            .stream()
+                .map(ReportDto.Basic::new).toList();
+        return new TeamReportDto(team.getId(),users,team.getTotalMinutes(),reports);
+    }
+
 }
