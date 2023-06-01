@@ -123,7 +123,8 @@ public class TeamServiceTest {
         savedA.belongTo(team);
         savedB.belongTo(team);
 
-        List<TeamDto> teams = teamService.getTeams();
+        String email = "";
+        List<TeamDto> teams = teamService.getTeams(email);
         System.out.println("teams = " + teams);
         assertThat(teams.size()).isNotNull();
         assertThat(teams.get(0).getMembers().size()).isEqualTo(2);

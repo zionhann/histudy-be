@@ -16,10 +16,8 @@ import java.util.List;
 public class TeamService {
     private final TeamRepository teamRepository;
 
-    public List<TeamDto> getTeams() {
+    public List<TeamDto> getTeams(String email) {
         List<Team> teams = teamRepository.findAll();
-//        List<User> users = new ArrayList<>();
-//        teams.forEach(t -> users.addAll(t.getUsers()));
         List<TeamDto> result = new ArrayList<>();
         teams.forEach(t -> {
             List<User> users = t.getUsers();

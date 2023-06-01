@@ -2,10 +2,11 @@ package edu.handong.csee.histudy.controller;
 
 import edu.handong.csee.histudy.dto.TeamDto;
 import edu.handong.csee.histudy.repository.TeamRepository;
+import edu.handong.csee.histudy.service.TeamService;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,10 +14,12 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
+@RequestMapping("/api/admin")
 public class TeamController {
-    private final TeamRepository teamRepository;
+    private final TeamService teamService;
 
-    public ResponseEntity<List<TeamDto>> getTeams() {
-        return ResponseEntity.ok(new ArrayList<>());
+    @GetMapping("/manageGroup")
+    public ResponseEntity<List<TeamDto>> getTeams(@RequestAttribute Claims claims) {
+        return ResponseEntity.ok(teamService.getTeams(claims.getSubject()));
     }
 }
