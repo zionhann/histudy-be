@@ -2,6 +2,7 @@ package edu.handong.csee.histudy.team;
 
 import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.TeamDto;
+import edu.handong.csee.histudy.dto.TeamIdDto;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
 import edu.handong.csee.histudy.repository.*;
 import edu.handong.csee.histudy.service.TeamService;
@@ -34,11 +35,10 @@ public class TeamServiceTest {
     ChoiceRepository choiceRepository;
     @Autowired
     FriendshipRepository friendshipRepository;
-
     @MockBean
     AuthenticationInterceptor interceptor;
     @Autowired
-    private TeamRepository teamRepository;
+    TeamRepository teamRepository;
 
     @BeforeEach
     void setup() throws IOException {
@@ -128,6 +128,24 @@ public class TeamServiceTest {
         System.out.println("teams = " + teams);
         assertThat(teams.size()).isNotNull();
         assertThat(teams.get(0).getMembers().size()).isEqualTo(2);
+    }
+    @DisplayName("팀을 삭제할 수 있어야 한다")
+    @Test
+    @Transactional
+    public void deleteTeamTest() {
+        User userA = User.builder()
+                .id("123")
+                .sid("22000329")
+                .accessToken("1234")
+                .email("a@a.com")
+                .role(Role.USER)
+                .build();
+        User savedA = userRepository.save(userA);
+        Team team = teamRepository.save(new Team(111));
+        savedA.belongTo(team);
+        int result = teamService.deleteTeam(new TeamIdDto(savedA.getTeam().getId()),"");
+        assertThat(result).isNotZero();
+        assertThat(savedA.getTeam()).isNull();
     }
 
 }
