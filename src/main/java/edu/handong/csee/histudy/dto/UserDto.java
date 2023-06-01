@@ -4,6 +4,7 @@ import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.jwt.JwtPair;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -26,7 +27,7 @@ public class UserDto {
             this.email = user.getEmail();
         }
     }
-      
+
     @Builder
     @Getter
     public static class Login {
@@ -34,4 +35,28 @@ public class UserDto {
         private final String tokenType;
         private final JwtPair tokens;
     }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @ToString
+    public static class Info {
+        private String id;
+        private String name;
+        private String sid;
+        private List<Basic> friends = new ArrayList<>();
+        private List<CourseIdNameDto> courses = new ArrayList<>();
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class Basic {
+        private String id;
+        private String name;
+        private String sid;
+    }
+
 }
