@@ -57,6 +57,12 @@ public class UserDto {
         private String id;
         private String name;
         private String sid;
+
+        public Basic(User user) {
+            this.id = user.getId();
+            this.sid = user.getSid();
+            this.name = user.getName();
+        }
     }
 
 }
