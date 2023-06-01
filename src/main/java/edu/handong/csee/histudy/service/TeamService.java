@@ -3,6 +3,7 @@ package edu.handong.csee.histudy.service;
 import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.CourseIdNameDto;
 import edu.handong.csee.histudy.dto.TeamDto;
+import edu.handong.csee.histudy.dto.TeamIdDto;
 import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.repository.TeamRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,10 +17,8 @@ import java.util.List;
 public class TeamService {
     private final TeamRepository teamRepository;
 
-    public List<TeamDto> getTeams() {
+    public List<TeamDto> getTeams(String email) {
         List<Team> teams = teamRepository.findAll();
-//        List<User> users = new ArrayList<>();
-//        teams.forEach(t -> users.addAll(t.getUsers()));
         List<TeamDto> result = new ArrayList<>();
         teams.forEach(t -> {
             List<User> users = t.getUsers();
@@ -57,5 +56,12 @@ public class TeamService {
             result.add(new TeamDto(t.getId(),userInfos,t.getReports().size(),t.getTotalMinutes()));
         });
         return result;
+    }
+    public int deleteTeam(TeamIdDto dto, String email) {
+        if(teamRepository.existsById(dto.getGroupId())) {
+            teamRepository.deleteById(dto.getGroupId());
+            return 1;
+        }
+        return 0;
     }
 }

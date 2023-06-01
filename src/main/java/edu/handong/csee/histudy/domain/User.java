@@ -83,4 +83,8 @@ public class User {
                     this.choices.add(choice);
                 });
     }
+
+    public void removeTeam() {
+        this.team = null;
+    }
 }
