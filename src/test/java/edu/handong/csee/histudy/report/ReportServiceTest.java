@@ -62,7 +62,7 @@ public class ReportServiceTest {
                 .content("content")
                 .totalMinutes(60)
                 .participants(List.of("22000328"))
-                .courses(List.of(1L,2L,3L))
+                .courses(List.of(1L, 2L, 3L))
                 .build();
         User user = User.builder()
                 .id("123")
@@ -74,9 +74,59 @@ public class ReportServiceTest {
         User saved = userRepository.save(user);
         Team team = teamRepository.save(new Team(1));
         saved.belongTo(team);
-        ReportDto.Response response = reportService.createReport(form,"1234");
+        ReportDto.Response response = reportService.createReport(form, "1234");
 //        assertThat(response.getCourses().size()).isEqualTo(3);
         System.out.println("response.getCourses() = " + response.getCourses());
     }
 
+    @DisplayName("보고서 상세조회를 할 수 있다")
+    @Test
+    @Transactional
+    public void reportDetailTest() {
+        Course course = Course.builder()
+                .name("기초전자공학실험")
+                .code("ECE20007")
+                .courseYear(2023)
+                .semester(1)
+                .build();
+        courseRepository.save(course);
+        Course courseB = Course.builder()
+                .name("데이타구조")
+                .code("ECE20010")
+                .professor("김호준")
+                .courseYear(2023)
+                .semester(1)
+                .build();
+        courseRepository.save(courseB);
+        Course courseC = Course.builder()
+                .name("자바프로그래밍언어")
+                .code("ECE20017")
+                .professor("남재창")
+                .courseYear(2023)
+                .semester(1)
+                .build();
+        courseRepository.save(courseC);
+        ReportForm form = ReportForm.builder()
+                .title("title")
+                .content("content")
+                .totalMinutes(60)
+                .participants(List.of("22000328"))
+                .courses(List.of(1L, 2L, 3L))
+                .build();
+        User user = User.builder()
+                .id("123")
+                .sid("22000328")
+                .accessToken("1234")
+                .email("a@a.com")
+                .role(Role.USER)
+                .build();
+        User saved = userRepository.save(user);
+        Team team = teamRepository.save(new Team(1));
+        saved.belongTo(team);
+        ReportDto.Response response = reportService.createReport(form, "1234");
+        ReportDto.Detail detail = reportService.getReportDetail(response.getId(), "");
+        assertThat(detail.getMembers().size()).isEqualTo(1);
+        assertThat(detail.getTitle()).isEqualTo("title");
+        assertThat(detail.getContent()).isEqualTo("content");
+    }
 }
