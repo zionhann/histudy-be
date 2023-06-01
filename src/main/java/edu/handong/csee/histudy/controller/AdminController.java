@@ -26,9 +26,9 @@ public class AdminController {
     public ResponseEntity<Integer> deleteTeam(@RequestBody TeamIdDto dto, @RequestAttribute Claims claims) {
         return ResponseEntity.ok(teamService.deleteTeam(dto, claims.getSubject()));
     }
-    @GetMapping("/groupReport")
-    public ResponseEntity<TeamReportDto> getTeamReports(@RequestBody TeamIdDto dto,
+    @GetMapping("/groupReport/{id}")
+    public ResponseEntity<TeamReportDto> getTeamReports(@PathVariable(name = "id") long id,
                                                               @RequestAttribute Claims claims) {
-        return ResponseEntity.ok(teamService.getTeamReports(dto, claims.getSubject()));
+        return ResponseEntity.ok(teamService.getTeamReports(id, claims.getSubject()));
     }
 }

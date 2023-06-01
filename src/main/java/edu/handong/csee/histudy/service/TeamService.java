@@ -62,8 +62,8 @@ public class TeamService {
         }
         return 0;
     }
-    public TeamReportDto getTeamReports(TeamIdDto dto, String email) {
-        Team team = teamRepository.findById(dto.getGroupId()).orElseThrow();
+    public TeamReportDto getTeamReports(long id, String email) {
+        Team team = teamRepository.findById(id).orElseThrow();
         List<UserDto.Basic> users = team.getUsers().stream()
                                                         .map(u -> UserDto.Basic.builder()
                                                                 .id(u.getId())
