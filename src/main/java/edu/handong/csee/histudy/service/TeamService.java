@@ -72,7 +72,7 @@ public class TeamService {
                                                                 .build()).toList();
         List<ReportDto.Basic> reports = team.getReports()
                                             .stream()
-                .map(ReportDto.Basic::new).toList();
+                                            .map(ReportDto.Basic::new).toList();
         return new TeamReportDto(team.getId(),users,team.getTotalMinutes(),reports);
     }
 
