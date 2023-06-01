@@ -44,7 +44,7 @@ public class ReportDto {
         public Basic(Report report) {
             this.id = report.getId();
             this.title = report.getTitle();
-            this.regDate = report.getBaseTime().getLastModifiedDate().toString();
+            this.regDate = report.getLastModifiedDate().toString();
             this.time = report.getTotalMinutes();
 
         }
