@@ -3,8 +3,8 @@ package edu.handong.csee.histudy.controller;
 import edu.handong.csee.histudy.dto.CourseDto;
 import edu.handong.csee.histudy.dto.CourseIdDto;
 import edu.handong.csee.histudy.service.CourseService;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -52,7 +52,7 @@ public class CourseController {
     }
 
     @GetMapping("/team")
-    public ResponseEntity<CourseDto> getTeamCourses(@RequestHeader(HttpHeaders.AUTHORIZATION) String accessToken) {
-        return ResponseEntity.ok(new CourseDto(courseService.getTeamCourses(accessToken)));
+    public ResponseEntity<CourseDto> getTeamCourses(@RequestAttribute Claims claims) {
+        return ResponseEntity.ok(new CourseDto(courseService.getTeamCourses(claims.getSubject())));
     }
 }

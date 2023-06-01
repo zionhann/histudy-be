@@ -20,4 +20,6 @@ public interface UserRepository extends JpaRepository<User, String> {
             "or u.sid like %:keyword% " +
             "or u.email like %:keyword%")
     List<User> findUserByNameOrSidOrEmail(String keyword);
+
+    Optional<User> findUserByEmail(String email);
 }

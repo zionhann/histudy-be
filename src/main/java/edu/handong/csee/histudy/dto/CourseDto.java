@@ -1,17 +1,16 @@
 package edu.handong.csee.histudy.dto;
 
 import edu.handong.csee.histudy.domain.Course;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.util.List;
 
 @AllArgsConstructor
 @Getter
-@NoArgsConstructor
-@Setter
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CourseDto {
 
     private List<Info> courses;
