@@ -186,7 +186,7 @@ public class TeamServiceTest {
                 .courses(List.of(1L,2L,3L))
                 .build();
         reportService.createReport(form,"1234");
-        TeamReportDto dto = teamService.getTeamReports(new TeamIdDto(1),"");
+        TeamReportDto dto = teamService.getTeamReports(new TeamIdDto(team.getId()),"");
         assertThat(dto.getMembers().size()).isEqualTo(2);
         assertThat(dto.getReports().size()).isEqualTo(1);
         assertThat(dto.getTotalTime()).isEqualTo(60L);
