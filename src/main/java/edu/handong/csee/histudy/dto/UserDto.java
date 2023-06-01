@@ -20,11 +20,13 @@ public class UserDto {
     @Getter
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @ToString
     public static class Info {
         private String id;
         private String name;
         private String sid;
-        List<Basic> friends = new ArrayList<>();
+        private List<Basic> friends = new ArrayList<>();
+        private List<CourseIdNameDto> courses = new ArrayList<>();
     }
 
     @Builder

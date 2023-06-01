@@ -41,4 +41,7 @@ public class Friendship {
             received.getReceivedRequests().remove(this);
         }
     }
+    public boolean isAccepted() {
+        return status.equals(FriendshipStatus.ACCEPTED);
+    }
 }

@@ -2,6 +2,7 @@ package edu.handong.csee.histudy.domain;
 
 import com.opencsv.bean.CsvBindByName;
 import edu.handong.csee.histudy.dto.CourseDto;
+import edu.handong.csee.histudy.dto.CourseIdNameDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -48,6 +49,12 @@ public class Course {
         dto.setProfessor(this.professor);
         dto.setCourseYear(this.courseYear);
         dto.setSemester(this.semester);
+        return dto;
+    }
+    public CourseIdNameDto toIdNameDto() {
+        CourseIdNameDto dto = new CourseIdNameDto();
+        dto.setId(this.id);
+        dto.setName(this.name);
         return dto;
     }
 }
