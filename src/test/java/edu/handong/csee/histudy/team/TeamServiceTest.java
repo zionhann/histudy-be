@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,7 +41,7 @@ public class TeamServiceTest {
     private TeamRepository teamRepository;
 
     @BeforeEach
-    void setup(){
+    void setup() throws IOException {
         when(interceptor.preHandle(any(), any(), any())).thenReturn(true);
         Course course = Course.builder()
                 .name("기초전자공학실험")
