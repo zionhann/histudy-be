@@ -1,10 +1,13 @@
 package edu.handong.csee.histudy.team;
 
+import edu.handong.csee.histudy.controller.form.ReportForm;
 import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.TeamDto;
 import edu.handong.csee.histudy.dto.TeamIdDto;
+import edu.handong.csee.histudy.dto.TeamReportDto;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
 import edu.handong.csee.histudy.repository.*;
+import edu.handong.csee.histudy.service.ReportService;
 import edu.handong.csee.histudy.service.TeamService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
@@ -39,6 +43,8 @@ public class TeamServiceTest {
     AuthenticationInterceptor interceptor;
     @Autowired
     TeamRepository teamRepository;
+    @Autowired
+    ReportService reportService;
 
     @BeforeEach
     void setup() throws IOException {
@@ -146,6 +152,45 @@ public class TeamServiceTest {
         int result = teamService.deleteTeam(new TeamIdDto(savedA.getTeam().getId()),"");
         assertThat(result).isNotZero();
         assertThat(savedA.getTeam()).isNull();
+    }
+    @DisplayName("팀의 보고서를 확인할 수 있다")
+    @Test
+    @Transactional
+    public void teamReportViewTest() {
+        User userA = User.builder()
+                .id("123")
+                .sid("22000329")
+                .name("배주영")
+                .accessToken("1234")
+                .email("a@a.com")
+                .role(Role.USER)
+                .build();
+        User userB = User.builder()
+                .id("124")
+                .sid("22000330")
+                .name("오인혁")
+                .accessToken("1235")
+                .email("a@b.com")
+                .role(Role.USER)
+                .build();
+        User savedA = userRepository.save(userA);
+        User savedB = userRepository.save(userB);
+        Team team = teamRepository.save(new Team(111));
+        savedA.belongTo(team);
+        savedB.belongTo(team);
+        ReportForm form = ReportForm.builder()
+                .title("title")
+                .content("content")
+                .totalMinutes(60)
+                .participants(List.of("22000328"))
+                .courses(List.of(1L,2L,3L))
+                .build();
+        reportService.createReport(form,"1234");
+        TeamReportDto dto = teamService.getTeamReports(new TeamIdDto(1),"");
+        assertThat(dto.getMembers().size()).isEqualTo(2);
+        assertThat(dto.getReports().size()).isEqualTo(1);
+        assertThat(dto.getTotalTime()).isEqualTo(60L);
+        System.out.println("dto = " + dto);
     }
 
 }
