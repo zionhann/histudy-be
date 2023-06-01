@@ -9,22 +9,16 @@ import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.CourseDto;
 import edu.handong.csee.histudy.dto.CourseIdDto;
 import edu.handong.csee.histudy.repository.CourseRepository;
-import edu.handong.csee.histudy.repository.TeamRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.input.BOMInputStream;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -33,13 +27,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CourseService {
     private final CourseRepository courseRepository;
-    private final TeamRepository teamRepository;
     private final UserRepository userRepository;
 
     public String uploadFile(MultipartFile file) throws IOException {
         BOMInputStream bomInputStream = new BOMInputStream(file.getInputStream());
-        if(bomInputStream.hasBOM()) {
-            try(Reader reader = new InputStreamReader(new BOMInputStream(file.getInputStream()), StandardCharsets.UTF_8)) {
+        if (bomInputStream.hasBOM()) {
+            try (Reader reader = new InputStreamReader(new BOMInputStream(file.getInputStream()), StandardCharsets.UTF_8)) {
                 CsvToBean<Course> csvToBean = new CsvToBeanBuilder<Course>(reader)
                         .withType(Course.class)
                         .withSeparator(',')
@@ -51,9 +44,8 @@ public class CourseService {
             } catch (IOException e) {
                 return "FAILED";
             }
-        }
-        else {
-            try(Reader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
+        } else {
+            try (Reader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
                 CsvToBean<Course> csvToBean = new CsvToBeanBuilder<Course>(reader)
                         .withType(Course.class)
                         .withSeparator(',')
@@ -68,14 +60,23 @@ public class CourseService {
         }
         return "SUCCESS";
     }
-    public List<CourseDto> getCourses() {
+
+    public List<CourseDto.Info> getCourses() {
         return courseRepository
                 .findAll()
                 .stream()
-                .map(Course::toDto)
-                .collect(Collectors.toList());
+                .map(CourseDto.Info::new)
+                .toList();
     }
-    public List<CourseDto> getTeamCourses(String accessToken) {
+
+    public List<CourseDto.Info> search(String keyword) {
+        return courseRepository.findAllByNameContainingIgnoreCase(keyword)
+                .stream()
+                .map(CourseDto.Info::new)
+                .toList();
+    }
+
+    public List<CourseDto.Info> getTeamCourses(String accessToken) {
         User user = userRepository.findUserByAccessToken(accessToken).orElseThrow();
         Team team = user.getTeam();
         List<User> users = team.getUsers();
@@ -84,7 +85,7 @@ public class CourseService {
     }
 
     public int deleteCourse(CourseIdDto dto) {
-        if(courseRepository.existsById(dto.getId())) {
+        if (courseRepository.existsById(dto.getId())) {
             courseRepository.deleteById(dto.getId());
             return 1;
         }

@@ -3,6 +3,7 @@ package edu.handong.csee.histudy.controller;
 import edu.handong.csee.histudy.controller.form.BuddyForm;
 import edu.handong.csee.histudy.controller.form.UserInfo;
 import edu.handong.csee.histudy.domain.Friendship;
+import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.FriendshipDto;
 import edu.handong.csee.histudy.dto.FriendshipRequest;
@@ -20,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
@@ -82,5 +82,20 @@ public class UserController {
                 .collect(Collectors.toList());
 
         return new FriendshipDto(receivedRequests);
+    }
+
+    @GetMapping
+    public ResponseEntity<UserDto> searchUser(@RequestParam(name = "search") String keyword) {
+        if (keyword == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        List<UserDto.Matching> users = userService.search(keyword)
+                .stream()
+                .filter(u -> u.getRole().equals(Role.USER))
+                .map(UserDto.Matching::new)
+                .toList();
+
+        return ResponseEntity.ok(
+                new UserDto(users));
     }
 }
