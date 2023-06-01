@@ -23,7 +23,7 @@ public class TeamController {
     public ResponseEntity<List<TeamDto>> getTeams(@RequestAttribute Claims claims) {
         return ResponseEntity.ok(teamService.getTeams(claims.getSubject()));
     }
-    @PostMapping("/group/delete")
+    @DeleteMapping("/group")
     public ResponseEntity<Integer> deleteTeam(@RequestBody TeamIdDto dto, @RequestAttribute Claims claims) {
         return ResponseEntity.ok(teamService.deleteTeam(dto, claims.getSubject()));
     }
