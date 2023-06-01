@@ -2,8 +2,8 @@ package edu.handong.csee.histudy.service;
 
 import edu.handong.csee.histudy.controller.form.ApplyForm;
 import edu.handong.csee.histudy.controller.form.BuddyForm;
-import edu.handong.csee.histudy.domain.Course;
 import edu.handong.csee.histudy.controller.form.UserInfo;
+import edu.handong.csee.histudy.domain.Course;
 import edu.handong.csee.histudy.domain.Friendship;
 import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.domain.User;
@@ -59,7 +59,7 @@ public class UserService {
         return userRepository.findUserByNameOrSidOrEmail(keyword);
     }
 
-    public boolean apply(ApplyForm form, String sub) {
+    public boolean apply(ApplyForm form, String email) {
         List<User> friends = form.getFriendIds()
                 .stream()
                 .map(userRepository::findUserBySid)
@@ -72,7 +72,7 @@ public class UserService {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
-        Optional<User> userOr = userRepository.findById(sub);
+        Optional<User> userOr = userRepository.findUserByEmail(email);
 
         userOr.ifPresent(u -> {
             u.add(friends);
@@ -81,7 +81,7 @@ public class UserService {
 
         return !courses.isEmpty() && userOr.isPresent();
     }
-  
+
     public boolean signUp(UserInfo userInfo) {
         Optional<User> userOr = userRepository.findById(userInfo.getSub());
 

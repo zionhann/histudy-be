@@ -68,6 +68,7 @@ public class AppControllerTests {
         userRepository.save(
                 User.builder()
                         .id("subA")
+                        .email("test@example.com")
                         .build());
 
         courseRepository.save(
@@ -86,7 +87,7 @@ public class AppControllerTests {
         String form = mapper.writeValueAsString(applyForm);
 
         Claims claims = Jwts.claims();
-        claims.put("sub", "subA");
+        claims.put("sub", "test@example.com");
 
         // when
         mvc.perform(post("/api/forms")
