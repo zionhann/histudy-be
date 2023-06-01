@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -34,6 +33,10 @@ public class ManageReportTests {
                 .name("user2")
                 .role(Role.USER)
                 .build();
+        Course course = Course.builder()
+                .name("courseName")
+                .build();
+
         Team team = new Team(1);
         Report report = Report.builder()
                 .title("title")
@@ -41,6 +44,7 @@ public class ManageReportTests {
                 .totalMinutes(60)
                 .team(team)
                 .participants(List.of(user1))
+                .courses(List.of(course))
                 .build();
         user1.belongTo(team);
         user2.belongTo(team);
@@ -54,12 +58,16 @@ public class ManageReportTests {
     @Test
     public void ManageReportTests_61() {
         // given
+        Course course = Course.builder()
+                .name("courseName")
+                .build();
         Report report = Report.builder()
                 .title("title")
                 .content("content")
                 .totalMinutes(60)
                 .team(new Team(1))
                 .participants(List.of(User.builder().build()))
+                .courses(List.of(course))
                 .build();
 
         // then
@@ -70,6 +78,9 @@ public class ManageReportTests {
     @Test
     public void ManageReportTests_76() {
         // given
+        Course course = Course.builder()
+                .name("courseName")
+                .build();
         Team team = new Team(1);
 
         Report report1 = Report.builder()
@@ -78,6 +89,7 @@ public class ManageReportTests {
                 .totalMinutes(30)
                 .team(team)
                 .participants(List.of(User.builder().build()))
+                .courses(List.of(course))
                 .build();
         Report report2 = Report.builder()
                 .title("title")
@@ -85,6 +97,7 @@ public class ManageReportTests {
                 .totalMinutes(60)
                 .team(team)
                 .participants(List.of(User.builder().build()))
+                .courses(List.of(course))
                 .build();
         // then
         assertEquals(90, team.getTotalMinutes());
@@ -94,6 +107,9 @@ public class ManageReportTests {
     @Test
     public void ManageReportTests_102() {
         // given
+        Course course = Course.builder()
+                .name("courseName")
+                .build();
         Report report = Report.builder()
                 .title("title")
                 .content("content")
@@ -101,6 +117,7 @@ public class ManageReportTests {
                 .team(new Team(1))
                 .participants(List.of(User.builder().build()))
                 .images(List.of("pathA", "pathB", "pathC"))
+                .courses(List.of(course))
                 .build();
 
         // then
@@ -115,6 +132,10 @@ public class ManageReportTests {
     @Test
     public void ManageReportTests_122() {
         // given
+        Course course = Course.builder()
+                .name("courseName")
+                .build();
+
         Report report = Report.builder()
                 .title("title")
                 .content("content")
@@ -122,6 +143,7 @@ public class ManageReportTests {
                 .team(new Team(1))
                 .participants(List.of(User.builder().build()))
                 .images(List.of("pathA", "pathB", "pathC"))
+                .courses(List.of(course))
                 .build();
 
         // then

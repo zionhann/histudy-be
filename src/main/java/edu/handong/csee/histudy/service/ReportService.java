@@ -1,6 +1,10 @@
 package edu.handong.csee.histudy.service;
 
 import edu.handong.csee.histudy.controller.form.ReportForm;
+import edu.handong.csee.histudy.domain.Course;
+import edu.handong.csee.histudy.domain.Report;
+import edu.handong.csee.histudy.domain.Team;
+import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.ImageDto;
 import edu.handong.csee.histudy.dto.ReportDto;
@@ -22,22 +26,81 @@ public class ReportService {
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
 
-    public ReportDto.Response createReport(ReportForm form, String accessToken) {
-        User user = userRepository.findUserByAccessToken(accessToken).orElseThrow();
-        List<Optional<User>> participants = form.getParticipants().stream()
+    public ReportDto.Info createReport(ReportForm form, String email) {
+        User user = userRepository.findUserByEmail(email).orElseThrow();
+
+        List<User> participants = form.getParticipants()
+                .stream()
                 .map(userRepository::findUserBySid)
-                .toList();
-        List<Optional<Course>> courses = form.getCourses().stream()
-                .map(courseRepository::findById)
-                .toList();
-        Report report = form.toEntity(user.getTeam(), participants);
-        Report saved = reportRepository.save(report);
-        List<Study> studies = courses.stream()
                 .filter(Optional::isPresent)
-                .map(c -> new Study(saved,c.get()))
+                .map(Optional::get)
                 .toList();
-        saved.setStudies(studies);
-        return new ReportDto.Response(saved);
+
+        List<Course> courses = form.getCourses()
+                .stream()
+                .map(courseRepository::findById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toList();
+
+        Report saved = reportRepository.save(
+                form.toEntity(user.getTeam(), participants, courses));
+
+        return new ReportDto.Info(saved);
+    }
+
+    public List<ReportDto.Info> getReports(String email) {
+        Team team = userRepository.findUserByEmail(email)
+                .orElseThrow()
+                .getTeam();
+
+        return team.getReports()
+                .stream()
+                .map(ReportDto.Info::new)
+                .toList();
+    }
+
+    public List<ReportDto.Info> getAllReports() {
+        return reportRepository.findAll()
+                .stream()
+                .map(ReportDto.Info::new)
+                .toList();
+    }
+
+    public boolean updateReport(Long reportId, ReportForm form) {
+        List<User> participants = form.getParticipants()
+                .stream()
+                .map(userRepository::findUserBySid)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toList();
+
+        List<Course> courses = form.getCourses()
+                .stream()
+                .map(courseRepository::findById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toList();
+
+        return reportRepository.findById(reportId)
+                .map(report -> report.update(form, participants, courses))
+                .orElse(false);
+    }
+
+    public Optional<ReportDto.Info> getReport(Long reportId) {
+        return reportRepository.findById(reportId)
+                .map(ReportDto.Info::new);
+    }
+
+    public boolean deleteReport(Long reportId) {
+        Optional<Report> reportOr = reportRepository.findById(reportId);
+
+        if (reportOr.isEmpty()) {
+            return false;
+        } else {
+            reportRepository.delete(reportOr.get());
+            return true;
+        }
     }
     public ReportDto.Detail getReportDetail(long id, String email) {
         Report report = reportRepository.findById(id).orElseThrow();

@@ -80,21 +80,18 @@ public class TeamServiceTest {
         User userA = User.builder()
                 .id("123")
                 .sid("22000329")
-                .accessToken("1234")
                 .email("a@a.com")
                 .role(Role.USER)
                 .build();
         User userB = User.builder()
                 .id("124")
                 .sid("22000330")
-                .accessToken("1235")
                 .email("a@b.com")
                 .role(Role.USER)
                 .build();
         User userC = User.builder()
                 .id("125")
                 .sid("22000332")
-                .accessToken("1236")
                 .email("a@c.com")
                 .role(Role.USER)
                 .build();
@@ -142,7 +139,6 @@ public class TeamServiceTest {
         User userA = User.builder()
                 .id("123")
                 .sid("22000329")
-                .accessToken("1234")
                 .email("a@a.com")
                 .role(Role.USER)
                 .build();

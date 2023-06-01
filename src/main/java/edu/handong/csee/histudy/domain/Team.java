@@ -38,4 +38,8 @@ public class Team {
         this.users.forEach(User::removeTeam);
         this.users.clear();
     }
+
+    public void update(long newTotalMinutes, long oldTotalMinutes) {
+        this.totalMinutes += newTotalMinutes - oldTotalMinutes;
+    }
 }
