@@ -1,11 +1,10 @@
 package edu.handong.csee.histudy.service;
 
 import edu.handong.csee.histudy.controller.form.ReportForm;
-import edu.handong.csee.histudy.domain.Course;
-import edu.handong.csee.histudy.domain.Report;
-import edu.handong.csee.histudy.domain.Study;
-import edu.handong.csee.histudy.domain.User;
+import edu.handong.csee.histudy.domain.*;
+import edu.handong.csee.histudy.dto.ImageDto;
 import edu.handong.csee.histudy.dto.ReportDto;
+import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.repository.CourseRepository;
 import edu.handong.csee.histudy.repository.ReportRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
@@ -39,5 +38,24 @@ public class ReportService {
                 .toList();
         saved.setStudies(studies);
         return new ReportDto.Response(saved);
+    }
+    public ReportDto.Detail getReportDetail(long id, String email) {
+        Report report = reportRepository.findById(id).orElseThrow();
+        List<UserDto.Basic> users = report.getParticipants()
+                .stream()
+                .map(Participates::getUser)
+                .map(UserDto.Basic::new)
+                .toList();
+        List<ImageDto> images = report.getImages()
+                .stream()
+                .map(Image::toDto)
+                .toList();
+        return ReportDto.Detail.builder()
+                .title(report.getTitle())
+                .time(report.getTotalMinutes())
+                .content(report.getContent())
+                .members(users)
+                .img(images)
+                .build();
     }
 }
