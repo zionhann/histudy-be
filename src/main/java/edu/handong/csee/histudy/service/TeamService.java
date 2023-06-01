@@ -3,6 +3,7 @@ package edu.handong.csee.histudy.service;
 import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.CourseIdNameDto;
 import edu.handong.csee.histudy.dto.TeamDto;
+import edu.handong.csee.histudy.dto.TeamIdDto;
 import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.repository.TeamRepository;
 import lombok.RequiredArgsConstructor;
@@ -55,5 +56,12 @@ public class TeamService {
             result.add(new TeamDto(t.getId(),userInfos,t.getReports().size(),t.getTotalMinutes()));
         });
         return result;
+    }
+    public int deleteTeam(TeamIdDto dto, String email) {
+        if(teamRepository.existsById(dto.getGroupId())) {
+            teamRepository.deleteById(dto.getGroupId());
+            return 1;
+        }
+        return 0;
     }
 }

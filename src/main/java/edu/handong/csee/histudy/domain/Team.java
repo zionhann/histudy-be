@@ -32,4 +32,10 @@ public class Team {
     public void increase(long totalMinutes) {
         this.totalMinutes += totalMinutes;
     }
+
+    @PreRemove
+    void preRemove() {
+        this.users.forEach(User::removeTeam);
+        this.users.clear();
+    }
 }
