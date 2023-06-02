@@ -62,7 +62,6 @@ public class ChoiceTest {
         User user = User.builder()
                 .id("123")
                 .sid("22000328")
-                .accessToken("1234")
                 .email("a@a.com")
                 .role(Role.USER)
                 .build();

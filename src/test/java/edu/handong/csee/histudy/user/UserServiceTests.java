@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
@@ -25,6 +26,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+@ActiveProfiles("dev")
 @SpringBootTest
 @Transactional
 public class UserServiceTests {
@@ -76,7 +78,6 @@ public class UserServiceTests {
                 .id("123")
                 .sid("22000329")
                 .name("배주영")
-                .accessToken("1234")
                 .email("a@a.com")
                 .role(Role.USER)
                 .build();
@@ -84,7 +85,6 @@ public class UserServiceTests {
                 .id("124")
                 .sid("22000330")
                 .name("오인혁")
-                .accessToken("1235")
                 .email("a@b.com")
                 .role(Role.USER)
                 .build();
@@ -92,7 +92,6 @@ public class UserServiceTests {
                 .id("125")
                 .sid("22000332")
                 .name("한시온")
-                .accessToken("1236")
                 .email("a@c.com")
                 .role(Role.USER)
                 .build();

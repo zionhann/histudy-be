@@ -32,13 +32,6 @@ public class UserService {
         return sender.getSentRequests();
     }
 
-    @Transactional(readOnly = true)
-    public User token2User(String accessToken) {
-        return userRepository
-                .findUserByAccessToken(accessToken)
-                .orElseThrow();
-    }
-
     public void acceptRequest(User user, String sid) {
         user.getReceivedRequests()
                 .stream()

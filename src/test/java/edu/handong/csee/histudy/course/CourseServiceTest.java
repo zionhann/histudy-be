@@ -71,7 +71,6 @@ public class CourseServiceTest {
         User user = User.builder()
                 .id("123")
                 .sid("22000328")
-                .accessToken("1234")
                 .email("a@a.com")
                 .role(Role.USER)
                 .build();
@@ -89,7 +88,6 @@ public class CourseServiceTest {
         User userB = User.builder()
                 .id("124")
                 .sid("22000329")
-                .accessToken("1235")
                 .email("b@b.com")
                 .role(Role.USER)
                 .build();

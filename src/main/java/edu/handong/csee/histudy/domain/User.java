@@ -23,9 +23,6 @@ public class User {
     @Column(unique = true)
     private String email;
 
-    @Column(unique = true)
-    private String accessToken;
-
     private String name;
 
     @Enumerated(EnumType.STRING)
@@ -47,12 +44,11 @@ public class User {
     private List<Choice> choices = new ArrayList<>();
 
     @Builder
-    public User(String id, String sid, String email, String name, String accessToken, Role role) {
+    public User(String id, String sid, String email, String name, Role role) {
         this.id = id;
         this.sid = sid;
         this.email = email;
         this.name = name;
-        this.accessToken = accessToken;
         this.role = role;
     }
 
