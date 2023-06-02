@@ -45,21 +45,21 @@ public class ReportService {
         return new ReportDto.ReportInfo(saved);
     }
 
-    public List<ReportDto.ReportBasic> getReports(String email) {
+    public List<ReportDto.ReportInfo> getReports(String email) {
         Team team = userRepository.findUserByEmail(email)
                 .orElseThrow()
                 .getTeam();
 
         return team.getReports()
                 .stream()
-                .map(ReportDto.ReportBasic::new)
+                .map(ReportDto.ReportInfo::new)
                 .toList();
     }
 
-    public List<ReportDto.ReportBasic> getAllReports() {
+    public List<ReportDto.ReportInfo> getAllReports() {
         return reportRepository.findAll()
                 .stream()
-                .map(ReportDto.ReportBasic::new)
+                .map(ReportDto.ReportInfo::new)
                 .toList();
     }
 

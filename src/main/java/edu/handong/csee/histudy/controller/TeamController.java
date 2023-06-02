@@ -41,7 +41,7 @@ public class TeamController {
             example = "Bearer access_token", required = true)
     @GetMapping("/reports")
     public ReportDto getMyGroupReports(@RequestAttribute Claims claims) {
-        List<ReportDto.ReportBasic> reports = reportService.getReports(claims.getSubject());
+        List<ReportDto.ReportInfo> reports = reportService.getReports(claims.getSubject());
 
         return new ReportDto(reports);
     }
