@@ -96,10 +96,24 @@ public class UserService {
     public Optional<User> isPresent(String sub) {
         return userRepository.findById(sub);
     }
-
     public List<UserDto.Info> getUsers(String email) {
         List<User> users = userRepository.findAll();
-        return users.stream()
+        return getInfoFromUser(users);
+    }
+    public Optional<ApplyFormDto> getUserInfo(String email) {
+        return userRepository.findUserByEmail(email)
+                .map(ApplyFormDto::new);
+    }
+    public List<UserDto.Info> getAppliedUsers() {
+        List<User> users = userRepository.findAll()
+                .stream()
+                .filter(u -> !u.getChoices().isEmpty())
+                .toList();
+        return getInfoFromUser(users);
+    }
+    public List<UserDto.Info> getInfoFromUser(List<User> users) {
+        return users
+                .stream()
                 .map(u -> {
                     List<User> friends = new ArrayList<>();
                     friends.addAll(u.getSentRequests()
@@ -130,10 +144,5 @@ public class UserService {
                             .courses(courses)
                             .build();
                 }).toList();
-    }
-
-    public Optional<ApplyFormDto> getUserInfo(String email) {
-        return userRepository.findUserByEmail(email)
-                .map(ApplyFormDto::new);
     }
 }
