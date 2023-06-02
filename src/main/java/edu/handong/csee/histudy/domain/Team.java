@@ -25,12 +25,26 @@ public class Team {
     @OneToMany(mappedBy = "team")
     private List<User> users = new ArrayList<>();
 
+    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
+    private List<Enrollment> enrolls = new ArrayList<>();
+
     public Team(Integer tag) {
         this.tag = tag;
     }
 
     public void increase(long totalMinutes) {
         this.totalMinutes += totalMinutes;
+    }
+
+    public void select(List<Course> courses) {
+        if (!courses.isEmpty()) {
+            this.enrolls.clear();
+        }
+        List<Enrollment> targetCourses = courses
+                .stream()
+                .map(course -> new Enrollment(this, course))
+                .toList();
+        enrolls.addAll(targetCourses);
     }
 
     @PreRemove

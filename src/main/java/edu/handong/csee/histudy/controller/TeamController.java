@@ -1,7 +1,9 @@
 package edu.handong.csee.histudy.controller;
 
 import edu.handong.csee.histudy.controller.form.ReportForm;
+import edu.handong.csee.histudy.dto.CourseDto;
 import edu.handong.csee.histudy.dto.ReportDto;
+import edu.handong.csee.histudy.service.CourseService;
 import edu.handong.csee.histudy.service.ReportService;
 import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -20,6 +22,7 @@ import java.util.Optional;
 public class TeamController {
 
     private final ReportService reportService;
+    private final CourseService courseService;
 
     @Parameters({
             @Parameter(in = ParameterIn.HEADER, name = "Authorization",
@@ -73,5 +76,12 @@ public class TeamController {
         return (reportService.deleteReport(reportId))
                 ? ResponseEntity.ok().build()
                 : ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/courses")
+    public ResponseEntity<CourseDto> getTeamCourses(@RequestAttribute Claims claims) {
+        return ResponseEntity.ok(
+                new CourseDto(
+                        courseService.getTeamCourses(claims.getSubject())));
     }
 }

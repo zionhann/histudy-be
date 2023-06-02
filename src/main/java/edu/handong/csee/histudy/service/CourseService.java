@@ -2,8 +2,9 @@ package edu.handong.csee.histudy.service;
 
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
-import edu.handong.csee.histudy.domain.Choice;
 import edu.handong.csee.histudy.domain.Course;
+import edu.handong.csee.histudy.domain.Enrollment;
+import edu.handong.csee.histudy.domain.Team;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.CourseDto;
 import edu.handong.csee.histudy.dto.CourseIdDto;
@@ -12,7 +13,6 @@ import edu.handong.csee.histudy.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.input.BOMInputStream;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -20,8 +20,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -77,20 +75,14 @@ public class CourseService {
     }
 
     public List<CourseDto.Info> getTeamCourses(String email) {
-        List<Long> courseIds = userRepository.findUserByEmail(email).stream()
+        List<Course> courses = userRepository.findUserByEmail(email).stream()
                 .map(User::getTeam)
-                .flatMap(t -> t.getUsers().stream())
-                .flatMap(u -> u.getChoices().stream())
-                .map(Choice::getCourse)
-                .collect(Collectors.groupingBy(Course::getId, Collectors.counting()))
-                .entrySet()
-                .stream()
-                .filter(e -> e.getValue() >= 2)
-                .map(Map.Entry::getKey)
+                .map(Team::getEnrolls)
+                .flatMap(list -> list.stream()
+                        .map(Enrollment::getCourse))
                 .toList();
 
-        return courseRepository.findAllById(courseIds)
-                .stream()
+        return courses.stream()
                 .map(CourseDto.Info::new)
                 .toList();
     }

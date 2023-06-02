@@ -9,21 +9,19 @@ import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
 import edu.handong.csee.histudy.repository.*;
 import edu.handong.csee.histudy.service.ReportService;
 import edu.handong.csee.histudy.service.TeamService;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -73,6 +71,7 @@ public class TeamServiceTest {
                 .build();
         courseRepository.save(courseC);
     }
+
     @DisplayName("하나의 팀에 속한 사람들의 정보가 떠야한다")
     @Test
     @Transactional
@@ -100,7 +99,7 @@ public class TeamServiceTest {
         User savedB = userRepository.save(userB);
         savedA.add(savedB);
         savedB.getReceivedRequests().stream().findAny().ifPresent(Friendship::accept);
-        List<Long> courseIdxList = List.of(1L,2L);
+        List<Long> courseIdxList = List.of(1L, 2L);
         List<Course> courses = courseIdxList.stream()
                 .map(courseRepository::findById)
                 .filter(Optional::isPresent)
@@ -111,7 +110,7 @@ public class TeamServiceTest {
                 .course(c)
                 .build())).toList();
         savedA.getChoices().addAll(choices);
-        List<Long> courseIdxList2 = List.of(1L,2L,3L);
+        List<Long> courseIdxList2 = List.of(1L, 2L, 3L);
         List<Course> courses2 = courseIdxList2.stream()
                 .map(courseRepository::findById)
                 .filter(Optional::isPresent)
@@ -129,9 +128,10 @@ public class TeamServiceTest {
         String email = "";
         List<TeamDto> teams = teamService.getTeams(email);
         System.out.println("teams = " + teams);
-        assertThat(teams.size()).isNotNull();
+        assertThat(teams.size()).isNotZero();
         assertThat(teams.get(0).getMembers().size()).isEqualTo(2);
     }
+
     @DisplayName("팀을 삭제할 수 있어야 한다")
     @Test
     @Transactional
@@ -145,10 +145,11 @@ public class TeamServiceTest {
         User savedA = userRepository.save(userA);
         Team team = teamRepository.save(new Team(111));
         savedA.belongTo(team);
-        int result = teamService.deleteTeam(new TeamIdDto(savedA.getTeam().getId()),"");
+        int result = teamService.deleteTeam(new TeamIdDto(savedA.getTeam().getId()), "");
         assertThat(result).isNotZero();
         assertThat(savedA.getTeam()).isNull();
     }
+
     @DisplayName("팀의 보고서를 확인할 수 있다")
     @Test
     @Transactional
@@ -177,14 +178,13 @@ public class TeamServiceTest {
                 .content("content")
                 .totalMinutes(60L)
                 .participants(List.of("22000328"))
-                .courses(List.of(1L,2L,3L))
+                .courses(List.of(1L, 2L, 3L))
                 .build();
-        reportService.createReport(form,"a@b.com");
-        TeamReportDto dto = teamService.getTeamReports(team.getId(),"");
+        reportService.createReport(form, "a@b.com");
+        TeamReportDto dto = teamService.getTeamReports(team.getId(), "");
         assertThat(dto.getMembers().size()).isEqualTo(2);
         assertThat(dto.getReports().size()).isEqualTo(1);
         assertThat(dto.getTotalTime()).isEqualTo(60L);
         System.out.println("dto = " + dto);
     }
-
 }
