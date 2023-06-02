@@ -143,4 +143,9 @@ public class UserService {
                             .build();
                 }).toList();
     }
+
+    public Optional<ApplyFormDto> getUserInfo(String email) {
+        return userRepository.findUserByEmail(email)
+                .map(ApplyFormDto::new);
+    }
 }
