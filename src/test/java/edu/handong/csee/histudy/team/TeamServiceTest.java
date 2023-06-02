@@ -157,7 +157,6 @@ public class TeamServiceTest {
                 .id("123")
                 .sid("22000329")
                 .name("배주영")
-                .accessToken("1234")
                 .email("a@a.com")
                 .role(Role.USER)
                 .build();
@@ -165,7 +164,6 @@ public class TeamServiceTest {
                 .id("124")
                 .sid("22000330")
                 .name("오인혁")
-                .accessToken("1235")
                 .email("a@b.com")
                 .role(Role.USER)
                 .build();
@@ -177,11 +175,11 @@ public class TeamServiceTest {
         ReportForm form = ReportForm.builder()
                 .title("title")
                 .content("content")
-                .totalMinutes(60)
+                .totalMinutes(60L)
                 .participants(List.of("22000328"))
                 .courses(List.of(1L,2L,3L))
                 .build();
-        reportService.createReport(form,"1234");
+        reportService.createReport(form,"a@b.com");
         TeamReportDto dto = teamService.getTeamReports(team.getId(),"");
         assertThat(dto.getMembers().size()).isEqualTo(2);
         assertThat(dto.getReports().size()).isEqualTo(1);

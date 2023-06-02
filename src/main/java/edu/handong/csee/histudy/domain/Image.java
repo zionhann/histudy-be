@@ -1,8 +1,10 @@
 package edu.handong.csee.histudy.domain;
 
-import edu.handong.csee.histudy.dto.ImageDto;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
@@ -22,11 +24,5 @@ public class Image {
     public Image(String path, Report report) {
         this.path = path;
         this.report = report;
-    }
-    public ImageDto toDto() {
-        ImageDto dto = new ImageDto();
-        dto.setId(this.id);
-        dto.setUrl(this.path);
-        return dto;
     }
 }

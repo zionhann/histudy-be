@@ -1,7 +1,7 @@
 package edu.handong.csee.histudy.report;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.handong.csee.histudy.controller.MyGroupController;
+import edu.handong.csee.histudy.controller.TeamController;
 import edu.handong.csee.histudy.controller.form.ReportForm;
 import edu.handong.csee.histudy.domain.Course;
 import edu.handong.csee.histudy.domain.Report;
@@ -48,7 +48,7 @@ public class ReportControllerTests {
     MockMvc mvc;
 
     @Autowired
-    MyGroupController myGroupController;
+    TeamController teamController;
 
     @Autowired
     ObjectMapper mapper;
@@ -65,7 +65,7 @@ public class ReportControllerTests {
     @BeforeEach
     void init() throws IOException {
         mvc = MockMvcBuilders
-                .standaloneSetup(myGroupController)
+                .standaloneSetup(teamController)
                 .addInterceptors(interceptor)
                 .build();
         when(interceptor.preHandle(any(), any(), any()))
@@ -103,7 +103,7 @@ public class ReportControllerTests {
 
         // when
         MvcResult mvcResult = mvc
-                .perform(get("/api/my-group/reports")
+                .perform(get("/api/team/reports")
                         .requestAttr("claims", claims))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -148,7 +148,7 @@ public class ReportControllerTests {
 
         // when
         mvc
-                .perform(patch("/api/my-group/reports/{reportId}", report.getId())
+                .perform(patch("/api/team/reports/{reportId}", report.getId())
                         .requestAttr("claims", claims))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
@@ -187,7 +187,7 @@ public class ReportControllerTests {
 
         // when
         mvc
-                .perform(patch("/api/my-group/reports/{reportId}", report.getId())
+                .perform(patch("/api/team/reports/{reportId}", report.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(form))
                 .andDo(print())
@@ -227,7 +227,7 @@ public class ReportControllerTests {
 
         // when
         mvc
-                .perform(delete("/api/my-group/reports/{reportId}", report.getId()))
+                .perform(delete("/api/team/reports/{reportId}", report.getId()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn();
@@ -261,7 +261,7 @@ public class ReportControllerTests {
 
         // when
         mvc
-                .perform(delete("/api/my-group/reports/{reportId}", 333))
+                .perform(delete("/api/team/reports/{reportId}", 333))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andReturn();

@@ -5,10 +5,7 @@ import edu.handong.csee.histudy.domain.Course;
 import edu.handong.csee.histudy.domain.Report;
 import edu.handong.csee.histudy.domain.Team;
 import edu.handong.csee.histudy.domain.User;
-import edu.handong.csee.histudy.domain.*;
-import edu.handong.csee.histudy.dto.ImageDto;
 import edu.handong.csee.histudy.dto.ReportDto;
-import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.repository.CourseRepository;
 import edu.handong.csee.histudy.repository.ReportRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
@@ -17,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -49,21 +45,21 @@ public class ReportService {
         return new ReportDto.Info(saved);
     }
 
-    public List<ReportDto.Info> getReports(String email) {
+    public List<ReportDto.Basic> getReports(String email) {
         Team team = userRepository.findUserByEmail(email)
                 .orElseThrow()
                 .getTeam();
 
         return team.getReports()
                 .stream()
-                .map(ReportDto.Info::new)
+                .map(ReportDto.Basic::new)
                 .toList();
     }
 
-    public List<ReportDto.Info> getAllReports() {
+    public List<ReportDto.Basic> getAllReports() {
         return reportRepository.findAll()
                 .stream()
-                .map(ReportDto.Info::new)
+                .map(ReportDto.Basic::new)
                 .toList();
     }
 
@@ -101,24 +97,5 @@ public class ReportService {
             reportRepository.delete(reportOr.get());
             return true;
         }
-    }
-    public ReportDto.Detail getReportDetail(long id, String email) {
-        Report report = reportRepository.findById(id).orElseThrow();
-        List<UserDto.Basic> users = report.getParticipants()
-                .stream()
-                .map(Participates::getUser)
-                .map(UserDto.Basic::new)
-                .toList();
-        List<ImageDto> images = report.getImages()
-                .stream()
-                .map(Image::toDto)
-                .toList();
-        return ReportDto.Detail.builder()
-                .title(report.getTitle())
-                .time(report.getTotalMinutes())
-                .content(report.getContent())
-                .members(users)
-                .img(images)
-                .build();
     }
 }

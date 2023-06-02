@@ -109,23 +109,23 @@ public class ReportServiceTest {
         ReportForm form = ReportForm.builder()
                 .title("title")
                 .content("content")
-                .totalMinutes(60)
+                .totalMinutes(60L)
                 .participants(List.of("22000328"))
                 .courses(List.of(1L, 2L, 3L))
                 .build();
         User user = User.builder()
                 .id("123")
                 .sid("22000328")
-                .accessToken("1234")
                 .email("a@a.com")
                 .role(Role.USER)
                 .build();
         User saved = userRepository.save(user);
         Team team = teamRepository.save(new Team(1));
         saved.belongTo(team);
-        ReportDto.Response response = reportService.createReport(form, "1234");
-        ReportDto.Detail detail = reportService.getReportDetail(response.getId(), "");
-        assertThat(detail.getMembers().size()).isEqualTo(1);
+        ReportDto.Info response = reportService.createReport(form, "a@a.com");
+        ReportDto.Info detail = reportService.getReport(response.getId())
+                .orElseThrow();
+        assertThat(detail.getParticipants().size()).isEqualTo(1);
         assertThat(detail.getTitle()).isEqualTo("title");
         assertThat(detail.getContent()).isEqualTo("content");
     }
