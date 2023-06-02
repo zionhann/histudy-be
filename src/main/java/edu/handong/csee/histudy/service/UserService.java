@@ -97,7 +97,7 @@ public class UserService {
         return userRepository.findById(sub);
     }
 
-    public List<UserDto.Info> getUsers(String email) {
+    public List<UserDto.UserInfo> getUsers(String email) {
         List<User> users = userRepository.findAll();
         return users.stream()
                 .map(u -> {
@@ -112,7 +112,7 @@ public class UserService {
                             .filter(Friendship::isAccepted)
                             .map(Friendship::getSent)
                             .toList());
-                    List<UserDto.Basic> buddies = friends.stream().map(f -> UserDto.Basic.builder()
+                    List<UserDto.UserBasic> buddies = friends.stream().map(f -> UserDto.UserBasic.builder()
                             .id(f.getId())
                             .sid(f.getSid())
                             .name(f.getName())
@@ -122,7 +122,7 @@ public class UserService {
                             .map(Choice::getCourse)
                             .map(Course::toIdNameDto)
                             .toList();
-                    return UserDto.Info.builder()
+                    return UserDto.UserInfo.builder()
                             .id(u.getId())
                             .sid(u.getSid())
                             .name(u.getName())

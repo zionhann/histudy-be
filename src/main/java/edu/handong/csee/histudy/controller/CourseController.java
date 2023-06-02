@@ -43,7 +43,7 @@ public class CourseController {
 
     @GetMapping
     public ResponseEntity<CourseDto> getCourses(@RequestParam(name = "search", required = false) String keyword) {
-        List<CourseDto.Info> courses = (keyword == null)
+        List<CourseDto.CourseInfo> courses = (keyword == null)
                 ? courseService.getCourses()
                 : courseService.search(keyword);
 

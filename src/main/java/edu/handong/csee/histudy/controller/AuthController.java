@@ -29,7 +29,7 @@ public class AuthController {
     private final JwtService jwtService;
 
     @GetMapping("/login")
-    public ResponseEntity<UserDto.Login> login(@RequestParam String sub) {
+    public ResponseEntity<UserDto.UserLogin> login(@RequestParam String sub) {
         Optional<User> userOr = userService.isPresent(sub);
 
         if (userOr.isPresent()) {
@@ -37,7 +37,7 @@ public class AuthController {
             JwtPair tokens = jwtService.issueToken(user.getEmail(), user.getName());
 
             return ResponseEntity.ok(
-                    UserDto.Login.builder()
+                    UserDto.UserLogin.builder()
                             .isRegistered(true)
                             .tokenType("Bearer ")
                             .tokens(tokens)
@@ -45,7 +45,7 @@ public class AuthController {
         }
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(UserDto.Login.builder()
+                .body(UserDto.UserLogin.builder()
                         .isRegistered(false)
                         .build());
     }

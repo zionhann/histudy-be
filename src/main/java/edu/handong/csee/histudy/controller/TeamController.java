@@ -29,8 +29,8 @@ public class TeamController {
                     required = true, example = "Bearer access_token")
     })
     @PostMapping("/reports")
-    public ReportDto.Info createReport(@RequestBody ReportForm form,
-                                       @RequestAttribute Claims claims) {
+    public ReportDto.ReportInfo createReport(@RequestBody ReportForm form,
+                                             @RequestAttribute Claims claims) {
         return reportService.createReport(form, claims.getSubject());
     }
 
@@ -38,7 +38,7 @@ public class TeamController {
             example = "Bearer access_token", required = true)
     @GetMapping("/reports")
     public ReportDto getMyGroupReports(@RequestAttribute Claims claims) {
-        List<ReportDto.Basic> reports = reportService.getReports(claims.getSubject());
+        List<ReportDto.ReportBasic> reports = reportService.getReports(claims.getSubject());
 
         return new ReportDto(reports);
     }
@@ -46,8 +46,8 @@ public class TeamController {
     @Parameter(in = ParameterIn.HEADER, name = "Authorization",
             example = "Bearer access_token", required = true)
     @GetMapping("/reports/{reportId}")
-    public ResponseEntity<ReportDto.Info> getReport(@PathVariable Long reportId) {
-        Optional<ReportDto.Info> reportsOr = reportService.getReport(reportId);
+    public ResponseEntity<ReportDto.ReportInfo> getReport(@PathVariable Long reportId) {
+        Optional<ReportDto.ReportInfo> reportsOr = reportService.getReport(reportId);
 
         return reportsOr
                 .map(ResponseEntity::ok)

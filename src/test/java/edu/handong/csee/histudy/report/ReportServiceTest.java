@@ -75,7 +75,7 @@ public class ReportServiceTest {
                 .build();
         User saved = userRepository.save(user);
         saved.belongTo(new Team(1));
-        ReportDto.Info response = reportService.createReport(form, "a@a.com");
+        ReportDto.ReportInfo response = reportService.createReport(form, "a@a.com");
         assertThat(response.getCourses().size()).isEqualTo(3);
     }
 
@@ -122,8 +122,8 @@ public class ReportServiceTest {
         User saved = userRepository.save(user);
         Team team = teamRepository.save(new Team(1));
         saved.belongTo(team);
-        ReportDto.Info response = reportService.createReport(form, "a@a.com");
-        ReportDto.Info detail = reportService.getReport(response.getId())
+        ReportDto.ReportInfo response = reportService.createReport(form, "a@a.com");
+        ReportDto.ReportInfo detail = reportService.getReport(response.getId())
                 .orElseThrow();
         assertThat(detail.getParticipants().size()).isEqualTo(1);
         assertThat(detail.getTitle()).isEqualTo("title");

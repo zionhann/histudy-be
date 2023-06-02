@@ -22,7 +22,7 @@ public class ReportService {
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
 
-    public ReportDto.Info createReport(ReportForm form, String email) {
+    public ReportDto.ReportInfo createReport(ReportForm form, String email) {
         User user = userRepository.findUserByEmail(email).orElseThrow();
 
         List<User> participants = form.getParticipants()
@@ -42,24 +42,24 @@ public class ReportService {
         Report saved = reportRepository.save(
                 form.toEntity(user.getTeam(), participants, courses));
 
-        return new ReportDto.Info(saved);
+        return new ReportDto.ReportInfo(saved);
     }
 
-    public List<ReportDto.Basic> getReports(String email) {
+    public List<ReportDto.ReportBasic> getReports(String email) {
         Team team = userRepository.findUserByEmail(email)
                 .orElseThrow()
                 .getTeam();
 
         return team.getReports()
                 .stream()
-                .map(ReportDto.Basic::new)
+                .map(ReportDto.ReportBasic::new)
                 .toList();
     }
 
-    public List<ReportDto.Basic> getAllReports() {
+    public List<ReportDto.ReportBasic> getAllReports() {
         return reportRepository.findAll()
                 .stream()
-                .map(ReportDto.Basic::new)
+                .map(ReportDto.ReportBasic::new)
                 .toList();
     }
 
@@ -83,9 +83,9 @@ public class ReportService {
                 .orElse(false);
     }
 
-    public Optional<ReportDto.Info> getReport(Long reportId) {
+    public Optional<ReportDto.ReportInfo> getReport(Long reportId) {
         return reportRepository.findById(reportId)
-                .map(ReportDto.Info::new);
+                .map(ReportDto.ReportInfo::new);
     }
 
     public boolean deleteReport(Long reportId) {
