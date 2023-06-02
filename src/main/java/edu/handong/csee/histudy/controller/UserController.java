@@ -2,6 +2,7 @@ package edu.handong.csee.histudy.controller;
 
 import edu.handong.csee.histudy.controller.form.UserInfo;
 import edu.handong.csee.histudy.domain.Role;
+import edu.handong.csee.histudy.dto.ApplyFormDto;
 import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.jwt.JwtPair;
 import edu.handong.csee.histudy.service.JwtService;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
@@ -48,6 +50,15 @@ public class UserController {
 
         return ResponseEntity.ok(
                 new UserDto(users));
+    }
+
+    @GetMapping("/me/forms")
+    public ResponseEntity<ApplyFormDto> getMyApplicationForm(@RequestAttribute Claims claims) {
+        Optional<ApplyFormDto> userInfo = userService.getUserInfo(claims.getSubject());
+
+        return userInfo
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping("/manageUsers")
