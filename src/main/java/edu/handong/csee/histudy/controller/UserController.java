@@ -24,11 +24,11 @@ public class UserController {
     private final JwtService jwtService;
 
     @PostMapping
-    public ResponseEntity<UserDto.Login> createUser(@RequestBody UserInfo userInfo) {
+    public ResponseEntity<UserDto.UserLogin> createUser(@RequestBody UserInfo userInfo) {
         if (userService.signUp(userInfo)) {
             JwtPair tokens = jwtService.issueToken(userInfo.getEmail(), userInfo.getName());
 
-            return ResponseEntity.ok(UserDto.Login.builder()
+            return ResponseEntity.ok(UserDto.UserLogin.builder()
                     .isRegistered(true)
                     .tokenType("Bearer ")
                     .tokens(tokens)
@@ -42,10 +42,10 @@ public class UserController {
         if (keyword == null) {
             return ResponseEntity.badRequest().build();
         }
-        List<UserDto.Matching> users = userService.search(keyword)
+        List<UserDto.UserMatching> users = userService.search(keyword)
                 .stream()
                 .filter(u -> u.getRole().equals(Role.USER))
-                .map(UserDto.Matching::new)
+                .map(UserDto.UserMatching::new)
                 .toList();
 
         return ResponseEntity.ok(
@@ -62,7 +62,7 @@ public class UserController {
     }
 
     @GetMapping("/manageUsers")
-    public List<UserDto.Info> userList(@RequestAttribute Claims claims) {
+    public List<UserDto.UserInfo> userList(@RequestAttribute Claims claims) {
         return userService.getUsers(claims.getSubject());
     }
 }

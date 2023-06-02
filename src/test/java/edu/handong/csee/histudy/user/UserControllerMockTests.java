@@ -151,9 +151,9 @@ public class UserControllerMockTests {
                 .andDo(print())
                 .andReturn();
 
-        UserDto.Login res = mapper.readValue(
+        UserDto.UserLogin res = mapper.readValue(
                 mvcResult.getResponse().getContentAsString(),
-                UserDto.Login.class);
+                UserDto.UserLogin.class);
 
         // then
         assertTrue(res.getIsRegistered());

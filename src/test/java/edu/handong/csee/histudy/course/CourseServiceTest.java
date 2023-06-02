@@ -101,7 +101,7 @@ public class CourseServiceTest {
                 .toList();
         List<Choice> choicesB = coursesB.stream().map(c -> choiceRepository.save(new Choice(savedB, c))).toList();
         savedB.getChoices().addAll(choicesB);
-        List<CourseDto.Info> result = courseService.getTeamCourses("1234");
+        List<CourseDto.CourseInfo> result = courseService.getTeamCourses("1234");
 //        assertThat(result.size()).isEqualTo(2);
         System.out.println("result = " + result);
     }

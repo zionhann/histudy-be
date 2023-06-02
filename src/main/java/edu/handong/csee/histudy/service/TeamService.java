@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +19,7 @@ public class TeamService {
         List<TeamDto> result = new ArrayList<>();
         teams.forEach(t -> {
             List<User> users = t.getUsers();
-            List<UserDto.Info> userInfos = users.stream()
+            List<UserDto.UserInfo> userInfos = users.stream()
                     .map(u -> {
                         List<User> friends = new ArrayList<>();
                         friends.addAll(u.getSentRequests()
@@ -33,7 +32,7 @@ public class TeamService {
                                 .filter(Friendship::isAccepted)
                                 .map(Friendship::getSent)
                                 .toList());
-                        List<UserDto.Basic> buddies = friends.stream().map(f -> UserDto.Basic.builder()
+                        List<UserDto.UserBasic> buddies = friends.stream().map(f -> UserDto.UserBasic.builder()
                                 .id(f.getId())
                                 .sid(f.getSid())
                                 .name(f.getName())
@@ -43,7 +42,7 @@ public class TeamService {
                                 .map(Choice::getCourse)
                                 .map(Course::toIdNameDto)
                                 .toList();
-                        return UserDto.Info.builder()
+                        return UserDto.UserInfo.builder()
                                 .id(u.getId())
                                 .sid(u.getSid())
                                 .name(u.getName())
@@ -64,15 +63,15 @@ public class TeamService {
     }
     public TeamReportDto getTeamReports(long id, String email) {
         Team team = teamRepository.findById(id).orElseThrow();
-        List<UserDto.Basic> users = team.getUsers().stream()
-                                                        .map(u -> UserDto.Basic.builder()
+        List<UserDto.UserBasic> users = team.getUsers().stream()
+                                                        .map(u -> UserDto.UserBasic.builder()
                                                                 .id(u.getId())
                                                                 .sid(u.getSid())
                                                                 .name(u.getName())
                                                                 .build()).toList();
-        List<ReportDto.Basic> reports = team.getReports()
+        List<ReportDto.ReportBasic> reports = team.getReports()
                                             .stream()
-                                            .map(ReportDto.Basic::new).toList();
+                                            .map(ReportDto.ReportBasic::new).toList();
         return new TeamReportDto(team.getId(),users,team.getTotalMinutes(),reports);
     }
 

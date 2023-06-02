@@ -96,22 +96,20 @@ public class UserService {
     public Optional<User> isPresent(String sub) {
         return userRepository.findById(sub);
     }
-    public List<UserDto.Info> getUsers(String email) {
+
+    public List<UserDto.UserInfo> getUsers(String email) {
         List<User> users = userRepository.findAll();
         return getInfoFromUser(users);
     }
-    public Optional<ApplyFormDto> getUserInfo(String email) {
-        return userRepository.findUserByEmail(email)
-                .map(ApplyFormDto::new);
-    }
-    public List<UserDto.Info> getAppliedUsers() {
+
+    public List<UserDto.UserInfo> getAppliedUsers() {
         List<User> users = userRepository.findAll()
                 .stream()
                 .filter(u -> !u.getChoices().isEmpty())
                 .toList();
         return getInfoFromUser(users);
     }
-    public List<UserDto.Info> getInfoFromUser(List<User> users) {
+    public List<UserDto.UserInfo> getInfoFromUser(List<User> users) {
         return users
                 .stream()
                 .map(u -> {
@@ -126,7 +124,7 @@ public class UserService {
                             .filter(Friendship::isAccepted)
                             .map(Friendship::getSent)
                             .toList());
-                    List<UserDto.Basic> buddies = friends.stream().map(f -> UserDto.Basic.builder()
+                    List<UserDto.UserBasic> buddies = friends.stream().map(f -> UserDto.UserBasic.builder()
                             .id(f.getId())
                             .sid(f.getSid())
                             .name(f.getName())
@@ -136,7 +134,7 @@ public class UserService {
                             .map(Choice::getCourse)
                             .map(Course::toIdNameDto)
                             .toList();
-                    return UserDto.Info.builder()
+                    return UserDto.UserInfo.builder()
                             .id(u.getId())
                             .sid(u.getSid())
                             .name(u.getName())
@@ -144,5 +142,10 @@ public class UserService {
                             .courses(courses)
                             .build();
                 }).toList();
+    }
+
+    public Optional<ApplyFormDto> getUserInfo(String email) {
+        return userRepository.findUserByEmail(email)
+                .map(ApplyFormDto::new);
     }
 }

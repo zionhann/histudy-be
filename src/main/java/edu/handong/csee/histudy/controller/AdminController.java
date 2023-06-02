@@ -34,7 +34,7 @@ public class AdminController {
         return ResponseEntity.ok(teamService.getTeamReports(id, claims.getSubject()));
     }
     @GetMapping("/allUsers")
-    public ResponseEntity<List<UserDto.Info>> getAppliedUsers() {
+    public ResponseEntity<List<UserDto.UserInfo>> getAppliedUsers() {
         return ResponseEntity.ok(userService.getAppliedUsers());
     }
 }

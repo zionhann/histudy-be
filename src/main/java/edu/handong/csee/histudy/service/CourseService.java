@@ -59,22 +59,22 @@ public class CourseService {
         return "SUCCESS";
     }
 
-    public List<CourseDto.Info> getCourses() {
+    public List<CourseDto.CourseInfo> getCourses() {
         return courseRepository
                 .findAll()
                 .stream()
-                .map(CourseDto.Info::new)
+                .map(CourseDto.CourseInfo::new)
                 .toList();
     }
 
-    public List<CourseDto.Info> search(String keyword) {
+    public List<CourseDto.CourseInfo> search(String keyword) {
         return courseRepository.findAllByNameContainingIgnoreCase(keyword)
                 .stream()
-                .map(CourseDto.Info::new)
+                .map(CourseDto.CourseInfo::new)
                 .toList();
     }
 
-    public List<CourseDto.Info> getTeamCourses(String email) {
+    public List<CourseDto.CourseInfo> getTeamCourses(String email) {
         List<Course> courses = userRepository.findUserByEmail(email).stream()
                 .map(User::getTeam)
                 .map(Team::getEnrolls)
@@ -83,7 +83,7 @@ public class CourseService {
                 .toList();
 
         return courses.stream()
-                .map(CourseDto.Info::new)
+                .map(CourseDto.CourseInfo::new)
                 .toList();
     }
 

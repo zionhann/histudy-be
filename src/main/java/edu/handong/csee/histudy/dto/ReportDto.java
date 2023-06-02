@@ -16,20 +16,20 @@ import java.util.List;
 public class ReportDto {
 
     @Schema(description = "List of reports", type = "array")
-    private List<Basic> reports;
+    private List<ReportBasic> reports;
 
     @Getter
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class Info {
+    public static class ReportInfo {
 
-        public Info(Report entity) {
+        public ReportInfo(Report entity) {
             this.id = entity.getId();
             this.title = entity.getTitle();
             this.content = entity.getContent();
             this.time = entity.getTotalMinutes();
             this.participants = entity.getParticipants().stream()
                     .map(Participates::getUser)
-                    .map(UserDto.Basic::new)
+                    .map(UserDto.UserBasic::new)
                     .toList();
             this.courses = entity.getStudies().stream()
                     .map(Study::getCourse)
@@ -52,8 +52,8 @@ public class ReportDto {
         @Schema(description = "Total minutes of the report", type = "number", example = "60")
         private long time;
 
-        @Schema(description = "Participant SIDs of the report", type = "array", example = "[\"20200001\", \"20200002\"]")
-        private List<UserDto.Basic> participants;
+        @Schema(description = "Participant SIDs of the report", type = "array")
+        private List<UserDto.UserBasic> participants;
 
         @Schema(description = "Course names of the report", type = "array", example = "[\"OOP\", \"OS\"]")
         private List<String> courses;
@@ -65,8 +65,8 @@ public class ReportDto {
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @Getter
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class Basic {
-        public Basic(Report report) {
+    public static class ReportBasic {
+        public ReportBasic(Report report) {
             this.id = report.getId();
             this.title = report.getTitle();
             this.regDate = report.getLastModifiedDate().toString();

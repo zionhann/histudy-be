@@ -8,7 +8,6 @@ import edu.handong.csee.histudy.repository.CourseRepository;
 import edu.handong.csee.histudy.repository.TeamRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import edu.handong.csee.histudy.service.UserService;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -125,7 +124,7 @@ public class UserServiceTests {
         Team team = teamRepository.save(new Team(111));
         savedA.belongTo(team);
         savedB.belongTo(team);
-        List<UserDto.Info> users = userService.getUsers("");
+        List<UserDto.UserInfo> users = userService.getUsers("");
         assertThat(users).isNotEmpty();
         assertThat(users.size()).isEqualTo(3);
         System.out.println("users = " + users);
@@ -184,7 +183,7 @@ public class UserServiceTests {
         Team team = teamRepository.save(new Team(111));
         savedA.belongTo(team);
         savedB.belongTo(team);
-        List<UserDto.Info> users = userService.getAppliedUsers();
+        List<UserDto.UserInfo> users = userService.getAppliedUsers();
         assertThat(users.size()).isEqualTo(2);
         System.out.println("users = " + users);
     }

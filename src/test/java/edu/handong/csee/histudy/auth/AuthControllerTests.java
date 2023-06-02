@@ -66,9 +66,9 @@ public class AuthControllerTests {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        UserDto.Login res = mapper.readValue(
+        UserDto.UserLogin res = mapper.readValue(
                 mvcResult.getResponse().getContentAsString(),
-                UserDto.Login.class);
+                UserDto.UserLogin.class);
 
         // then
         assertNotNull(res);
