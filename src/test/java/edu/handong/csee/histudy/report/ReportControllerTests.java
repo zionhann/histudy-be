@@ -117,6 +117,51 @@ public class ReportControllerTests {
         assertEquals(1, res.getReports().size());
     }
 
+    @DisplayName("보고서를 조회한다")
+    @Test
+    void ReportControllerTests_122() throws Exception {
+        // given
+        User user = userRepository.save(User.builder()
+                .id("123")
+                .sid("21811111")
+                .name("username")
+                .email("user@test.com")
+                .build());
+        user.belongTo(new Team(1));
+
+        Course course = courseRepository.save(Course.builder()
+                .name("courseName")
+                .build());
+
+        Report report = Report.builder()
+                .title("reportTitle")
+                .content("reportContent")
+                .team(user.getTeam())
+                .totalMinutes(60L)
+                .participants(List.of(user))
+                .courses(List.of(course))
+                .build();
+        reportRepository.save(report);
+
+        Claims claims = Jwts.claims(
+                Collections.singletonMap(Claims.SUBJECT, user.getEmail()));
+
+        // when
+        MvcResult mvcResult = mvc
+                .perform(get("/api/team/reports/{id}", report.getId())
+                        .requestAttr("claims", claims))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ReportDto.ReportInfo res = mapper.readValue(
+                mvcResult.getResponse().getContentAsString(),
+                ReportDto.ReportInfo.class);
+
+        // then
+        assertEquals(report.getId(), res.getId());
+    }
+
     @DisplayName("그룹의 보고서를 수정할 수 있다: 요청폼 없음")
     @Test
     void ReportControllerTests_121() throws Exception {

@@ -27,13 +27,13 @@ public class Report extends BaseTime{
     @ManyToOne(fetch = FetchType.LAZY)
     private Team team;
 
-    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Participates> participants = new ArrayList<>();
 
-    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images = new ArrayList<>();
 
-    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Study> studies = new ArrayList<>();
 
     @Builder
