@@ -4,6 +4,7 @@ import edu.handong.csee.histudy.controller.form.ReportForm;
 import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.TeamDto;
 import edu.handong.csee.histudy.dto.TeamIdDto;
+import edu.handong.csee.histudy.dto.TeamRankDto;
 import edu.handong.csee.histudy.dto.TeamReportDto;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
 import edu.handong.csee.histudy.repository.*;
@@ -26,6 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
+@Transactional
 public class TeamServiceTest {
     @Autowired
     TeamService teamService;
@@ -43,6 +45,8 @@ public class TeamServiceTest {
     TeamRepository teamRepository;
     @Autowired
     ReportService reportService;
+    @Autowired
+    private ReportRepository reportRepository;
 
     @BeforeEach
     void setup() throws IOException {
@@ -186,5 +190,68 @@ public class TeamServiceTest {
         assertThat(dto.getReports().size()).isEqualTo(1);
         assertThat(dto.getTotalTime()).isEqualTo(60L);
         System.out.println("dto = " + dto);
+    }
+
+    @DisplayName("전체 팀이 총학습시간에 대해 내림차순으로 정렬되어야 한다")
+    @Test
+    void TeamServiceTest_193() {
+        // given
+        User userA = User.builder()
+                .id("123")
+                .sid("22000329")
+                .name("ab")
+                .build();
+        User userB = User.builder()
+                .id("234")
+                .sid("22000123")
+                .name("cd")
+                .build();
+        User savedUser = userRepository.save(userA);
+        User savedUser2 = userRepository.save(userB);
+
+        Team team = new Team(1);
+        savedUser.belongTo(team);
+
+        Team team2 = new Team(2);
+        savedUser2.belongTo(team2);
+
+        Report report = Report.builder()
+                .title("title")
+                .content("content")
+                .totalMinutes(60L)
+                .participants(List.of())
+                .courses(List.of())
+                .team(team)
+                .build();
+
+        Report report2 = Report.builder()
+                .title("title")
+                .content("content")
+                .totalMinutes(120L)
+                .participants(List.of())
+                .courses(List.of())
+                .team(team)
+                .build();
+
+        Report report3 = Report.builder()
+                .title("title")
+                .content("content")
+                .totalMinutes(210L)
+                .participants(List.of())
+                .courses(List.of())
+                .team(team2)
+                .build();
+
+        reportRepository.save(report);
+        reportRepository.save(report2);
+        reportRepository.save(report3);
+
+        // when
+        TeamRankDto res = teamService.getAllTeams();
+
+        // then
+        assertThat(res.getCount()).isEqualTo(2);
+        assertThat(res.getTeams().get(0).getTotalMinutes()).isEqualTo(210);
+        assertThat(res.getTeams().get(1).getTotalMinutes()).isEqualTo(180);
     }
 }
