@@ -115,4 +115,69 @@ public class UserControllerTests {
         assertEquals(1, res.getCourses().size());
         assertEquals(1, res.getFriends().size());
     }
+
+    @DisplayName("스터디 지원서를 수정할 수 있다")
+    @Test
+    void UserControllerTests_121() throws Exception {
+        // given
+        User saved = userRepository.save(User.builder()
+                .id("123")
+                .sid("123")
+                .name("test")
+                .email("test@example.com")
+                .build());
+        User friend = userRepository.save(User.builder()
+                .id("234")
+                .sid("234")
+                .name("test2")
+                .email("test2@example.com")
+                .build());
+        User friend2 = userRepository.save(User.builder()
+                .id("345")
+                .sid("345")
+                .name("newFriend")
+                .email("test3@example.com")
+                .build());
+        Course course = courseRepository.save(Course.builder()
+                .name("courseName")
+                .build());
+        Course course2 = courseRepository.save(Course.builder()
+                .name("newCourse")
+                .build());
+
+        userService.apply(
+                ApplyForm.builder()
+                        .friendIds(List.of(friend.getSid()))
+                        .courseIds(List.of(course.getId()))
+                        .build(),
+                saved.getEmail());
+
+        userService.apply(
+                ApplyForm.builder()
+                        .friendIds(List.of(friend2.getSid()))
+                        .courseIds(List.of(course2.getId()))
+                        .build(),
+                saved.getEmail());
+
+        Claims claims = Jwts.claims(
+                Collections.singletonMap("sub", saved.getEmail()));
+
+        // when
+        MvcResult mvcResult = mvc
+                .perform(get("/api/users/me/forms")
+                        .requestAttr("claims", claims))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ApplyFormDto res = mapper.readValue(
+                mvcResult.getResponse().getContentAsString(),
+                ApplyFormDto.class);
+
+        // then
+        assertEquals(1, res.getCourses().size());
+        assertEquals(1, res.getFriends().size());
+        assertEquals(course2.getName(), res.getCourses().get(0).getName());
+        assertEquals(friend2.getName(), res.getFriends().get(0).getName());
+    }
 }
