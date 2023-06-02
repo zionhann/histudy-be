@@ -1,25 +1,21 @@
 package edu.handong.csee.histudy.controller;
 
-import edu.handong.csee.histudy.dto.ReportDto;
-import edu.handong.csee.histudy.service.ReportService;
+import edu.handong.csee.histudy.dto.TeamRankDto;
+import edu.handong.csee.histudy.service.TeamService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/public")
 public class PublicController {
 
-    private final ReportService reportService;
+    private final TeamService teamService;
 
-    @GetMapping("/reports")
-    public ReportDto getReportList() {
-        List<ReportDto.ReportInfo> reports = reportService.getAllReports();
-
-        return new ReportDto(reports);
+    @GetMapping("/teams")
+    public TeamRankDto getTeams() {
+        return teamService.getAllTeams();
     }
 }

@@ -19,7 +19,7 @@ public class TeamDto {
     private List<UserDto.UserInfo> members;
 
     @Schema(description = "Number of reports created", type = "number", example = "5")
-    private int reports; // report count
+    private int reports;
 
     @Schema(description = "Total time studied", type = "number", example = "120")
     private long times; // totalMinutes

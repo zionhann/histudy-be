@@ -5,6 +5,7 @@ import edu.handong.csee.histudy.dto.*;
 import edu.handong.csee.histudy.repository.TeamRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -52,30 +53,33 @@ public class TeamService {
                                 .courses(courses)
                                 .build();
                     }).toList();
-            result.add(new TeamDto(t.getId(),userInfos,t.getReports().size(),t.getTotalMinutes()));
+            result.add(new TeamDto(t.getId(), userInfos, t.getReports().size(), t.getTotalMinutes()));
         });
         return result;
     }
+
     public int deleteTeam(TeamIdDto dto, String email) {
-        if(teamRepository.existsById(dto.getGroupId())) {
+        if (teamRepository.existsById(dto.getGroupId())) {
             teamRepository.deleteById(dto.getGroupId());
             return 1;
         }
         return 0;
     }
+
     public TeamReportDto getTeamReports(long id, String email) {
         Team team = teamRepository.findById(id).orElseThrow();
         List<UserDto.UserBasic> users = team.getUsers().stream()
-                                                        .map(u -> UserDto.UserBasic.builder()
-                                                                .id(u.getId())
-                                                                .sid(u.getSid())
-                                                                .name(u.getName())
-                                                                .build()).toList();
+                .map(u -> UserDto.UserBasic.builder()
+                        .id(u.getId())
+                        .sid(u.getSid())
+                        .name(u.getName())
+                        .build()).toList();
         List<ReportDto.ReportBasic> reports = team.getReports()
-                                            .stream()
-                                            .map(ReportDto.ReportBasic::new).toList();
-        return new TeamReportDto(team.getId(),users,team.getTotalMinutes(),reports);
+                .stream()
+                .map(ReportDto.ReportBasic::new).toList();
+        return new TeamReportDto(team.getId(), users, team.getTotalMinutes(), reports);
     }
+
     public List<UserDto.UserBasic> getTeamUsers(String email) {
         User user = userRepository.findUserByEmail(email).orElseThrow();
         return user.getTeam().getUsers()
@@ -84,4 +88,12 @@ public class TeamService {
                 .toList();
     }
 
+    public TeamRankDto getAllTeams() {
+        List<TeamRankDto.TeamInfo> teams = teamRepository
+                .findAll(Sort.by(Sort.Direction.DESC, "totalMinutes"))
+                .stream()
+                .map(TeamRankDto.TeamInfo::new)
+                .toList();
+        return new TeamRankDto(teams);
+    }
 }
