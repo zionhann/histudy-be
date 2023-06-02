@@ -1,10 +1,8 @@
 package edu.handong.csee.histudy.dto;
 
+import edu.handong.csee.histudy.domain.Image;
 import edu.handong.csee.histudy.domain.Report;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
@@ -37,4 +35,35 @@ public class ReportDto {
         private List<String> participants;
         private List<String> courses;
     }
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @Getter
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class Basic {
+        public Basic(Report report) {
+            this.id = report.getId();
+            this.title = report.getTitle();
+            this.regDate = report.getLastModifiedDate().toString();
+            this.time = report.getTotalMinutes();
+
+        }
+
+        private long id;
+        private String title;
+        private String regDate;
+        private long time;
+    }
+    @AllArgsConstructor
+    @Getter
+    @NoArgsConstructor
+    @Builder
+    public static class Detail {
+        private String title;
+        private List<UserDto.Basic> members;
+        private long time;
+        private String content;
+        private List<ImageDto> img;
+    }
+
+
+
 }

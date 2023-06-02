@@ -14,7 +14,7 @@ import java.util.List;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Report {
+public class Report extends BaseTime{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,8 +22,6 @@ public class Report {
     private String title;
     private String content;
     private long totalMinutes;
-    @Embedded
-    private BaseTime baseTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Team team;

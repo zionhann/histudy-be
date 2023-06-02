@@ -1,5 +1,6 @@
 package edu.handong.csee.histudy.domain;
 
+import edu.handong.csee.histudy.dto.ImageDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,5 +22,11 @@ public class Image {
     public Image(String path, Report report) {
         this.path = path;
         this.report = report;
+    }
+    public ImageDto toDto() {
+        ImageDto dto = new ImageDto();
+        dto.setId(this.id);
+        dto.setUrl(this.path);
+        return dto;
     }
 }

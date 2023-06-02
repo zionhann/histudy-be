@@ -45,8 +45,8 @@ public class UserDto {
         private String id;
         private String name;
         private String sid;
-        private List<Basic> friends = new ArrayList<>();
-        private List<CourseIdNameDto> courses = new ArrayList<>();
+        private List<Basic> friends;
+        private List<CourseIdNameDto> courses;
     }
 
     @Builder
@@ -57,6 +57,12 @@ public class UserDto {
         private String id;
         private String name;
         private String sid;
+
+        public Basic(User user) {
+            this.id = user.getId();
+            this.sid = user.getSid();
+            this.name = user.getName();
+        }
     }
 
 }

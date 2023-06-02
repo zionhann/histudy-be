@@ -17,14 +17,4 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 @RequestMapping("/api/admin")
 public class TeamController {
-    private final TeamService teamService;
-
-    @GetMapping("/manageGroup")
-    public ResponseEntity<List<TeamDto>> getTeams(@RequestAttribute Claims claims) {
-        return ResponseEntity.ok(teamService.getTeams(claims.getSubject()));
-    }
-    @DeleteMapping("/group")
-    public ResponseEntity<Integer> deleteTeam(@RequestBody TeamIdDto dto, @RequestAttribute Claims claims) {
-        return ResponseEntity.ok(teamService.deleteTeam(dto, claims.getSubject()));
-    }
 }
