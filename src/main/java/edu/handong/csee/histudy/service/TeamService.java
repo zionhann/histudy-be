@@ -3,6 +3,7 @@ package edu.handong.csee.histudy.service;
 import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.*;
 import edu.handong.csee.histudy.repository.TeamRepository;
+import edu.handong.csee.histudy.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TeamService {
     private final TeamRepository teamRepository;
+    private final UserRepository userRepository;
 
     public List<TeamDto> getTeams(String email) {
         List<Team> teams = teamRepository.findAll();
@@ -73,6 +75,13 @@ public class TeamService {
                                             .stream()
                                             .map(ReportDto.ReportBasic::new).toList();
         return new TeamReportDto(team.getId(),users,team.getTotalMinutes(),reports);
+    }
+    public List<UserDto.UserBasic> getTeamUsers(String email) {
+        User user = userRepository.findUserByEmail(email).orElseThrow();
+        return user.getTeam().getUsers()
+                .stream()
+                .map(UserDto.UserBasic::new)
+                .toList();
     }
 
 }

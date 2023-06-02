@@ -3,8 +3,10 @@ package edu.handong.csee.histudy.controller;
 import edu.handong.csee.histudy.controller.form.ReportForm;
 import edu.handong.csee.histudy.dto.CourseDto;
 import edu.handong.csee.histudy.dto.ReportDto;
+import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.service.CourseService;
 import edu.handong.csee.histudy.service.ReportService;
+import edu.handong.csee.histudy.service.TeamService;
 import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -23,6 +25,7 @@ public class TeamController {
 
     private final ReportService reportService;
     private final CourseService courseService;
+    private final TeamService teamService;
 
     @Parameters({
             @Parameter(in = ParameterIn.HEADER, name = "Authorization",
@@ -83,5 +86,9 @@ public class TeamController {
         return ResponseEntity.ok(
                 new CourseDto(
                         courseService.getTeamCourses(claims.getSubject())));
+    }
+    @GetMapping("/users")
+    public ResponseEntity<List<UserDto.UserBasic>> getTeamUsers(@RequestAttribute Claims claims) {
+        return ResponseEntity.ok(teamService.getTeamUsers(claims.getSubject()));
     }
 }
