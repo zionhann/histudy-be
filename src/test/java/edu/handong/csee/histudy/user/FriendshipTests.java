@@ -116,4 +116,27 @@ public class FriendshipTests {
         assertThat(userB.getReceivedRequests()).isEmpty();
         assertThat(userA.getSentRequests()).isEmpty();
     }
+
+    @DisplayName("기존에 등록한 강의 정보나 친구가 있는 경우 지우고 업데이트한다")
+    @Test
+    void FriendshipTests_122() {
+        // given
+        User userA = User.builder()
+                .name("userA")
+                .build();
+        User userB = User.builder()
+                .name("userB")
+                .build();
+        User userC = User.builder()
+                .name("userC")
+                .build();
+
+        // when
+        userA.add(userB);
+        userA.add(userC);
+
+        // then
+        assertThat(userA.getSentRequests()).hasSize(1);
+        assertThat(userA.getSentRequests().get(0).getReceived()).isEqualTo(userC);
+    }
 }

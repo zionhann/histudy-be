@@ -58,12 +58,20 @@ public class User {
     }
 
     public void add(User user) {
+        if (!sentRequests.isEmpty()) {
+            this.sentRequests.clear();
+            user.receivedRequests.clear();
+        }
         Friendship friendship = new Friendship(this, user);
         this.sentRequests.add(friendship);
         user.receivedRequests.add(friendship);
     }
 
     public void add(List<User> users) {
+        if (!sentRequests.isEmpty()) {
+            this.sentRequests.clear();
+            users.forEach(u -> u.receivedRequests.clear());
+        }
         users
                 .forEach(u -> {
                     Friendship friendship = new Friendship(this, u);
@@ -73,6 +81,9 @@ public class User {
     }
 
     public void select(List<Course> courses) {
+        if (!choices.isEmpty()) {
+            this.choices.clear();
+        }
         courses
                 .forEach(c -> {
                     Choice choice = new Choice(this, c);
