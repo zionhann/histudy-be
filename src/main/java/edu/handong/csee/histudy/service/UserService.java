@@ -99,7 +99,19 @@ public class UserService {
 
     public List<UserDto.UserInfo> getUsers(String email) {
         List<User> users = userRepository.findAll();
-        return users.stream()
+        return getInfoFromUser(users);
+    }
+
+    public List<UserDto.UserInfo> getAppliedUsers() {
+        List<User> users = userRepository.findAll()
+                .stream()
+                .filter(u -> !u.getChoices().isEmpty())
+                .toList();
+        return getInfoFromUser(users);
+    }
+    public List<UserDto.UserInfo> getInfoFromUser(List<User> users) {
+        return users
+                .stream()
                 .map(u -> {
                     List<User> friends = new ArrayList<>();
                     friends.addAll(u.getSentRequests()

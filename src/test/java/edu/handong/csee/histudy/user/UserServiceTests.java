@@ -129,4 +129,62 @@ public class UserServiceTests {
         assertThat(users.size()).isEqualTo(3);
         System.out.println("users = " + users);
     }
+    @DisplayName("신청한 유저들의 리스트를 받을 수 있어야 한다")
+    @Test
+    public void testAppliedUsersTest() {
+        User userA = User.builder()
+                .id("123")
+                .sid("22000329")
+                .name("배주영")
+                .email("a@a.com")
+                .role(Role.USER)
+                .build();
+        User userB = User.builder()
+                .id("124")
+                .sid("22000330")
+                .name("오인혁")
+                .email("a@b.com")
+                .role(Role.USER)
+                .build();
+        User userC = User.builder()
+                .id("125")
+                .sid("22000332")
+                .name("한시온")
+                .email("a@c.com")
+                .role(Role.USER)
+                .build();
+        User savedA = userRepository.save(userA);
+        User savedB = userRepository.save(userB);
+        User savedC = userRepository.save(userC);
+        savedA.add(savedB);
+        savedB.getReceivedRequests().stream().findAny().ifPresent(Friendship::accept);
+        List<Long> courseIdxList = List.of(1L,2L,3L);
+        List<Course> courses = courseIdxList.stream()
+                .map(courseRepository::findById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toList();
+        List<Choice> choices = courses.stream().map(c -> choiceRepository.save(Choice.builder()
+                .user(savedA)
+                .course(c)
+                .build())).toList();
+        savedA.getChoices().addAll(choices);
+        List<Long> courseIdxList2 = List.of(1L,2L,3L);
+        List<Course> courses2 = courseIdxList2.stream()
+                .map(courseRepository::findById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toList();
+        List<Choice> choices2 = courses2.stream().map(c -> choiceRepository.save(Choice.builder()
+                .user(savedB)
+                .course(c)
+                .build())).toList();
+        savedB.getChoices().addAll(choices2);
+        Team team = teamRepository.save(new Team(111));
+        savedA.belongTo(team);
+        savedB.belongTo(team);
+        List<UserDto.UserInfo> users = userService.getAppliedUsers();
+        assertThat(users.size()).isEqualTo(2);
+        System.out.println("users = " + users);
+    }
 }
