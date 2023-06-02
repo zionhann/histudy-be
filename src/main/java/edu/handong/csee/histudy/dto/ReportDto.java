@@ -16,7 +16,7 @@ import java.util.List;
 public class ReportDto {
 
     @Schema(description = "List of reports", type = "array")
-    private List<ReportBasic> reports;
+    private List<ReportInfo> reports;
 
     @Getter
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -26,7 +26,7 @@ public class ReportDto {
             this.id = entity.getId();
             this.title = entity.getTitle();
             this.content = entity.getContent();
-            this.time = entity.getTotalMinutes();
+            this.totalMinutes = entity.getTotalMinutes();
             this.participants = entity.getParticipants().stream()
                     .map(Participates::getUser)
                     .map(UserDto.UserBasic::new)
@@ -35,9 +35,10 @@ public class ReportDto {
                     .map(Study::getCourse)
                     .map(Course::getName)
                     .toList();
-            this.imgs = entity.getImages().stream()
+            this.images = entity.getImages().stream()
                     .map(ImageDto::new)
                     .toList();
+            this.regDate = entity.getLastModifiedDate().toString();
         }
 
         @Schema(description = "Report ID", type = "number", example = "1")
@@ -50,7 +51,7 @@ public class ReportDto {
         private String content;
 
         @Schema(description = "Total minutes of the report", type = "number", example = "60")
-        private long time;
+        private long totalMinutes;
 
         @Schema(description = "Participant SIDs of the report", type = "array")
         private List<UserDto.UserBasic> participants;
@@ -59,7 +60,10 @@ public class ReportDto {
         private List<String> courses;
 
         @Schema(description = "Images of the report", type = "array")
-        private List<ImageDto> imgs;
+        private List<ImageDto> images;
+
+        @Schema(description = "Report Last Modified Date", example = "2021-06-01 00:00:00")
+        private String regDate;
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -70,7 +74,7 @@ public class ReportDto {
             this.id = report.getId();
             this.title = report.getTitle();
             this.regDate = report.getLastModifiedDate().toString();
-            this.time = report.getTotalMinutes();
+            this.totalMinutes = report.getTotalMinutes();
             this.thumbnail = report.getImages()
                     .stream()
                     .findFirst()
@@ -88,7 +92,7 @@ public class ReportDto {
         private String regDate;
 
         @Schema(description = "Total minutes of the report", type = "number", example = "60")
-        private long time;
+        private long totalMinutes;
 
         @Schema(description = "Thumbnail of the report", example = "https://histudy.s3.ap-northeast-2.amazonaws.com/2021-06-01-00-00-00-1")
         private String thumbnail;

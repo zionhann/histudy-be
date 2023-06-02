@@ -18,7 +18,7 @@ public class PublicController {
 
     @GetMapping("/reports")
     public ReportDto getReportList() {
-        List<ReportDto.ReportBasic> reports = reportService.getAllReports();
+        List<ReportDto.ReportInfo> reports = reportService.getAllReports();
 
         return new ReportDto(reports);
     }
