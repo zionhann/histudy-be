@@ -4,6 +4,7 @@ import edu.handong.csee.histudy.controller.form.ApplyForm;
 import edu.handong.csee.histudy.controller.form.BuddyForm;
 import edu.handong.csee.histudy.controller.form.UserInfo;
 import edu.handong.csee.histudy.domain.*;
+import edu.handong.csee.histudy.dto.ApplyFormDto;
 import edu.handong.csee.histudy.dto.CourseIdNameDto;
 import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.repository.CourseRepository;
@@ -129,5 +130,10 @@ public class UserService {
                             .courses(courses)
                             .build();
                 }).toList();
+    }
+
+    public Optional<ApplyFormDto> getUserInfo(String email) {
+        return userRepository.findUserByEmail(email)
+                .map(ApplyFormDto::new);
     }
 }
