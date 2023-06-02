@@ -1,6 +1,7 @@
 package edu.handong.csee.histudy.controller;
 
 import edu.handong.csee.histudy.controller.form.ApplyForm;
+import edu.handong.csee.histudy.dto.ApplyFormDto;
 import edu.handong.csee.histudy.service.UserService;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
@@ -16,10 +17,10 @@ public class ApplyFormController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<String> applyForStudy(@RequestBody ApplyForm form,
-                                                @RequestAttribute Claims claims) {
-        return (userService.apply(form, claims.getSubject()))
-                ? ResponseEntity.status(HttpStatus.OK).build()
-                : ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    public ResponseEntity<ApplyFormDto> applyForStudy(@RequestBody ApplyForm form,
+                                                      @RequestAttribute Claims claims) {
+        return userService.apply(form, claims.getSubject())
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
     }
 }
