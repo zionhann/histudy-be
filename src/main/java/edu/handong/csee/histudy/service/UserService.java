@@ -53,7 +53,7 @@ public class UserService {
         return userRepository.findUserByNameOrSidOrEmail(keyword);
     }
 
-    public boolean apply(ApplyForm form, String email) {
+    public Optional<ApplyFormDto> apply(ApplyForm form, String email) {
         List<User> friends = form.getFriendIds()
                 .stream()
                 .map(userRepository::findUserBySid)
@@ -66,14 +66,13 @@ public class UserService {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
-        Optional<User> userOr = userRepository.findUserByEmail(email);
 
-        userOr.ifPresent(u -> {
-            u.add(friends);
-            u.select(courses);
-        });
-
-        return !courses.isEmpty() && userOr.isPresent();
+        return userRepository.findUserByEmail(email)
+                .map(u -> {
+                    u.add(friends);
+                    u.select(courses);
+                    return new ApplyFormDto(u);
+                });
     }
 
     public boolean signUp(UserInfo userInfo) {
@@ -109,6 +108,7 @@ public class UserService {
                 .toList();
         return getInfoFromUser(users);
     }
+
     public List<UserDto.UserInfo> getInfoFromUser(List<User> users) {
         return users
                 .stream()

@@ -5,6 +5,7 @@ import edu.handong.csee.histudy.controller.ApplyFormController;
 import edu.handong.csee.histudy.controller.form.ApplyForm;
 import edu.handong.csee.histudy.domain.Course;
 import edu.handong.csee.histudy.domain.User;
+import edu.handong.csee.histudy.dto.ApplyFormDto;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
 import edu.handong.csee.histudy.repository.CourseRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
@@ -19,11 +20,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -159,5 +162,78 @@ public class AppControllerTests {
                 .andExpect(status().isBadRequest())
                 .andDo(print())
                 .andReturn();
+    }
+
+    @DisplayName("신청폼을 업데이트 할 수 있다")
+    @Test
+    void AppControllerTests_166() throws Exception {
+        // given
+        userRepository.save(
+                User.builder()
+                        .id("subA")
+                        .sid("sidA")
+                        .email("test@example.com")
+                        .build());
+        userRepository.save(
+                User.builder()
+                        .id("subB")
+                        .sid("sidB")
+                        .email("test2@example.com")
+                        .build());
+        userRepository.save(
+                User.builder()
+                        .id("subC")
+                        .sid("sidC")
+                        .email("test3@example.com")
+                        .build());
+        Course course1 = courseRepository.save(
+                Course.builder()
+                        .name("test1")
+                        .build());
+        Course course2 = courseRepository.save(
+                Course.builder()
+                        .name("test2")
+                        .build());
+
+        ApplyForm applyForm = ApplyForm.builder()
+                .friendIds(List.of("sidB", "sidC"))
+                .courseIds(List.of(course1.getId(), course2.getId()))
+                .build();
+        String form = mapper.writeValueAsString(applyForm);
+
+        Claims claims = Jwts.claims();
+        claims.put("sub", "test@example.com");
+
+        // when
+        mvc.perform(post("/api/forms")
+                        .requestAttr("claims", claims)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(form))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        ApplyForm applyForm2 = ApplyForm.builder()
+                .friendIds(List.of("sidB"))
+                .courseIds(List.of(course1.getId()))
+                .build();
+        String updatedForm = mapper.writeValueAsString(applyForm2);
+
+        MvcResult mvcResult = mvc.perform(post("/api/forms")
+                        .requestAttr("claims", claims)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updatedForm))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        ApplyFormDto res = mapper.readValue(
+                mvcResult.getResponse().getContentAsString(),
+                ApplyFormDto.class);
+
+        assertThat(res.getCourses()).hasSize(1);
+        assertThat(res.getFriends()).hasSize(1);
+        assertThat(res.getCourses().get(0).getName()).isEqualTo(course1.getName());
+        assertThat(res.getFriends().get(0).getSid()).isEqualTo("sidB");
     }
 }
