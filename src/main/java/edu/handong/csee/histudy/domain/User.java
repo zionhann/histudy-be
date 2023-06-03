@@ -28,19 +28,19 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Team team;
 
     @OneToMany(mappedBy = "user")
     private List<Participates> participates;
 
-    @OneToMany(mappedBy = "sent", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "sent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Friendship> sentRequests = new ArrayList<>();
 
-    @OneToMany(mappedBy = "received", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "received", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Friendship> receivedRequests = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Choice> choices = new ArrayList<>();
 
     @Builder
