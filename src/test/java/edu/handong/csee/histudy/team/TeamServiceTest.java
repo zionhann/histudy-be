@@ -222,6 +222,7 @@ public class TeamServiceTest {
                 .participants(List.of())
                 .courses(List.of())
                 .team(team)
+                .images(List.of("img.jpg"))
                 .build();
 
         Report report2 = Report.builder()
@@ -231,6 +232,7 @@ public class TeamServiceTest {
                 .participants(List.of())
                 .courses(List.of())
                 .team(team)
+                .images(List.of("img2.jpg"))
                 .build();
 
         Report report3 = Report.builder()
@@ -240,18 +242,23 @@ public class TeamServiceTest {
                 .participants(List.of())
                 .courses(List.of())
                 .team(team2)
+                .images(List.of("img3.jpg"))
                 .build();
 
         reportRepository.save(report);
-        reportRepository.save(report2);
-        reportRepository.save(report3);
+        reportRepository.save(report2); // the latest report of team 1
+        reportRepository.save(report3); // the latest report of team 2
 
         // when
         TeamRankDto res = teamService.getAllTeams();
 
         // then
-        assertThat(res.getCount()).isEqualTo(2);
+        assertThat(res.getTeams().size()).isEqualTo(2);
         assertThat(res.getTeams().get(0).getTotalMinutes()).isEqualTo(210);
         assertThat(res.getTeams().get(1).getTotalMinutes()).isEqualTo(180);
+
+        assertThat(res.getTeams().get(0).getThumbnail()).isEqualTo("img3.jpg"); // team 2
+        assertThat(res.getTeams().get(1).getThumbnail()).isEqualTo("img2.jpg"); // team 1
+
     }
 }
