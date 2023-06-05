@@ -32,7 +32,7 @@ public class User {
     private Team team;
 
     @OneToMany(mappedBy = "user")
-    private List<Participates> participates;
+    private List<Participates> participates = new ArrayList<>();
 
     @OneToMany(mappedBy = "sent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Friendship> sentRequests = new ArrayList<>();

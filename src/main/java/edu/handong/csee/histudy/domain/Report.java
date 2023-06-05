@@ -69,10 +69,11 @@ public class Report extends BaseTime{
         if (!participants.isEmpty()) {
             participants.clear();
         }
-        List<Participates> participates = users.stream()
-                .map(user -> new Participates(user, this))
-                .toList();
-        this.participants.addAll(participates);
+        users.forEach(user -> {
+            Participates participates = new Participates(user, this);
+            user.getParticipates().add(participates);
+            this.participants.add(participates);
+        });
     }
 
     private void writtenBy(Team team) {
