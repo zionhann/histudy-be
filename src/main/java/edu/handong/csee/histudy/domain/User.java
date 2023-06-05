@@ -60,11 +60,11 @@ public class User {
     public void add(User user) {
         if (!sentRequests.isEmpty()) {
             this.sentRequests.clear();
-            user.receivedRequests.clear();
+            user.getReceivedRequests().clear();
         }
         Friendship friendship = new Friendship(this, user);
         this.sentRequests.add(friendship);
-        user.receivedRequests.add(friendship);
+        user.getReceivedRequests().add(friendship);
     }
 
     public void add(List<User> users) {
