@@ -11,12 +11,14 @@ import edu.handong.csee.histudy.repository.ReportRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ReportService {
     private final ReportRepository reportRepository;
     private final UserRepository userRepository;
