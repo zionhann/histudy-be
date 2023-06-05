@@ -1,12 +1,12 @@
 package edu.handong.csee.histudy.user;
 
+import edu.handong.csee.histudy.controller.form.ReportForm;
 import edu.handong.csee.histudy.domain.*;
+import edu.handong.csee.histudy.dto.ReportDto;
 import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
-import edu.handong.csee.histudy.repository.ChoiceRepository;
-import edu.handong.csee.histudy.repository.CourseRepository;
-import edu.handong.csee.histudy.repository.TeamRepository;
-import edu.handong.csee.histudy.repository.UserRepository;
+import edu.handong.csee.histudy.repository.*;
+import edu.handong.csee.histudy.service.ReportService;
 import edu.handong.csee.histudy.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -39,8 +39,12 @@ public class UserServiceTests {
     CourseRepository courseRepository;
     @Autowired
     ChoiceRepository choiceRepository;
+    @Autowired
+    ReportService reportService;
     @MockBean
     AuthenticationInterceptor interceptor;
+    @Autowired
+    private ReportRepository reportRepository;
 
     @BeforeEach
     void setup() throws IOException {
@@ -124,9 +128,21 @@ public class UserServiceTests {
         Team team = teamRepository.save(new Team(111));
         savedA.belongTo(team);
         savedB.belongTo(team);
+        ReportForm form = ReportForm.builder()
+                .title("title")
+                .content("content")
+                .totalMinutes(60L)
+                .participants(List.of("22000329"))
+                .courses(List.of(1L, 2L, 3L))
+                .build();
+        ReportDto.ReportInfo report = reportService.createReport(form, "a@a.com");
         List<UserDto.UserInfo> users = userService.getUsers("");
         assertThat(users).isNotEmpty();
         assertThat(users.size()).isEqualTo(3);
+        List<Report> reports = reportRepository.findAll();
+        System.out.println("reports = " + reports);
+        System.out.println("users = " + users);
+        assertThat(users.get(0).getTotalMinutes()).isEqualTo(60L);
         System.out.println("users = " + users);
     }
     @DisplayName("신청한 유저들의 리스트를 받을 수 있어야 한다")

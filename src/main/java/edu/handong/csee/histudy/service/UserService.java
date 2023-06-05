@@ -134,12 +134,18 @@ public class UserService {
                             .map(Choice::getCourse)
                             .map(Course::toIdNameDto)
                             .toList();
+                    long totalMinutes = u.getParticipates()
+                            .stream()
+                            .map(Participates::getReport)
+                            .mapToLong(Report::getTotalMinutes)
+                            .sum();
                     return UserDto.UserInfo.builder()
                             .id(u.getId())
                             .sid(u.getSid())
                             .name(u.getName())
                             .friends(buddies)
                             .courses(courses)
+                            .totalMinutes(totalMinutes)
                             .build();
                 }).toList();
     }

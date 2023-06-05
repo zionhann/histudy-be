@@ -87,6 +87,7 @@ public class User {
         courses
                 .forEach(c -> {
                     Choice choice = new Choice(this, c);
+                    c.getChoices().add(choice);
                     this.choices.add(choice);
                 });
     }

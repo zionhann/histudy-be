@@ -69,6 +69,8 @@ public class UserDto {
 
         @Schema(description = "list of course added", type = "array")
         private List<CourseIdNameDto> courses;
+        @Schema(description = "student's total minutes studied", type="number")
+        private long totalMinutes;
     }
 
     @Builder
