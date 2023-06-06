@@ -86,11 +86,11 @@ public class TeamService {
         return new TeamReportDto(team.getId(), users, team.getTotalMinutes(), reports);
     }
 
-    public List<UserDto.UserBasic> getTeamUsers(String email) {
+    public List<UserDto.UserMe> getTeamUsers(String email) {
         User user = userRepository.findUserByEmail(email).orElseThrow();
         return user.getTeam().getUsers()
                 .stream()
-                .map(UserDto.UserBasic::new)
+                .map(UserDto.UserMe::new)
                 .toList();
     }
 

@@ -88,7 +88,7 @@ public class TeamController {
                         courseService.getTeamCourses(claims.getSubject())));
     }
     @GetMapping("/users")
-    public ResponseEntity<List<UserDto.UserBasic>> getTeamUsers(@RequestAttribute Claims claims) {
+    public ResponseEntity<List<UserDto.UserMe>> getTeamUsers(@RequestAttribute Claims claims) {
         return ResponseEntity.ok(teamService.getTeamUsers(claims.getSubject()));
     }
 }
