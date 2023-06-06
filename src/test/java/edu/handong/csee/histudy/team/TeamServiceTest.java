@@ -81,19 +81,16 @@ public class TeamServiceTest {
     @Transactional
     public void teamService() {
         User userA = User.builder()
-                .id("123")
                 .sid("22000329")
                 .email("a@a.com")
                 .role(Role.USER)
                 .build();
         User userB = User.builder()
-                .id("124")
                 .sid("22000330")
                 .email("a@b.com")
                 .role(Role.USER)
                 .build();
         User userC = User.builder()
-                .id("125")
                 .sid("22000332")
                 .email("a@c.com")
                 .role(Role.USER)
@@ -141,7 +138,6 @@ public class TeamServiceTest {
     @Transactional
     public void deleteTeamTest() {
         User userA = User.builder()
-                .id("123")
                 .sid("22000329")
                 .email("a@a.com")
                 .role(Role.USER)
@@ -159,14 +155,12 @@ public class TeamServiceTest {
     @Transactional
     public void teamReportViewTest() {
         User userA = User.builder()
-                .id("123")
                 .sid("22000329")
                 .name("배주영")
                 .email("a@a.com")
                 .role(Role.USER)
                 .build();
         User userB = User.builder()
-                .id("124")
                 .sid("22000330")
                 .name("오인혁")
                 .email("a@b.com")
@@ -197,12 +191,10 @@ public class TeamServiceTest {
     void TeamServiceTest_193() {
         // given
         User userA = User.builder()
-                .id("123")
                 .sid("22000329")
                 .name("ab")
                 .build();
         User userB = User.builder()
-                .id("234")
                 .sid("22000123")
                 .name("cd")
                 .build();

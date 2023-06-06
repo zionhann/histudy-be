@@ -55,7 +55,6 @@ public class UserService {
 
         if (userOr.isEmpty()) {
             User user = User.builder()
-                    .id(userInfo.getSub())
                     .sid(userInfo.getSid())
                     .email(userInfo.getEmail())
                     .name(userInfo.getName())
@@ -68,7 +67,7 @@ public class UserService {
     }
 
     public Optional<User> isPresent(String sub) {
-        return userRepository.findById(sub);
+        return userRepository.findUserBySub(sub);
     }
 
     public List<UserDto.UserInfo> getUsers(String email) {

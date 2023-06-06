@@ -69,7 +69,6 @@ public class CourseServiceTest {
     @Test
     public void teamCourseTest() {
         User user = User.builder()
-                .id("123")
                 .sid("22000328")
                 .email("a@a.com")
                 .role(Role.USER)
@@ -86,7 +85,6 @@ public class CourseServiceTest {
         List<Choice> choices = courses.stream().map(c -> choiceRepository.save(new Choice(saved, c))).toList();
         saved.getChoices().addAll(choices);
         User userB = User.builder()
-                .id("124")
                 .sid("22000329")
                 .email("b@b.com")
                 .role(Role.USER)

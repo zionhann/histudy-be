@@ -15,7 +15,11 @@ import java.util.List;
 public class User {
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true)
+    private String sub;
 
     @Column(unique = true)
     private String sid;
@@ -41,8 +45,8 @@ public class User {
     private List<Choice> choices = new ArrayList<>();
 
     @Builder
-    public User(String id, String sid, String email, String name, Role role) {
-        this.id = id;
+    public User(String sub, String sid, String email, String name, Role role) {
+        this.sub = sub;
         this.sid = sid;
         this.email = email;
         this.name = name;

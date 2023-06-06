@@ -78,21 +78,18 @@ public class UserServiceTests {
     @Test
     public void userListTest() {
         User userA = User.builder()
-                .id("123")
                 .sid("22000329")
                 .name("배주영")
                 .email("a@a.com")
                 .role(Role.USER)
                 .build();
         User userB = User.builder()
-                .id("124")
                 .sid("22000330")
                 .name("오인혁")
                 .email("a@b.com")
                 .role(Role.USER)
                 .build();
         User userC = User.builder()
-                .id("125")
                 .sid("22000332")
                 .name("한시온")
                 .email("a@c.com")
@@ -149,21 +146,18 @@ public class UserServiceTests {
     @Test
     public void testAppliedUsersTest() {
         User userA = User.builder()
-                .id("123")
                 .sid("22000329")
                 .name("배주영")
                 .email("a@a.com")
                 .role(Role.USER)
                 .build();
         User userB = User.builder()
-                .id("124")
                 .sid("22000330")
                 .name("오인혁")
                 .email("a@b.com")
                 .role(Role.USER)
                 .build();
         User userC = User.builder()
-                .id("125")
                 .sid("22000332")
                 .name("한시온")
                 .email("a@c.com")

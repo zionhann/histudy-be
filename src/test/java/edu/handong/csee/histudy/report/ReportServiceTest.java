@@ -68,7 +68,6 @@ public class ReportServiceTest {
                 .courses(List.of(course.getId(), courseB.getId(), courseC.getId()))
                 .build();
         User user = User.builder()
-                .id("123")
                 .sid("22000328")
                 .email("a@a.com")
                 .role(Role.USER)
@@ -114,7 +113,6 @@ public class ReportServiceTest {
                 .courses(List.of(1L, 2L, 3L))
                 .build();
         User user = User.builder()
-                .id("123")
                 .sid("22000328")
                 .email("a@a.com")
                 .role(Role.USER)

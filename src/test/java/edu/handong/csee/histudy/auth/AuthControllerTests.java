@@ -52,9 +52,9 @@ public class AuthControllerTests {
     void AuthControllerTests_29() throws Exception {
         // given
         User user = User.builder()
-                .id("1234")
                 .email("test@example.com")
                 .name("username")
+                .sub("1234")
                 .build();
         userRepository.save(user);
 

@@ -58,7 +58,7 @@ public class UserDto {
     public static class UserInfo {
 
         @Schema(description = "User ID", example = "1", type = "number")
-        private String id;
+        private Long id;
 
         @Schema(description = "User name", example = "John Doe")
         private String name;
@@ -85,7 +85,7 @@ public class UserDto {
     public static class UserBasic {
 
         @Schema(description = "User ID", example = "1", type = "number")
-        private String id;
+        private Long id;
 
         @Schema(description = "User name", example = "John Doe")
         private String name;

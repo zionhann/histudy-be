@@ -74,13 +74,11 @@ public class UserControllerTests {
     void UserControllerTests_16() throws Exception {
         // given
         User saved = userRepository.save(User.builder()
-                .id("123")
                 .sid("123")
                 .name("test")
                 .email("test@example.com")
                 .build());
         User friend = userRepository.save(User.builder()
-                .id("234")
                 .sid("234")
                 .name("test2")
                 .email("test2@example.com")
@@ -121,19 +119,16 @@ public class UserControllerTests {
     void UserControllerTests_121() throws Exception {
         // given
         User saved = userRepository.save(User.builder()
-                .id("123")
                 .sid("123")
                 .name("test")
                 .email("test@example.com")
                 .build());
         User friend = userRepository.save(User.builder()
-                .id("234")
                 .sid("234")
                 .name("test2")
                 .email("test2@example.com")
                 .build());
         User friend2 = userRepository.save(User.builder()
-                .id("345")
                 .sid("345")
                 .name("newFriend")
                 .email("test3@example.com")

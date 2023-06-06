@@ -36,13 +36,13 @@ public class MatchingAlgorithmTests {
     @BeforeEach
     void init() {
         for (int i = 0; i <= 100; i++) {
-            String id = "ID_" + i;
+            String sub = "SUB_" + i;
             String sid = "SID_" + i;
             String email = "EMAIL_" + i + "@test.com";
             String name = "test" + i;
             Role role = Role.USER;
 
-            User user = new User(id, sid, name, email, role);
+            User user = new User(sub, sid, email, name, role);
             userRepository.save(user);
         }
 

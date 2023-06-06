@@ -60,7 +60,6 @@ public class ChoiceTest {
                 .build();
         courseRepository.save(courseC);
         User user = User.builder()
-                .id("123")
                 .sid("22000328")
                 .email("a@a.com")
                 .role(Role.USER)

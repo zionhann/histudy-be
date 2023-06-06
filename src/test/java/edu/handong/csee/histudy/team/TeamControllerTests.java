@@ -73,12 +73,10 @@ public class TeamControllerTests {
         // given
 
         User userA = User.builder()
-                .id("1")
                 .sid("201511111")
                 .email("userA@test.com")
                 .build();
         User userB = User.builder()
-                .id("2")
                 .sid("201611111")
                 .email("userB@test.com")
                 .build();

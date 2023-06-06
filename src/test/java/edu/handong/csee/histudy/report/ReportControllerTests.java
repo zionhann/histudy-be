@@ -77,7 +77,6 @@ public class ReportControllerTests {
     void ReportControllerTests_16() throws Exception {
         // given
         User user = userRepository.save(User.builder()
-                .id("123")
                 .sid("21811111")
                 .name("username")
                 .email("user@test.com")
@@ -122,7 +121,6 @@ public class ReportControllerTests {
     void ReportControllerTests_122() throws Exception {
         // given
         User user = userRepository.save(User.builder()
-                .id("123")
                 .sid("21811111")
                 .name("username")
                 .email("user@test.com")
@@ -167,7 +165,6 @@ public class ReportControllerTests {
     void ReportControllerTests_121() throws Exception {
         // given
         User user = userRepository.save(User.builder()
-                .id("123")
                 .sid("21811111")
                 .name("username")
                 .email("user@test.com")
@@ -205,7 +202,6 @@ public class ReportControllerTests {
     void ReportControllerTests_159() throws Exception {
         // given
         User user = userRepository.save(User.builder()
-                .id("123")
                 .sid("21811111")
                 .name("username")
                 .email("user@test.com")
@@ -245,7 +241,6 @@ public class ReportControllerTests {
     void ReportControllerTests_204() throws Exception {
         // given
         User user = userRepository.save(User.builder()
-                .id("123")
                 .sid("21811111")
                 .name("username")
                 .email("user@test.com")
@@ -283,7 +278,6 @@ public class ReportControllerTests {
     void ReportControllerTests_240() throws Exception {
         // given
         User user = userRepository.save(User.builder()
-                .id("123")
                 .sid("21811111")
                 .name("username")
                 .email("user@test.com")

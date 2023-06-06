@@ -70,7 +70,6 @@ public class AppControllerTests {
         // given
         userRepository.save(
                 User.builder()
-                        .id("subA")
                         .email("test@example.com")
                         .build());
 
@@ -108,7 +107,6 @@ public class AppControllerTests {
         // given
         userRepository.save(
                 User.builder()
-                        .id("subA")
                         .email("subA")
                         .build());
 
@@ -142,7 +140,6 @@ public class AppControllerTests {
         // given
         userRepository.save(
                 User.builder()
-                        .id("subA")
                         .build());
 
         ApplyForm applyForm = ApplyForm.builder()
@@ -171,19 +168,16 @@ public class AppControllerTests {
         // given
         userRepository.save(
                 User.builder()
-                        .id("subA")
                         .sid("sidA")
                         .email("test@example.com")
                         .build());
         userRepository.save(
                 User.builder()
-                        .id("subB")
                         .sid("sidB")
                         .email("test2@example.com")
                         .build());
         userRepository.save(
                 User.builder()
-                        .id("subC")
                         .sid("sidC")
                         .email("test3@example.com")
                         .build());

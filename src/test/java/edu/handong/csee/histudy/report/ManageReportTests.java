@@ -20,14 +20,12 @@ public class ManageReportTests {
     public void ManageReportTests_16() {
         // given
         User user1 = User.builder()
-                .id("123")
                 .sid("22300000")
                 .email("test@histudy.com")
                 .name("user1")
                 .role(Role.USER)
                 .build();
         User user2 = User.builder()
-                .id("123")
                 .sid("22300000")
                 .email("test@histudy.com")
                 .name("user2")
