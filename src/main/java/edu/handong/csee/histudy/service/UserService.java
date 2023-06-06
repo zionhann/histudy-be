@@ -114,11 +114,14 @@ public class UserService {
                             .map(Participates::getReport)
                             .mapToLong(Report::getTotalMinutes)
                             .sum();
+                    int tag=0;
+                    if(u.getTeam()!=null)
+                        tag = u.getTeam().getTag();
                     return UserDto.UserInfo.builder()
                             .id(u.getId())
                             .sid(u.getSid())
                             .name(u.getName())
-                            .group(u.getTeam().getTag())
+                            .group(tag)
                             .friends(buddies)
                             .courses(courses)
                             .totalMinutes(totalMinutes)

@@ -29,19 +29,19 @@ public class ReportForm {
      * Contains student ID
      */
     @Schema(description = "Participant SIDs of the report", type = "array", example = "[\"20200001\", \"20200002\"]")
-    private List<String> participants = new ArrayList<>();
+    private List<String> participants;
 
     /**
      * Contains image URL
      */
     @Schema(description = "Image URLs of the report", type = "array", example = "[\"https://histudy.s3.ap-northeast-2.amazonaws.com/1.jpg\", \"https://histudy.s3.ap-northeast-2.amazonaws.com/2.jpg\"]")
-    private List<String> images = new ArrayList<>();
+    private List<String> images;
 
     /**
      * Contains course ID
      */
     @Schema(description = "Course IDs of the report", type = "array", example = "[1, 2]")
-    private List<Long> courses = new ArrayList<>();
+    private List<Long> courses;
 
     public Report toEntity(Team team, List<User> participants, List<Course> courses) {
         return Report.builder()
