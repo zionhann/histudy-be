@@ -66,7 +66,7 @@ public class UserDto {
         @Schema(description = "User student ID", example = "211234567")
         private String sid;
 
-        @Schema(description = "Group tag", example="112")
+        @Schema(description = "Group tag", example = "112")
         private int group;
 
         @Schema(description = "list of friend added", type = "array")
@@ -74,7 +74,8 @@ public class UserDto {
 
         @Schema(description = "list of course added", type = "array")
         private List<CourseIdNameDto> courses;
-        @Schema(description = "student's total minutes studied", type="number")
+
+        @Schema(description = "student's total minutes studied", type = "number")
         private long totalMinutes;
     }
 
@@ -100,4 +101,26 @@ public class UserDto {
         }
     }
 
+    @Getter
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class UserMe {
+        @Schema(description = "User ID", example = "1", type = "number")
+        private Long id;
+
+        @Schema(description = "User name", example = "John Doe")
+        private String name;
+
+        @Schema(description = "User student ID", example = "211234567")
+        private String sid;
+
+        @Schema(description = "User email", example = "user@test.com")
+        private String email;
+
+        public UserMe(User user) {
+            this.id = user.getId();
+            this.sid = user.getSid();
+            this.name = user.getName();
+            this.email = user.getEmail();
+        }
+    }
 }

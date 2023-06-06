@@ -6,6 +6,7 @@ import edu.handong.csee.histudy.controller.form.ApplyForm;
 import edu.handong.csee.histudy.domain.Course;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.ApplyFormDto;
+import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
 import edu.handong.csee.histudy.repository.CourseRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
@@ -174,5 +175,35 @@ public class UserControllerTests {
         assertEquals(1, res.getFriends().size());
         assertEquals(course2.getName(), res.getCourses().get(0).getName());
         assertEquals(friend2.getName(), res.getFriends().get(0).getName());
+    }
+
+    @DisplayName("나의 정보를 조회한다")
+    @Test
+    void UserControllerTests_181() throws Exception {
+        // given
+        User saved = userRepository.save(User.builder()
+                .sid("123")
+                .name("test")
+                .email("test@example.com")
+                .build());
+
+        Claims claims = Jwts.claims(
+                Collections.singletonMap("sub", saved.getEmail()));
+
+        // when
+        MvcResult mvcResult = mvc
+                .perform(get("/api/users/me")
+                        .requestAttr("claims", claims))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        UserDto.UserMe res = mapper.readValue(
+                mvcResult.getResponse().getContentAsString(),
+                UserDto.UserMe.class);
+
+        // then
+        assertEquals("test", res.getName());
+        assertEquals("test@example.com", res.getEmail());
     }
 }

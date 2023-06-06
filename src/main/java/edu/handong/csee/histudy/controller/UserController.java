@@ -52,6 +52,15 @@ public class UserController {
                 new UserDto(users));
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<UserDto.UserMe> getMyInfo(@RequestAttribute Claims claims) {
+        Optional<UserDto.UserMe> info = userService.getUserMe(claims.getSubject());
+
+        return info
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/me/forms")
     public ResponseEntity<ApplyFormDto> getMyApplicationForm(@RequestAttribute Claims claims) {
         Optional<ApplyFormDto> userInfo = userService.getUserInfo(claims.getSubject());
