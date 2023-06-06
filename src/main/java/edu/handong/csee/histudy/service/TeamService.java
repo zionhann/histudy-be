@@ -58,6 +58,7 @@ public class TeamService {
                                 .name(u.getName())
                                 .friends(buddies)
                                 .courses(courses)
+                                .group(u.getTeam().getTag())
                                 .build();
                     }).toList();
             result.add(new TeamDto(t.getId(), userInfos, t.getReports().size(), t.getTotalMinutes()));
