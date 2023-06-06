@@ -127,4 +127,9 @@ public class UserService {
         return userRepository.findUserByEmail(email)
                 .map(ApplyFormDto::new);
     }
+
+    public Optional<UserDto.UserMe> getUserMe(String email) {
+        return userRepository.findUserByEmail(email)
+                .map(UserDto.UserMe::new);
+    }
 }
