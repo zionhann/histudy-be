@@ -45,4 +45,9 @@ public class AdminController {
     public ResponseEntity<TeamDto.MatchResults> matchTeam() {
         return ResponseEntity.ok(teamService.matchTeam());
     }
+
+    @GetMapping("unmatched-users")
+    public ResponseEntity<List<UserDto.UserInfo>> getUnmatchedUsers() {
+        return ResponseEntity.ok(userService.getUnmatchedUsers());
+    }
 }

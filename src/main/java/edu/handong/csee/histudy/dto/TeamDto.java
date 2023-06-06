@@ -35,13 +35,12 @@ public class TeamDto {
         private List<TeamMatching> matchedTeams;
 
         @Schema(description = "List of unmatched users", type = "array")
-        private List<UserDto.UserMatching> unmatchedUsers;
+        private List<UserDto.UserInfo> unmatchedUsers;
 
-        public MatchResults(List<Team> matchedTeams, List<User> unmatchedUsers) {
+        public MatchResults(List<Team> matchedTeams, List<UserDto.UserInfo> unmatchedUsers) {
             this.matchedTeams = matchedTeams.stream()
                     .map(TeamMatching::new).toList();
-            this.unmatchedUsers = unmatchedUsers.stream()
-                    .map(UserDto.UserMatching::new).toList();
+            this.unmatchedUsers = unmatchedUsers;
         }
     }
 
