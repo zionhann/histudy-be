@@ -66,6 +66,9 @@ public class UserDto {
         @Schema(description = "User student ID", example = "211234567")
         private String sid;
 
+        @Schema(description = "Group tag", example="112")
+        private int group;
+
         @Schema(description = "list of friend added", type = "array")
         private List<UserBasic> friends;
 

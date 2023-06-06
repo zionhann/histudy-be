@@ -118,6 +118,7 @@ public class UserService {
                             .id(u.getId())
                             .sid(u.getSid())
                             .name(u.getName())
+                            .group(u.getTeam().getTag())
                             .friends(buddies)
                             .courses(courses)
                             .totalMinutes(totalMinutes)
