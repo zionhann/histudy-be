@@ -21,5 +21,5 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     Optional<User> findUserByEmail(String email);
 
-    List<User> findAllByTeamIsNull();
+    List<User> findAllByTeamIsNullAndChoicesIsNotEmpty();
 }

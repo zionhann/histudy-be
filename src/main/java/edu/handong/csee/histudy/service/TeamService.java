@@ -105,7 +105,7 @@ public class TeamService {
 
     public TeamDto.MatchResults matchTeam() {
         // Get users who are not in a team
-        List<User> users = userRepository.findAllByTeamIsNull();
+        List<User> users = userRepository.findAllByTeamIsNullAndChoicesIsNotEmpty();
         AtomicInteger tag = new AtomicInteger(1);
 
         // First matching
