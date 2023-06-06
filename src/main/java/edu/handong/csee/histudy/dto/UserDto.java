@@ -9,24 +9,24 @@ import java.util.List;
 
 @AllArgsConstructor
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserDto {
 
     @Schema(description = "List of user", type = "array")
     private List<UserMatching> users;
 
-    @RequiredArgsConstructor
     @Getter
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class UserMatching {
 
         @Schema(description = "User name", example = "John Doe")
-        private final String name;
+        private String name;
 
         @Schema(description = "User student ID", example = "211234567")
-        private final String sid;
+        private String sid;
 
         @Schema(description = "User email", example = "jd@example.com")
-        private final String email;
+        private String email;
 
         public UserMatching(User user) {
             this.name = user.getName();
@@ -37,15 +37,17 @@ public class UserDto {
 
     @Builder
     @Getter
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class UserLogin {
         @Schema(description = "Registration status", example = "true", type = "boolean")
-        private final Boolean isRegistered;
+        private Boolean isRegistered;
 
         @Schema(description = "Token type", example = "Bearer ")
-        private final String tokenType;
+        private String tokenType;
 
         @Schema(description = "Token pairs", type = "object")
-        private final JwtPair tokens;
+        private JwtPair tokens;
     }
 
     @Builder

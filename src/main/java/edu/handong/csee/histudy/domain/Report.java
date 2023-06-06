@@ -15,7 +15,7 @@ import static java.util.Objects.requireNonNullElse;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Report extends BaseTime{
+public class Report extends BaseTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -69,11 +69,12 @@ public class Report extends BaseTime{
         if (!participants.isEmpty()) {
             participants.clear();
         }
-        users.forEach(user -> {
-            Participates participates = new Participates(user, this);
-            user.getParticipates().add(participates);
-            this.participants.add(participates);
-        });
+        users
+                .forEach(user -> {
+                    Participates participates = new Participates(user, this);
+                    this.participants.add(participates);
+                    user.getParticipates().add(participates);
+                });
     }
 
     private void writtenBy(Team team) {

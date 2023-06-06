@@ -1,12 +1,15 @@
 package edu.handong.csee.histudy.jwt;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class TokenInfo {
     private final String tokenType = "Bearer ";
-    private final GrantType grantType;
-    private final String token;
+    private GrantType grantType;
+    private String token;
 }

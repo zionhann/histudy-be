@@ -109,6 +109,7 @@ public class AppControllerTests {
         userRepository.save(
                 User.builder()
                         .id("subA")
+                        .email("subA")
                         .build());
 
         courseRepository.save(
