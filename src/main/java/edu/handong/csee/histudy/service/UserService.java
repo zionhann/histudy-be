@@ -51,7 +51,7 @@ public class UserService {
     }
 
     public boolean signUp(UserInfo userInfo) {
-        Optional<User> userOr = userRepository.findById(userInfo.getSub());
+        Optional<User> userOr = userRepository.findUserBySub(userInfo.getSub());
 
         if (userOr.isEmpty()) {
             User user = User.builder()
