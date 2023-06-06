@@ -5,6 +5,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -35,13 +37,44 @@ public class Friendship {
         }
     }
 
-    public void decline() {
-        if (this.status == FriendshipStatus.PENDING) {
-            sent.getSentRequests().remove(this);
-            received.getReceivedRequests().remove(this);
+    public void cancel() {
+        if (this.status == FriendshipStatus.ACCEPTED) {
+            this.status = FriendshipStatus.PENDING;
         }
     }
+
+    public void disconnect() {
+        if (this.status == FriendshipStatus.PENDING) {
+            sent.getFriendships().remove(this);
+            received.getFriendships().remove(this);
+        }
+    }
+
     public boolean isAccepted() {
         return status.equals(FriendshipStatus.ACCEPTED);
+    }
+
+    public void connect() {
+        sent.getFriendships().add(this);
+        received.getFriendships().add(this);
+    }
+
+    public Team makeTeam(AtomicInteger tag) {
+        if (sent.getTeam() != null && received.getTeam() != null) {
+            assert sent.getTeam().equals(received.getTeam());
+            return sent.getTeam();
+        } else if (sent.getTeam() != null) {
+            // (a <-> b) -> c]
+            received.belongTo(sent.getTeam());
+            return sent.getTeam();
+        } else if (received.getTeam() != null) {
+            // (a <-> b) <- c
+            sent.belongTo(received.getTeam());
+            return received.getTeam();
+        }
+        Team team = new Team(tag.getAndIncrement());
+        sent.belongTo(team);
+        received.belongTo(team);
+        return team;
     }
 }

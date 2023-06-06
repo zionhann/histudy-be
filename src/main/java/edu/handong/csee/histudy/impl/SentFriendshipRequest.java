@@ -6,6 +6,6 @@ import edu.handong.csee.histudy.dto.FriendshipRequest;
 public class SentFriendshipRequest extends FriendshipRequest {
 
     public SentFriendshipRequest(Friendship friendship) {
-        super(friendship.getReceived(), friendship.getStatus());
+        super(friendship.getSent(), friendship.getStatus());
     }
 }

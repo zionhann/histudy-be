@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -37,14 +40,15 @@ public class Team {
     }
 
     public void select(List<Course> courses) {
-        if (!courses.isEmpty()) {
+        if (!enrolls.isEmpty()) {
             this.enrolls.clear();
         }
-        List<Enrollment> targetCourses = courses
-                .stream()
-                .map(course -> new Enrollment(this, course))
-                .toList();
-        enrolls.addAll(targetCourses);
+        courses
+                .forEach(course -> {
+                    Enrollment enrollment = new Enrollment(this, course);
+                    enrolls.add(enrollment);
+                    course.getEnrolls().add(enrollment);
+                });
     }
 
     @PreRemove
@@ -55,5 +59,34 @@ public class Team {
 
     public void update(long newTotalMinutes, long oldTotalMinutes) {
         this.totalMinutes += newTotalMinutes - oldTotalMinutes;
+    }
+
+    private List<Course> commonCourses() {
+        Map<Course, Long> courseCountMap = users.stream()
+                .flatMap(u -> u.getChoices().stream())
+                .map(Choice::getCourse)
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+
+        return courseCountMap.entrySet().stream()
+                .filter(entry -> entry.getValue() >= 2)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+    }
+
+    public void enroll(List<User> group) {
+        if (!enrolls.isEmpty()) {
+            this.enrolls
+                    .forEach(e -> e.getCourse()
+                            .getEnrolls()
+                            .remove(e));
+            this.enrolls.clear();
+        }
+        group.forEach(u -> u.belongTo(this));
+        commonCourses()
+                .forEach(course -> {
+                    Enrollment enrollment = new Enrollment(this, course);
+                    enrolls.add(enrollment);
+                    course.getEnrolls().add(enrollment);
+                });
     }
 }

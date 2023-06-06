@@ -24,17 +24,25 @@ public class AdminController {
     public ResponseEntity<List<TeamDto>> getTeams(@RequestAttribute Claims claims) {
         return ResponseEntity.ok(teamService.getTeams(claims.getSubject()));
     }
+
     @DeleteMapping("/group")
     public ResponseEntity<Integer> deleteTeam(@RequestBody TeamIdDto dto, @RequestAttribute Claims claims) {
         return ResponseEntity.ok(teamService.deleteTeam(dto, claims.getSubject()));
     }
+
     @GetMapping("/groupReport/{id}")
     public ResponseEntity<TeamReportDto> getTeamReports(@PathVariable(name = "id") long id,
-                                                              @RequestAttribute Claims claims) {
+                                                        @RequestAttribute Claims claims) {
         return ResponseEntity.ok(teamService.getTeamReports(id, claims.getSubject()));
     }
+
     @GetMapping("/allUsers")
     public ResponseEntity<List<UserDto.UserInfo>> getAppliedUsers() {
         return ResponseEntity.ok(userService.getAppliedUsers());
+    }
+
+    @PostMapping("/team-match")
+    public ResponseEntity<TeamDto.MatchResults> matchTeam() {
+        return ResponseEntity.ok(teamService.matchTeam());
     }
 }

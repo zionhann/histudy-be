@@ -1,7 +1,6 @@
 package edu.handong.csee.histudy.service;
 
 import edu.handong.csee.histudy.controller.form.ApplyForm;
-import edu.handong.csee.histudy.controller.form.BuddyForm;
 import edu.handong.csee.histudy.controller.form.UserInfo;
 import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.ApplyFormDto;
@@ -24,30 +23,6 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
-
-    public List<Friendship> sendRequest(User sender, BuddyForm form) {
-        userRepository
-                .findAllById(form.getBuddies())
-                .forEach(sender::add);
-
-        return sender.getSentRequests();
-    }
-
-    public void acceptRequest(User user, String sid) {
-        user.getReceivedRequests()
-                .stream()
-                .filter(friendship -> friendship.getSent().getSid().equals(sid))
-                .findAny()
-                .ifPresent(Friendship::accept);
-    }
-
-    public void declineRequest(User user, String sid) {
-        user.getReceivedRequests()
-                .stream()
-                .filter(friendship -> friendship.getSent().getSid().equals(sid))
-                .findAny()
-                .ifPresent(Friendship::decline);
-    }
 
     public List<User> search(String keyword) {
         return userRepository.findUserByNameOrSidOrEmail(keyword);
@@ -114,12 +89,12 @@ public class UserService {
                 .stream()
                 .map(u -> {
                     List<User> friends = new ArrayList<>();
-                    friends.addAll(u.getSentRequests()
+                    friends.addAll(u.getFriendships()
                             .stream()
                             .filter(Friendship::isAccepted)
                             .map(Friendship::getReceived)
                             .toList());
-                    friends.addAll(u.getReceivedRequests()
+                    friends.addAll(u.getFriendships()
                             .stream()
                             .filter(Friendship::isAccepted)
                             .map(Friendship::getSent)

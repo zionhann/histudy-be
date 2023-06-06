@@ -20,4 +20,6 @@ public interface UserRepository extends JpaRepository<User, String> {
     List<User> findUserByNameOrSidOrEmail(String keyword);
 
     Optional<User> findUserByEmail(String email);
+
+    List<User> findAllByTeamIsNull();
 }

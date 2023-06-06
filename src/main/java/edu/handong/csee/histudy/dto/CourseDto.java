@@ -19,6 +19,7 @@ public class CourseDto {
 
     @AllArgsConstructor
     @Getter
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class CourseInfo {
 
         @Schema(description = "Course ID", example = "1", type = "number")

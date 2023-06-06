@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 
@@ -27,8 +29,8 @@ public class FriendshipTests {
                 .build();
 
         // when
-        userA.add(userB);
-        Friendship friendship = userA.getSentRequests()
+        userA.add(List.of(userB));
+        Friendship friendship = userA.getFriendships()
                 .stream()
                 .findAny()
                 .orElseThrow();
@@ -51,8 +53,8 @@ public class FriendshipTests {
                 .build();
 
         // when
-        userA.add(userB);
-        Friendship friendship = userB.getReceivedRequests()
+        userA.add(List.of(userB));
+        Friendship friendship = userB.getFriendships()
                 .stream()
                 .findAny()
                 .orElseThrow();
@@ -75,14 +77,14 @@ public class FriendshipTests {
                 .build();
 
         // when
-        userA.add(userB);
-        userB.getReceivedRequests()
+        userA.add(List.of(userB));
+        userB.getFriendships()
                 .stream()
                 .filter(friendship -> friendship.getSent().equals(userA))
                 .findAny()
                 .ifPresent((Friendship::accept));
 
-        Friendship friendship = userB.getReceivedRequests()
+        Friendship friendship = userB.getFriendships()
                 .stream()
                 .findAny()
                 .orElseThrow();
@@ -105,16 +107,16 @@ public class FriendshipTests {
                 .build();
 
         // when
-        userA.add(userB);
-        userB.getReceivedRequests()
+        userA.add(List.of(userB));
+        userB.getFriendships()
                 .stream()
                 .filter(friendship -> friendship.getSent().equals(userA))
                 .findAny()
-                .ifPresent(Friendship::decline);
+                .ifPresent(Friendship::disconnect);
 
         // then
-        assertThat(userB.getReceivedRequests()).isEmpty();
-        assertThat(userA.getSentRequests()).isEmpty();
+        assertThat(userB.getFriendships()).isEmpty();
+        assertThat(userA.getFriendships()).isEmpty();
     }
 
     @DisplayName("기존에 등록한 강의 정보나 친구가 있는 경우 지우고 업데이트한다")
@@ -132,11 +134,11 @@ public class FriendshipTests {
                 .build();
 
         // when
-        userA.add(userB);
-        userA.add(userC);
+        userA.add(List.of(userB));
+        userA.add(List.of(userC));
 
         // then
-        assertThat(userA.getSentRequests()).hasSize(1);
-        assertThat(userA.getSentRequests().get(0).getReceived()).isEqualTo(userC);
+        assertThat(userA.getFriendships()).hasSize(1);
+        assertThat(userA.getFriendships().get(0).getReceived()).isEqualTo(userC);
     }
 }

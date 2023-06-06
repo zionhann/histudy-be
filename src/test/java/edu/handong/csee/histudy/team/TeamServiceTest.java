@@ -101,8 +101,8 @@ public class TeamServiceTest {
         User savedC = userRepository.save(userC);
         User savedA = userRepository.save(userA);
         User savedB = userRepository.save(userB);
-        savedA.add(savedB);
-        savedB.getReceivedRequests().stream().findAny().ifPresent(Friendship::accept);
+        savedA.add(List.of(savedB));
+        savedB.getFriendships().stream().findAny().ifPresent(Friendship::accept);
         List<Long> courseIdxList = List.of(1L, 2L);
         List<Course> courses = courseIdxList.stream()
                 .map(courseRepository::findById)

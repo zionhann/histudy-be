@@ -21,7 +21,7 @@ public class ApplyFormDto {
     private List<CourseDto.CourseInfo> courses;
 
     public ApplyFormDto(User entity) {
-        this.friends = entity.getSentRequests()
+        this.friends = entity.getFriendships()
                 .stream()
                 .map(Friendship::getReceived)
                 .map(UserDto.UserBasic::new)

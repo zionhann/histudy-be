@@ -35,10 +35,7 @@ public class User {
     private List<Participates> participates = new ArrayList<>();
 
     @OneToMany(mappedBy = "sent", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Friendship> sentRequests = new ArrayList<>();
-
-    @OneToMany(mappedBy = "received", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Friendship> receivedRequests = new ArrayList<>();
+    private List<Friendship> friendships = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Choice> choices = new ArrayList<>();
@@ -57,27 +54,27 @@ public class User {
         team.getUsers().add(this);
     }
 
-    public void add(User user) {
-        if (!sentRequests.isEmpty()) {
-            this.sentRequests.clear();
-            user.getReceivedRequests().clear();
-        }
-        Friendship friendship = new Friendship(this, user);
-        this.sentRequests.add(friendship);
-        user.getReceivedRequests().add(friendship);
-    }
-
     public void add(List<User> users) {
-        if (!sentRequests.isEmpty()) {
-            this.sentRequests.clear();
-            users.forEach(u -> u.receivedRequests.clear());
+        if (!friendships.isEmpty()) {
+            List<Friendship> old = new ArrayList<>();
+
+            for (Friendship friendship : friendships) {
+                if (friendship.isAccepted()) friendship.cancel();
+                if (friendship.getSent().equals(this)) old.add(friendship);
+            }
+            old.forEach(Friendship::disconnect);
         }
         users
-                .forEach(u -> {
-                    Friendship friendship = new Friendship(this, u);
-                    this.sentRequests.add(friendship);
-                    u.receivedRequests.add(friendship);
-                });
+                .forEach(u -> u.friendships.stream()
+                        .filter(f -> f.getReceived().equals(this))
+                        .findFirst()
+                        .ifPresentOrElse(
+                                Friendship::accept,
+                                () -> {
+                                    Friendship friendship = new Friendship(this, u);
+                                    friendship.connect();
+                                }
+                        ));
     }
 
     public void select(List<Course> courses) {
@@ -87,8 +84,8 @@ public class User {
         courses
                 .forEach(c -> {
                     Choice choice = new Choice(this, c);
-                    c.getChoices().add(choice);
                     this.choices.add(choice);
+                    c.getChoices().add(choice);
                 });
     }
 

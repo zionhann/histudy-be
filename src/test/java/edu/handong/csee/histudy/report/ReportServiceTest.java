@@ -65,7 +65,7 @@ public class ReportServiceTest {
                 .content("content")
                 .totalMinutes(60L)
                 .participants(List.of("22000328"))
-                .courses(List.of(1L, 2L, 3L))
+                .courses(List.of(course.getId(), courseB.getId(), courseC.getId()))
                 .build();
         User user = User.builder()
                 .id("123")
