@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 public class TeamService {
     private final TeamRepository teamRepository;
     private final UserRepository userRepository;
+    private final UserService userService;
 
     public List<TeamDto> getTeams(String email) {
         List<Team> teams = teamRepository.findAll();
@@ -130,7 +131,7 @@ public class TeamService {
         List<Team> matchedTeams = new ArrayList<>(teamsWithFriends);
         matchedTeams.addAll(teamsWithoutFriends);
 
-        return new TeamDto.MatchResults(matchedTeams, users);
+        return new TeamDto.MatchResults(matchedTeams, userService.getInfoFromUser(users));
     }
 
     public List<Team> matchFriendFirst(List<User> users, AtomicInteger tag) {
