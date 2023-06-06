@@ -77,4 +77,10 @@ public class Friendship {
         received.belongTo(team);
         return team;
     }
+
+    public User getFriendOf(User u) {
+        return (this.sent.equals(u))
+                ? this.received
+                : this.sent;
+    }
 }

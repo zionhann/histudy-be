@@ -92,12 +92,7 @@ public class UserService {
                     friends.addAll(u.getFriendships()
                             .stream()
                             .filter(Friendship::isAccepted)
-                            .map(Friendship::getReceived)
-                            .toList());
-                    friends.addAll(u.getFriendships()
-                            .stream()
-                            .filter(Friendship::isAccepted)
-                            .map(Friendship::getSent)
+                            .map(f -> f.getFriendOf(u))
                             .toList());
                     List<UserDto.UserBasic> buddies = friends.stream().map(f -> UserDto.UserBasic.builder()
                             .id(f.getId())
@@ -114,8 +109,8 @@ public class UserService {
                             .map(Participates::getReport)
                             .mapToLong(Report::getTotalMinutes)
                             .sum();
-                    int tag=0;
-                    if(u.getTeam()!=null)
+                    int tag = 0;
+                    if (u.getTeam() != null)
                         tag = u.getTeam().getTag();
                     return UserDto.UserInfo.builder()
                             .id(u.getId())
