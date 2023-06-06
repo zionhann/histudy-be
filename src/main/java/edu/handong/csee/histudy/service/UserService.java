@@ -132,4 +132,7 @@ public class UserService {
         return userRepository.findUserByEmail(email)
                 .map(UserDto.UserMe::new);
     }
+    public List<UserDto.UserInfo> getUnmatchedUsers() {
+        return getInfoFromUser(userRepository.findUsersByTeamIsNull());
+    }
 }
