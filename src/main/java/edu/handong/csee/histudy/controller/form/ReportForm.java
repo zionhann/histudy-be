@@ -29,7 +29,7 @@ public class ReportForm {
      * Contains student ID
      */
     @Schema(description = "Participant SIDs of the report", type = "array", example = "[\"20200001\", \"20200002\"]")
-    private List<String> participants;
+    private List<String> participants = new ArrayList<>();
 
     /**
      * Contains image URL
@@ -41,7 +41,7 @@ public class ReportForm {
      * Contains course ID
      */
     @Schema(description = "Course IDs of the report", type = "array", example = "[1, 2]")
-    private List<Long> courses;
+    private List<Long> courses = new ArrayList<>();
 
     public Report toEntity(Team team, List<User> participants, List<Course> courses) {
         return Report.builder()
