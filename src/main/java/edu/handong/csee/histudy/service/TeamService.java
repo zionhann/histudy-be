@@ -25,7 +25,8 @@ public class TeamService {
     private final UserService userService;
 
     public List<TeamDto> getTeams(String email) {
-        return teamRepository.findAll()
+        return teamRepository.findAll(
+                Sort.by(Sort.DEFAULT_DIRECTION,"tag"))
                 .stream()
                 .map(TeamDto::new)
                 .toList();
