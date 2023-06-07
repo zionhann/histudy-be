@@ -6,6 +6,7 @@ import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.ApplyFormDto;
 import edu.handong.csee.histudy.dto.CourseIdNameDto;
 import edu.handong.csee.histudy.dto.UserDto;
+import edu.handong.csee.histudy.repository.ChoiceRepository;
 import edu.handong.csee.histudy.repository.CourseRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,6 +25,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
+    private final ChoiceRepository choiceRepository;
 
     public List<User> search(String keyword) {
         return userRepository.findUserByNameOrSidOrEmail(keyword);
@@ -134,5 +137,19 @@ public class UserService {
     }
     public List<UserDto.UserInfo> getUnmatchedUsers() {
         return getInfoFromUser(userRepository.findUsersByTeamIsNull());
+    }
+    public boolean deleteUserForm(String sid) {
+//        Optional<User> user = userRepository.findUserBySid(sid);
+//        user.ifPresent(u -> {
+//            u.getChoices().clear();
+//            u.getFriendships().removeIf(f -> f.getSent().equals(u));
+//            u.add(Collections.emptyList());
+//        });
+        User user = userRepository.findUserBySid(sid).orElse(new User("","","","",Role.USER));
+        if(user.getSid().isEmpty())
+            return false;
+        user.getChoices().clear();
+        user.add(Collections.emptyList());
+        return true;
     }
 }
