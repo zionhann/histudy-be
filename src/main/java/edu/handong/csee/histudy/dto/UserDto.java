@@ -141,5 +141,16 @@ public class UserDto {
             this.name = user.getName();
             this.email = user.getEmail();
         }
+
+    }
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UserEdit {
+        private long id;
+        private int team;
+        private String name;
+        private String sid;
     }
 }
