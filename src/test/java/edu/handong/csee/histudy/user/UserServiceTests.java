@@ -1,5 +1,6 @@
 package edu.handong.csee.histudy.user;
 
+import edu.handong.csee.histudy.controller.form.ApplyForm;
 import edu.handong.csee.histudy.controller.form.ReportForm;
 import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.ReportDto;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +47,8 @@ public class UserServiceTests {
     AuthenticationInterceptor interceptor;
     @Autowired
     private ReportRepository reportRepository;
+    @Autowired
+    private FriendshipRepository friendshipRepository;
 
     @BeforeEach
     void setup() throws IOException {
@@ -100,7 +104,7 @@ public class UserServiceTests {
         User savedC = userRepository.save(userC);
         savedA.add(List.of(savedB));
         savedB.getFriendships().stream().findAny().ifPresent(Friendship::accept);
-        List<Long> courseIdxList = List.of(1L,2L);
+        List<Long> courseIdxList = List.of(1L, 2L);
         List<Course> courses = courseIdxList.stream()
                 .map(courseRepository::findById)
                 .filter(Optional::isPresent)
@@ -111,7 +115,7 @@ public class UserServiceTests {
                 .course(c)
                 .build())).toList();
         savedA.getChoices().addAll(choices);
-        List<Long> courseIdxList2 = List.of(1L,2L,3L);
+        List<Long> courseIdxList2 = List.of(1L, 2L, 3L);
         List<Course> courses2 = courseIdxList2.stream()
                 .map(courseRepository::findById)
                 .filter(Optional::isPresent)
@@ -142,6 +146,7 @@ public class UserServiceTests {
         assertThat(users.get(0).getTotalMinutes()).isEqualTo(60L);
         System.out.println("users = " + users);
     }
+
     @DisplayName("신청한 유저들의 리스트를 받을 수 있어야 한다")
     @Test
     public void testAppliedUsersTest() {
@@ -168,7 +173,7 @@ public class UserServiceTests {
         User savedC = userRepository.save(userC);
         savedA.add(List.of(savedB));
         savedB.getFriendships().stream().findAny().ifPresent(Friendship::accept);
-        List<Long> courseIdxList = List.of(1L,2L,3L);
+        List<Long> courseIdxList = List.of(1L, 2L, 3L);
         List<Course> courses = courseIdxList.stream()
                 .map(courseRepository::findById)
                 .filter(Optional::isPresent)
@@ -179,7 +184,7 @@ public class UserServiceTests {
                 .course(c)
                 .build())).toList();
         savedA.getChoices().addAll(choices);
-        List<Long> courseIdxList2 = List.of(1L,2L,3L);
+        List<Long> courseIdxList2 = List.of(1L, 2L, 3L);
         List<Course> courses2 = courseIdxList2.stream()
                 .map(courseRepository::findById)
                 .filter(Optional::isPresent)
@@ -196,5 +201,88 @@ public class UserServiceTests {
         List<UserDto.UserInfo> users = userService.getAppliedUsers();
         assertThat(users.size()).isEqualTo(2);
         System.out.println("users = " + users);
+    }
+
+    @DisplayName("유저의 신청서를 지울 수 있어야 한다")
+    @Test
+    @Rollback(value = false)
+    public void deleteFormTest() {
+        User userA = User.builder()
+                .sid("22000329")
+                .name("배주영")
+                .email("a@a.com")
+                .role(Role.USER)
+                .build();
+        User userB = User.builder()
+                .sid("22000330")
+                .name("오인혁")
+                .email("a@b.com")
+                .role(Role.USER)
+                .build();
+        User userC = User.builder()
+                .sid("22000332")
+                .name("한시온")
+                .email("a@c.com")
+                .role(Role.USER)
+                .build();
+        User savedA = userRepository.save(userA);
+        User accepted = userRepository.save(userB);
+        User pending = userRepository.save(userC);
+
+//        savedA.add(List.of(savedB,savedC));
+//        savedB.getFriendships().forEach(Friendship::accept);
+//        assertThat(savedA.getFriendships().size()).isEqualTo(2);
+//        assertThat(savedA.getFriendships()
+//                .stream()
+//                .filter(f -> f.getStatus()==FriendshipStatus.PENDING)
+//                .toList()
+//                .get(0)
+//        ).isEqualTo(savedC.getFriendships()
+//                .stream()
+//                .filter(f -> f.getReceived().equals(this))
+//                .toList().get(0));
+        ApplyForm form = ApplyForm.builder()
+                                .friendIds(List.of(accepted.getSid(),pending.getSid()))
+                                .courseIds(List.of(1L,1L,2L))
+                                .build();
+        ApplyForm form2 = ApplyForm.builder()
+                                .friendIds(List.of(savedA.getSid()))
+                                .courseIds(List.of(2L,2L,2L))
+                                .build();
+        userService.apply(form, savedA.getEmail());
+        userService.apply(form2,accepted.getEmail());
+        assertThat(accepted.getFriendships()
+                .stream()
+                .filter(Friendship::isAccepted)
+                .toList()
+                .size()
+        ).isNotZero();
+        userService.deleteUserForm(savedA.getSid());
+        assertThat(accepted.getFriendships()
+                .stream()
+                .filter(Friendship::isAccepted)
+                .toList()
+                .size()
+        ).isZero();
+        assertThat(accepted.getFriendships()
+                .stream()
+                .filter(f -> f.getStatus() == FriendshipStatus.PENDING)
+                .toList()
+                .size()
+        ).isNotZero();
+        List<Friendship> sentFromA = friendshipRepository.findAll();
+//        assertThat(friendshipRepository.findAll()
+//                .stream()
+//                .filter(f -> f.getSent().equals(savedA))
+//                .toList()
+//                .size()
+//        ).isZero();
+//        assertThat(choiceRepository.findAll()
+//                .stream()
+//                .filter(c -> c.getUser().equals(savedA))
+//                .toList()
+//                .size()
+//        ).isZero();
+        assertThat(savedA.getChoices().size()).isZero();
     }
 }
