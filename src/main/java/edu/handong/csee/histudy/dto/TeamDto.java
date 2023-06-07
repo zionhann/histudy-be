@@ -17,6 +17,8 @@ public class TeamDto {
     @Schema(description = "Team ID", example = "1", type = "number")
     private Long group; // id
 
+    private int tag;
+
     @Schema(description = "Team members", type = "array")
     private List<UserDto.UserInfo> members;
 
@@ -28,6 +30,7 @@ public class TeamDto {
 
     public TeamDto(Team team) {
         this.group = team.getId();
+        this.tag = team.getTag();
         this.members = team.getUsers().stream()
                 .map(UserDto.UserInfo::new).toList();
         this.reports = team.getReports().size();
