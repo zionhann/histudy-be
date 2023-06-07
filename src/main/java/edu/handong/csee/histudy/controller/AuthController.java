@@ -30,10 +30,11 @@ public class AuthController {
 
     @GetMapping("/login")
     public ResponseEntity<UserDto.UserLogin> login(@RequestParam String sub) {
-        User userOr = userService.isPresent(sub);
+        Optional<User> userOr = userService.isPresent(sub);
 
-        if (!userOr.getSub().isEmpty()) {
-            JwtPair tokens = jwtService.issueToken(userOr.getEmail(), userOr.getName());
+        if (userOr.isPresent()) {
+            User user = userOr.get();
+            JwtPair tokens = jwtService.issueToken(user.getEmail(), user.getName());
 
             return ResponseEntity.ok(
                     UserDto.UserLogin.builder()

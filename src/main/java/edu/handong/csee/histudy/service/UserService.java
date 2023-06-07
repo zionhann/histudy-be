@@ -64,6 +64,7 @@ public class UserService {
                     .sid(userInfo.getSid())
                     .email(userInfo.getEmail())
                     .name(userInfo.getName())
+                    .sub(userInfo.getSub())
                     .role(Role.USER)
                     .build();
             userRepository.save(user);
@@ -72,8 +73,8 @@ public class UserService {
         return false;
     }
 
-    public User isPresent(String sub) {
-        return userRepository.findUserBySub(sub).orElse(new User("","","","",Role.USER));
+    public Optional<User> isPresent(String sub) {
+        return userRepository.findUserBySub(sub);
     }
 
     public List<UserDto.UserInfo> getUsers(String email) {
