@@ -72,8 +72,8 @@ public class UserService {
         return false;
     }
 
-    public Optional<User> isPresent(String sub) {
-        return userRepository.findUserBySub(sub);
+    public User isPresent(String sub) {
+        return userRepository.findUserBySub(sub).orElse(new User("","","","",Role.USER));
     }
 
     public List<UserDto.UserInfo> getUsers(String email) {
