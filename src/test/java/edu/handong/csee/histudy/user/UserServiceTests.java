@@ -256,4 +256,28 @@ public class UserServiceTests {
         ).isNotZero();
         assertThat(savedA.getChoices().size()).isZero();
     }
+    @DisplayName("유저의 정보를 수정할 수 있어야한다")
+    @Test
+    public void userEditTest() {
+        User user = User.builder()
+                .sid("22000329")
+                .name("배주영")
+                .email("a@a.com")
+                .role(Role.USER)
+                .build();
+        User saved = userRepository.save(user);
+        Team team = teamRepository.save(new Team(111));
+        Team newTeam = teamRepository.save(new Team(222));
+        saved.belongTo(team);
+        UserDto.UserEdit dto = UserDto.UserEdit.builder()
+                                                .id(saved.getId())
+                                                .sid("12345678")
+                                                .name("조용히해라")
+                                                .team(222)
+                                                .build();
+        UserDto.UserInfo edited = userService.editUser(dto);
+        assertThat(edited.getName()).isEqualTo("조용히해라");
+        assertThat(edited.getSid()).isEqualTo("12345678");
+        assertThat(edited.getGroup()).isEqualTo(newTeam.getTag());
+    }
 }

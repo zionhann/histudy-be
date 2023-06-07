@@ -1,5 +1,6 @@
 package edu.handong.csee.histudy.domain;
 
+import edu.handong.csee.histudy.dto.UserDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -94,5 +95,12 @@ public class User {
 
     public void removeTeam() {
         this.team = null;
+    }
+
+    public void edit(UserDto.UserEdit dto,Team team) {
+        this.sid = dto.getSid();
+        this.name = dto.getName();
+        this.team = team;
+        team.getUsers().add(this);
     }
 }

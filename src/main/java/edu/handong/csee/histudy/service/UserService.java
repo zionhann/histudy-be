@@ -4,11 +4,13 @@ import edu.handong.csee.histudy.controller.form.ApplyForm;
 import edu.handong.csee.histudy.controller.form.UserInfo;
 import edu.handong.csee.histudy.domain.Course;
 import edu.handong.csee.histudy.domain.Role;
+import edu.handong.csee.histudy.domain.Team;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.ApplyFormDto;
 import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.repository.ChoiceRepository;
 import edu.handong.csee.histudy.repository.CourseRepository;
+import edu.handong.csee.histudy.repository.TeamRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
     private final ChoiceRepository choiceRepository;
+    private final TeamRepository teamRepository;
 
     public List<User> search(String keyword) {
         return userRepository.findUserByNameOrSidOrEmail(keyword);
@@ -113,6 +116,12 @@ public class UserService {
         user.getChoices().clear();
         user.add(Collections.emptyList());
 
+        return new UserDto.UserInfo(user);
+    }
+    public UserDto.UserInfo editUser(UserDto.UserEdit dto) {
+        User user = userRepository.findById(dto.getId()).orElseThrow();
+        Team team = teamRepository.findByTag(dto.getTeam()).orElseThrow();
+        user.edit(dto,team);
         return new UserDto.UserInfo(user);
     }
 }

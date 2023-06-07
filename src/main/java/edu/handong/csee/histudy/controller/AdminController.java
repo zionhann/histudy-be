@@ -55,4 +55,8 @@ public class AdminController {
     public UserDto.UserInfo deleteForm(@RequestParam String sid) {
         return userService.deleteUserForm(sid);
     }
+    @PostMapping("/edit-user")
+    public UserDto.UserInfo editUser(@RequestBody UserDto.UserEdit dto) {
+        return userService.editUser(dto);
+    }
 }
