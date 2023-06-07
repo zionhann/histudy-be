@@ -1,5 +1,6 @@
 package edu.handong.csee.histudy.dto;
 
+import edu.handong.csee.histudy.domain.Friendship;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.jwt.JwtPair;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -77,6 +78,24 @@ public class UserDto {
 
         @Schema(description = "student's total minutes studied", type = "number")
         private long totalMinutes;
+
+        public UserInfo(User user) {
+            this.id = user.getId();
+            this.name = user.getName();
+            this.sid = user.getSid();
+            this.group = (user.getTeam() == null) ? 0 : user.getTeam().getTag();
+            this.friends = user.getFriendships().stream()
+                    .filter(Friendship::isAccepted)
+                    .map(f -> f.getFriendOf(user))
+                    .map(UserBasic::new)
+                    .toList();
+            this.courses = user.getChoices().stream()
+                    .map(c -> new CourseIdNameDto(c.getCourse()))
+                    .toList();
+            this.totalMinutes = user.getParticipates().stream()
+                    .mapToLong(p -> p.getReport().getTotalMinutes())
+                    .sum();
+        }
     }
 
     @Builder

@@ -2,9 +2,10 @@ package edu.handong.csee.histudy.service;
 
 import edu.handong.csee.histudy.controller.form.ApplyForm;
 import edu.handong.csee.histudy.controller.form.UserInfo;
-import edu.handong.csee.histudy.domain.*;
+import edu.handong.csee.histudy.domain.Course;
+import edu.handong.csee.histudy.domain.Role;
+import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.ApplyFormDto;
-import edu.handong.csee.histudy.dto.CourseIdNameDto;
 import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.repository.ChoiceRepository;
 import edu.handong.csee.histudy.repository.CourseRepository;
@@ -13,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -89,41 +89,8 @@ public class UserService {
     public List<UserDto.UserInfo> getInfoFromUser(List<User> users) {
         return users
                 .stream()
-                .map(u -> {
-                    List<User> friends = new ArrayList<>();
-                    friends.addAll(u.getFriendships()
-                            .stream()
-                            .filter(Friendship::isAccepted)
-                            .map(f -> f.getFriendOf(u))
-                            .toList());
-                    List<UserDto.UserBasic> buddies = friends.stream().map(f -> UserDto.UserBasic.builder()
-                            .id(f.getId())
-                            .sid(f.getSid())
-                            .name(f.getName())
-                            .build()).toList();
-                    List<CourseIdNameDto> courses = u.getChoices()
-                            .stream()
-                            .map(Choice::getCourse)
-                            .map(Course::toIdNameDto)
-                            .toList();
-                    long totalMinutes = u.getParticipates()
-                            .stream()
-                            .map(Participates::getReport)
-                            .mapToLong(Report::getTotalMinutes)
-                            .sum();
-                    int tag = 0;
-                    if (u.getTeam() != null)
-                        tag = u.getTeam().getTag();
-                    return UserDto.UserInfo.builder()
-                            .id(u.getId())
-                            .sid(u.getSid())
-                            .name(u.getName())
-                            .group(tag)
-                            .friends(buddies)
-                            .courses(courses)
-                            .totalMinutes(totalMinutes)
-                            .build();
-                }).toList();
+                .map(UserDto.UserInfo::new)
+                .toList();
     }
 
     public Optional<ApplyFormDto> getUserInfo(String email) {
@@ -135,21 +102,17 @@ public class UserService {
         return userRepository.findUserByEmail(email)
                 .map(UserDto.UserMe::new);
     }
+
     public List<UserDto.UserInfo> getUnmatchedUsers() {
         return getInfoFromUser(userRepository.findUsersByTeamIsNull());
     }
-    public boolean deleteUserForm(String sid) {
-//        Optional<User> user = userRepository.findUserBySid(sid);
-//        user.ifPresent(u -> {
-//            u.getChoices().clear();
-//            u.getFriendships().removeIf(f -> f.getSent().equals(u));
-//            u.add(Collections.emptyList());
-//        });
-        User user = userRepository.findUserBySid(sid).orElse(new User("","","","",Role.USER));
-        if(user.getSid().isEmpty())
-            return false;
+
+    public UserDto.UserInfo deleteUserForm(String sid) {
+        User user = userRepository.findUserBySid(sid).orElseThrow();
+
         user.getChoices().clear();
         user.add(Collections.emptyList());
-        return true;
+
+        return new UserDto.UserInfo(user);
     }
 }

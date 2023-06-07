@@ -1,6 +1,9 @@
 package edu.handong.csee.histudy.service;
 
-import edu.handong.csee.histudy.domain.*;
+import edu.handong.csee.histudy.domain.Course;
+import edu.handong.csee.histudy.domain.Friendship;
+import edu.handong.csee.histudy.domain.Team;
+import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.*;
 import edu.handong.csee.histudy.repository.TeamRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
@@ -25,40 +28,10 @@ public class TeamService {
     private final UserService userService;
 
     public List<TeamDto> getTeams(String email) {
-        List<Team> teams = teamRepository.findAll();
-        List<TeamDto> result = new ArrayList<>();
-        teams.forEach(t -> {
-            List<User> users = t.getUsers();
-            List<UserDto.UserInfo> userInfos = users.stream()
-                    .map(u -> {
-                        List<User> friends = new ArrayList<>();
-                        friends.addAll(u.getFriendships()
-                                .stream()
-                                .filter(Friendship::isAccepted)
-                                .map(f -> f.getFriendOf(u))
-                                .toList());
-                        List<UserDto.UserBasic> buddies = friends.stream().map(f -> UserDto.UserBasic.builder()
-                                .id(f.getId())
-                                .sid(f.getSid())
-                                .name(f.getName())
-                                .build()).toList();
-                        List<CourseIdNameDto> courses = u.getChoices()
-                                .stream()
-                                .map(Choice::getCourse)
-                                .map(Course::toIdNameDto)
-                                .toList();
-                        return UserDto.UserInfo.builder()
-                                .id(u.getId())
-                                .sid(u.getSid())
-                                .name(u.getName())
-                                .friends(buddies)
-                                .courses(courses)
-                                .group(u.getTeam().getTag())
-                                .build();
-                    }).toList();
-            result.add(new TeamDto(t.getId(), userInfos, t.getReports().size(), t.getTotalMinutes()));
-        });
-        return result;
+        return teamRepository.findAll()
+                .stream()
+                .map(TeamDto::new)
+                .toList();
     }
 
     public int deleteTeam(TeamIdDto dto, String email) {

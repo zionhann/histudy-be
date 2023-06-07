@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.handong.csee.histudy.controller.UserController;
 import edu.handong.csee.histudy.controller.form.ApplyForm;
 import edu.handong.csee.histudy.domain.Course;
+import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.ApplyFormDto;
 import edu.handong.csee.histudy.dto.UserDto;
@@ -33,6 +34,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -205,5 +207,51 @@ public class UserControllerTests {
         // then
         assertEquals("test", res.getName());
         assertEquals("test@example.com", res.getEmail());
+    }
+
+    @DisplayName("유저의 신청폼을 삭제한다.")
+    @Test
+    void UserControllerTests_212() throws Exception {
+        // given
+        User user = userRepository.save(User.builder()
+                .sid("1234")
+                .role(Role.USER)
+                .email("조용히해라")
+                .name("한시온")
+                .build());
+        User friend = userRepository.save(User.builder()
+                .sid("12321")
+                .role(Role.USER)
+                .email("배@email.com")
+                .name("배주영")
+                .build());
+        User friend2 = userRepository.save(User.builder()
+                .sid("345")
+                .name("오인혁")
+                .email("test3@example.com")
+                .build());
+        Course course = courseRepository.save(Course.builder()
+                .name("courseName")
+                .build());
+
+        user.add(List.of(friend, friend2));
+        friend.add(List.of(user));
+        user.select(List.of(course, course, course));
+
+        // when
+        MvcResult mvcResult = mvc
+                .perform(delete("/api/users/form")
+                        .queryParam("sid", user.getSid()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        UserDto.UserInfo res = mapper.readValue(
+                mvcResult.getResponse().getContentAsString(),
+                UserDto.UserInfo.class);
+
+        // then
+        assertEquals(0, res.getFriends().size());
+        assertEquals(0, res.getCourses().size());
     }
 }
