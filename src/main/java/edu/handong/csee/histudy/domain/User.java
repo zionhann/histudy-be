@@ -63,7 +63,7 @@ public class User {
             List<Friendship> old = new ArrayList<>();
 
             for (Friendship friendship : friendships) {
-                if (friendship.isAccepted()) friendship.cancel();
+//                if (friendship.isAccepted()) friendship.cancel();
                 if (friendship.getSent().equals(this)) old.add(friendship);
             }
             old.forEach(Friendship::disconnect);
