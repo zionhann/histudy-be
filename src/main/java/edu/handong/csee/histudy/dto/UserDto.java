@@ -148,7 +148,7 @@ public class UserDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class UserEdit {
-        private long id;
+        private Long id;
         private int team;
         private String name;
         private String sid;
