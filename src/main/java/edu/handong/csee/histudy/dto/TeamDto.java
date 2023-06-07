@@ -1,7 +1,7 @@
 package edu.handong.csee.histudy.dto;
 
+import edu.handong.csee.histudy.domain.Report;
 import edu.handong.csee.histudy.domain.Team;
-import edu.handong.csee.histudy.domain.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -25,6 +25,15 @@ public class TeamDto {
 
     @Schema(description = "Total time studied", type = "number", example = "120")
     private long times; // totalMinutes
+
+    public TeamDto(Team team) {
+        this.group = team.getId();
+        this.members = team.getUsers().stream()
+                .map(UserDto.UserInfo::new).toList();
+        this.reports = team.getReports().size();
+        this.times = team.getReports().stream()
+                .mapToLong(Report::getTotalMinutes).sum();
+    }
 
 
     @Getter

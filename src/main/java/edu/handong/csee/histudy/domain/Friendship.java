@@ -44,8 +44,14 @@ public class Friendship {
     }
 
     public void disconnect() {
-        if (this.status == FriendshipStatus.PENDING) {
-            sent.getFriendships().remove(this);
+        sent.getFriendships().remove(this);
+        if (this.status == FriendshipStatus.ACCEPTED) {
+            this.status = FriendshipStatus.PENDING;
+            User temp = sent;
+            sent = received;
+            received = temp;
+        }
+        else {
             received.getFriendships().remove(this);
         }
     }
