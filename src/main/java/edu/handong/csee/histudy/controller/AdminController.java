@@ -50,4 +50,9 @@ public class AdminController {
     public ResponseEntity<List<UserDto.UserInfo>> getUnmatchedUsers() {
         return ResponseEntity.ok(userService.getUnmatchedUsers());
     }
+
+    @DeleteMapping("/form")
+    public UserDto.UserInfo deleteForm(@RequestParam String sid) {
+        return userService.deleteUserForm(sid);
+    }
 }

@@ -74,9 +74,4 @@ public class UserController {
     public List<UserDto.UserInfo> userList(@RequestAttribute Claims claims) {
         return userService.getUsers(claims.getSubject());
     }
-
-    @DeleteMapping("/form")
-    public UserDto.UserInfo deleteForm (@RequestParam String sid) {
-    	return userService.deleteUserForm(sid);
-    }
 }
