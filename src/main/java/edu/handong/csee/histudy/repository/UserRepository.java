@@ -26,4 +26,6 @@ public interface UserRepository extends JpaRepository<User, String> {
     @Query("select u from User u where u.team is null")
     List<User> findUsersByTeamIsNull();
     Optional<User> findUserBySub(String sub);
+
+    Optional<User> findById(long id);
 }
