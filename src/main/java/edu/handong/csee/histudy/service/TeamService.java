@@ -12,10 +12,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -58,10 +55,13 @@ public class TeamService {
 
     public List<UserDto.UserMe> getTeamUsers(String email) {
         User user = userRepository.findUserByEmail(email).orElseThrow();
-        return user.getTeam().getUsers()
-                .stream()
-                .map(UserDto.UserMe::new)
-                .toList();
+        if(user.getTeam()!=null) {
+            return user.getTeam().getUsers()
+                    .stream()
+                    .map(UserDto.UserMe::new)
+                    .toList();
+        }
+        else return Collections.emptyList();
     }
 
     public TeamRankDto getAllTeams() {
