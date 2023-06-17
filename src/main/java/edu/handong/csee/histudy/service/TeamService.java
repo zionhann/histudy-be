@@ -139,7 +139,7 @@ public class TeamService {
                         // [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] -> [1, 2, 3, 4, 5], [6, 7, 8, 9, 10], [11]
                         List<User> subGroup = group.subList(0, 5);
 
-                        // Create a team with 3 ~ 5 elements
+                        // Create a team with only 5 elements
                         Team team = new Team(tag.getAndIncrement());
                         team.enroll(subGroup);
                         teamsWithoutFriends.add(team);
