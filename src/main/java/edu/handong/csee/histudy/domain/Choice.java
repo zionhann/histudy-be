@@ -1,7 +1,10 @@
 package edu.handong.csee.histudy.domain;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
@@ -14,7 +17,7 @@ public class Choice {
     private User user;
     @ManyToOne(fetch = FetchType.LAZY)
     private Course course;
-  
+
     @Builder
     public Choice(User user, Course course) {
         this.user = user;

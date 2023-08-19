@@ -18,12 +18,17 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${custom.origin.allowed}")
     private String client;
 
+    @Value("${custom.path-patterns.exclude}")
+    private String[] excludePathPatterns;
+
+    @Value("${custom.path-patterns.include}")
+    private String[] includePathPatterns;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new AuthenticationInterceptor(jwtService))
-                .excludePathPatterns("/api/auth/**", "/api/users")
-                .excludePathPatterns("/swagger-ui/**", "/v3/api-docs/**")
-                .excludePathPatterns("/api/public/**");
+                .excludePathPatterns(excludePathPatterns)
+                .addPathPatterns(includePathPatterns);
     }
 
     @Override
