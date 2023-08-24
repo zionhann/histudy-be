@@ -1,7 +1,9 @@
 package edu.handong.csee.histudy.algo;
 
 import edu.handong.csee.histudy.domain.*;
+import edu.handong.csee.histudy.dto.TeamDto;
 import edu.handong.csee.histudy.repository.CourseRepository;
+import edu.handong.csee.histudy.repository.TeamRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import edu.handong.csee.histudy.service.TeamService;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,11 +11,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,53 +36,49 @@ public class MatchingAlgorithmTests {
     @Autowired
     CourseRepository courseRepository;
 
-//    @BeforeEach
+    @Autowired
+    TeamRepository teamRepository;
+
+    @BeforeEach
     void init() {
         Random random = new Random();
         String[] names = {"김가영", "이민준", "박서연", "최예준", "정지우", "황하윤", "서재민", "윤지윤", "박민서", "한민재"};
 
-        for (int i = 0; i <= 100; i++) {
+        for (int i = 1; i <= 300; i++) {
             String sub = "SUB_" + i;
 
             // Generate a random SID
             int sidPrefix = random.nextInt(5);  // Randomly selects 0, 1, 2, 3, or 4
-            String sid = "";
-            switch (sidPrefix) {
-                case 0:
-                    sid = "21800";
-                    break;
-                case 1:
-                    sid = "21900";
-                    break;
-                case 2:
-                    sid = "22000";
-                    break;
-                case 3:
-                    sid = "22100";
-                    break;
-                case 4:
-                    sid = "22200";
-                    break;
-            }
-            sid += String.format("%03d", random.nextInt(1000));
-
-            // Generate an email with the SID as the prefix
-            String emailPrefix = sid;
-
-            // Generate a random email domain
-            String emailDomain = "@test.com";
-
-            // Generate a random name
+            String sid = switch (sidPrefix) {
+                case 0 -> "21800";
+                case 1 -> "21900";
+                case 2 -> "22000";
+                case 3 -> "22100";
+                case 4 -> "22200";
+                default -> "";
+            };
+            sid += String.format("%03d", i);
+            String email = sid + "@test.com";
             String name = names[random.nextInt(names.length)];
-
-            // Combine the email prefix and domain
-            String email = emailPrefix + emailDomain;
-
             Role role = Role.USER;
 
             User user = new User(sub, sid, email, name, role);
             userRepository.save(user);
         }
+        List<User> users = userRepository.findAll();
+        List<Course> courses = courseRepository.saveAll(getCourses());
+
+        for (int i = 0; i < users.size(); i++) {
+            User currentUser = users.get(i);
+            currentUser.select(List.of(courses.get(random.nextInt(courses.size())), courses.get(random.nextInt(courses.size())), courses.get(random.nextInt(courses.size()))));
+
+            if (random.nextBoolean()) {
+                currentUser.add(List.of(users.get(random.nextInt(users.size())), users.get(random.nextInt(users.size())), users.get(random.nextInt(users.size()))));
+            }
+        }
+    }
+
+    private static List<Course> getCourses() {
 
         Course course1 = new Course("Introduction to Computer Science", "CS101", "John Smith", 2023, 1);
         Course course2 = new Course("Data Structures", "CS201", "Emily Johnson", 2023, 1);
@@ -114,29 +112,17 @@ public class MatchingAlgorithmTests {
         courseList.add(course13);
         courseList.add(course14);
         courseList.add(course15);
-
-        List<User> users = userRepository.findAll();
-        List<Course> courses = courseRepository.saveAll(courseList);
-
-
-        for (int i = 0; i < users.size(); i++) {
-            User currentUser = users.get(i);
-
-            currentUser.select(List.of(courses.get(random.nextInt(courses.size())), courses.get(random.nextInt(courses.size())), courses.get(random.nextInt(courses.size()))));
-
-            if (random.nextBoolean()) {
-                currentUser.add(List.of(users.get(random.nextInt(users.size())), users.get(random.nextInt(users.size())), users.get(random.nextInt(users.size()))));
-            }
-        }
-        printUsers();
+        return courseList;
     }
 
-    @Test
-    @Rollback(value = false)
-    void run() {
-        init();
-    }
-
+    /**
+     * Enable only when QA testing is needed.
+     */
+//    @Test
+//    @Rollback(value = false)
+//    void run() {
+//        init();
+//    }
     @DisplayName("팀당 인원 수는 3명 이상 6명 미만이다.")
     @Test
     void MatchingAlgorithmTests_13() {
@@ -154,7 +140,57 @@ public class MatchingAlgorithmTests {
         });
     }
 
-    void printUsers() {
+    @DisplayName("MatchingAlgorithmTests_140")
+    @Test
+    void MatchingAlgorithmTests_140() {
+        // Given
+        TeamDto.MatchResults results = teams.matchTeam();
+        List<User> all = userRepository.findAll();
+        AtomicInteger counter = new AtomicInteger(1);
+
+        all
+                .stream()
+                .filter(usr -> usr.getTeam() != null)
+                .sorted(Comparator.comparingInt(usr -> usr.getTeam().getTag()))
+                .forEach(usr -> {
+                    Integer tag = usr.getTeam().getTag();
+                    System.out.println(counter.getAndIncrement() + ". " + usr.getName() + ": " + "Team " + tag);
+                });
+
+        System.out.println("all.size() = " + all.size());
+        System.out.println("matched Teams = " + results.getMatchedTeams().size());
+        System.out.println("results.getUnmatchedUsers().size() = " + results.getUnmatchedUsers().size());
+
+        // When
+
+        // Then
+    }
+
+    @DisplayName("MatchingAlgorithmTests_165")
+    @Test
+    void MatchingAlgorithmTests_165() {
+        // Given
+        TeamDto.MatchResults results = teams.matchTeam();
+
+        // When
+        results
+                .getMatchedTeams()
+                .stream().sorted(Comparator.comparingInt(TeamDto.TeamMatching::getTag))
+                .forEach(team -> {
+                    System.out.println("========================================");
+                    System.out.println("Team " + team.getTag() + ":");
+                    System.out.println("Members:");
+                    team.getUsers().forEach(user -> System.out.println(user.getName()));
+                    System.out.println("========================================");
+                });
+        System.out.println("results.getUnmatchedUsers().size() = " + results.getUnmatchedUsers().size());
+
+        // Then
+    }
+
+    @DisplayName("MatchingAlgorithmTests_186")
+    @Test
+    void MatchingAlgorithmTests_186() {
         List<User> all = userRepository.findAll();
         System.out.println("========================================");
         System.out.println("Members:");
@@ -165,10 +201,16 @@ public class MatchingAlgorithmTests {
         System.out.println("========================================");
     }
 
-    void printUsers(List<Team> teams, String message) {
-        teams.forEach(team -> {
+    @DisplayName("MatchingAlgorithmTests_199")
+    @Test
+    void MatchingAlgorithmTests_199() {
+        // Given
+        teams.matchTeam();
+        List<Team> all = teamRepository.findAll();
+
+        all.forEach(team -> {
             System.out.println("========================================");
-            System.out.println(message + " " + team.getTag() + ":");
+            System.out.println("Team " + team.getTag() + ":");
             System.out.println("Members:");
             team.getUsers().forEach(user -> {
                 System.out.println(user.getName() +
