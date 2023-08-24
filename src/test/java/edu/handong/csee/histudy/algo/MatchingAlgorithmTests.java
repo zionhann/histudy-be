@@ -9,6 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,13 +34,48 @@ public class MatchingAlgorithmTests {
     @Autowired
     CourseRepository courseRepository;
 
-    @BeforeEach
+//    @BeforeEach
     void init() {
+        Random random = new Random();
+        String[] names = {"김가영", "이민준", "박서연", "최예준", "정지우", "황하윤", "서재민", "윤지윤", "박민서", "한민재"};
+
         for (int i = 0; i <= 100; i++) {
             String sub = "SUB_" + i;
-            String sid = "SID_" + i;
-            String email = "EMAIL_" + i + "@test.com";
-            String name = "test" + i;
+
+            // Generate a random SID
+            int sidPrefix = random.nextInt(5);  // Randomly selects 0, 1, 2, 3, or 4
+            String sid = "";
+            switch (sidPrefix) {
+                case 0:
+                    sid = "21800";
+                    break;
+                case 1:
+                    sid = "21900";
+                    break;
+                case 2:
+                    sid = "22000";
+                    break;
+                case 3:
+                    sid = "22100";
+                    break;
+                case 4:
+                    sid = "22200";
+                    break;
+            }
+            sid += String.format("%03d", random.nextInt(1000));
+
+            // Generate an email with the SID as the prefix
+            String emailPrefix = sid;
+
+            // Generate a random email domain
+            String emailDomain = "@test.com";
+
+            // Generate a random name
+            String name = names[random.nextInt(names.length)];
+
+            // Combine the email prefix and domain
+            String email = emailPrefix + emailDomain;
+
             Role role = Role.USER;
 
             User user = new User(sub, sid, email, name, role);
@@ -82,7 +118,6 @@ public class MatchingAlgorithmTests {
         List<User> users = userRepository.findAll();
         List<Course> courses = courseRepository.saveAll(courseList);
 
-        Random random = new Random();
 
         for (int i = 0; i < users.size(); i++) {
             User currentUser = users.get(i);
@@ -94,6 +129,12 @@ public class MatchingAlgorithmTests {
             }
         }
         printUsers();
+    }
+
+    @Test
+    @Rollback(value = false)
+    void run() {
+        init();
     }
 
     @DisplayName("팀당 인원 수는 3명 이상 6명 미만이다.")
