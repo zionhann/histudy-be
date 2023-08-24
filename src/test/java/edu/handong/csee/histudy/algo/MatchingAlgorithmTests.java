@@ -9,7 +9,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,7 +33,7 @@ public class MatchingAlgorithmTests {
     @Autowired
     CourseRepository courseRepository;
 
-//    @BeforeEach
+    @BeforeEach
     void init() {
         Random random = new Random();
         String[] names = {"김가영", "이민준", "박서연", "최예준", "정지우", "황하윤", "서재민", "윤지윤", "박민서", "한민재"};
@@ -44,24 +43,14 @@ public class MatchingAlgorithmTests {
 
             // Generate a random SID
             int sidPrefix = random.nextInt(5);  // Randomly selects 0, 1, 2, 3, or 4
-            String sid = "";
-            switch (sidPrefix) {
-                case 0:
-                    sid = "21800";
-                    break;
-                case 1:
-                    sid = "21900";
-                    break;
-                case 2:
-                    sid = "22000";
-                    break;
-                case 3:
-                    sid = "22100";
-                    break;
-                case 4:
-                    sid = "22200";
-                    break;
-            }
+            String sid = switch (sidPrefix) {
+                case 0 -> "21800";
+                case 1 -> "21900";
+                case 2 -> "22000";
+                case 3 -> "22100";
+                case 4 -> "22200";
+                default -> "";
+            };
             sid += String.format("%03d", random.nextInt(1000));
 
             // Generate an email with the SID as the prefix
@@ -81,7 +70,22 @@ public class MatchingAlgorithmTests {
             User user = new User(sub, sid, email, name, role);
             userRepository.save(user);
         }
+        List<User> users = userRepository.findAll();
+        List<Course> courses = courseRepository.saveAll(getCourses());
 
+        for (int i = 0; i < users.size(); i++) {
+            User currentUser = users.get(i);
+
+            currentUser.select(List.of(courses.get(random.nextInt(courses.size())), courses.get(random.nextInt(courses.size())), courses.get(random.nextInt(courses.size()))));
+
+            if (random.nextBoolean()) {
+                currentUser.add(List.of(users.get(random.nextInt(users.size())), users.get(random.nextInt(users.size())), users.get(random.nextInt(users.size()))));
+            }
+        }
+        printUsers();
+    }
+
+    private static List<Course> getCourses() {
         Course course1 = new Course("Introduction to Computer Science", "CS101", "John Smith", 2023, 1);
         Course course2 = new Course("Data Structures", "CS201", "Emily Johnson", 2023, 1);
         Course course3 = new Course("Algorithms", "CS301", "David Lee", 2023, 2);
@@ -114,28 +118,17 @@ public class MatchingAlgorithmTests {
         courseList.add(course13);
         courseList.add(course14);
         courseList.add(course15);
-
-        List<User> users = userRepository.findAll();
-        List<Course> courses = courseRepository.saveAll(courseList);
-
-
-        for (int i = 0; i < users.size(); i++) {
-            User currentUser = users.get(i);
-
-            currentUser.select(List.of(courses.get(random.nextInt(courses.size())), courses.get(random.nextInt(courses.size())), courses.get(random.nextInt(courses.size()))));
-
-            if (random.nextBoolean()) {
-                currentUser.add(List.of(users.get(random.nextInt(users.size())), users.get(random.nextInt(users.size())), users.get(random.nextInt(users.size()))));
-            }
-        }
-        printUsers();
+        return courseList;
     }
 
-    @Test
-    @Rollback(value = false)
-    void run() {
-        init();
-    }
+    /**
+     * Enable only when QA testing is needed.
+     */
+//    @Test
+//    @Rollback(value = false)
+//    void run() {
+//        init();
+//    }
 
     @DisplayName("팀당 인원 수는 3명 이상 6명 미만이다.")
     @Test
