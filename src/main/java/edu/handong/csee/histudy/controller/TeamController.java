@@ -8,9 +8,11 @@ import edu.handong.csee.histudy.service.CourseService;
 import edu.handong.csee.histudy.service.ReportService;
 import edu.handong.csee.histudy.service.TeamService;
 import io.jsonwebtoken.Claims;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
+@Tag(name = "스터디 그룹 API")
+@SecurityRequirement(name = "General")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/team")
@@ -27,18 +31,14 @@ public class TeamController {
     private final CourseService courseService;
     private final TeamService teamService;
 
-    @Parameters({
-            @Parameter(in = ParameterIn.HEADER, name = "Authorization",
-                    required = true, example = "Bearer access_token")
-    })
+    @Operation(summary = "그룹 스터디 보고서 생성")
     @PostMapping("/reports")
     public ReportDto.ReportInfo createReport(@RequestBody ReportForm form,
                                              @RequestAttribute Claims claims) {
         return reportService.createReport(form, claims.getSubject());
     }
 
-    @Parameter(in = ParameterIn.HEADER, name = "Authorization",
-            example = "Bearer access_token", required = true)
+    @Operation(summary = "그룹 보고서 목록 조회")
     @GetMapping("/reports")
     public ReportDto getMyGroupReports(@RequestAttribute Claims claims) {
         List<ReportDto.ReportInfo> reports = reportService.getReports(claims.getSubject());
@@ -46,8 +46,7 @@ public class TeamController {
         return new ReportDto(reports);
     }
 
-    @Parameter(in = ParameterIn.HEADER, name = "Authorization",
-            example = "Bearer access_token", required = true)
+    @Operation(summary = "그룹 특정 보고서 조회")
     @GetMapping("/reports/{reportId}")
     public ResponseEntity<ReportDto.ReportInfo> getReport(@PathVariable Long reportId) {
         Optional<ReportDto.ReportInfo> reportsOr = reportService.getReport(reportId);
@@ -57,10 +56,8 @@ public class TeamController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @Parameters({
-            @Parameter(name = "Authorization", in = ParameterIn.HEADER, example = "Bearer access_token"),
-            @Parameter(name = "reportId", in = ParameterIn.PATH, example = "1")
-    })
+    @Operation(summary = "그룹 특정 보고서 수정")
+    @Parameter(name = "reportId", in = ParameterIn.PATH, example = "1")
     @PatchMapping("/reports/{reportId}")
     public ResponseEntity<String> updateReport(
             @PathVariable Long reportId,
@@ -70,10 +67,8 @@ public class TeamController {
                 : ResponseEntity.notFound().build();
     }
 
-    @Parameters({
-            @Parameter(name = "Authorization", in = ParameterIn.HEADER, example = "Bearer access_token"),
-            @Parameter(name = "reportId", in = ParameterIn.PATH, example = "1")
-    })
+    @Operation(summary = "그룹 특정 보고서 삭제")
+    @Parameter(name = "reportId", in = ParameterIn.PATH, example = "1")
     @DeleteMapping("/reports/{reportId}")
     public ResponseEntity<String> deleteReport(@PathVariable Long reportId) {
         return (reportService.deleteReport(reportId))
@@ -81,12 +76,15 @@ public class TeamController {
                 : ResponseEntity.notFound().build();
     }
 
+    @Operation(summary = "그룹 선택 강의 목록 조회")
     @GetMapping("/courses")
     public ResponseEntity<CourseDto> getTeamCourses(@RequestAttribute Claims claims) {
         return ResponseEntity.ok(
                 new CourseDto(
                         courseService.getTeamCourses(claims.getSubject())));
     }
+
+    @Operation(summary = "그룹 팀원 목록 조회")
     @GetMapping("/users")
     public ResponseEntity<List<UserDto.UserMe>> getTeamUsers(@RequestAttribute Claims claims) {
         return ResponseEntity.ok(teamService.getTeamUsers(claims.getSubject()));
