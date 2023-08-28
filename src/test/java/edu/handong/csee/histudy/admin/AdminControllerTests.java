@@ -9,6 +9,8 @@ import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
 import edu.handong.csee.histudy.repository.CourseRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -90,6 +92,9 @@ public class AdminControllerTests {
                 .name("courseName")
                 .build());
 
+        Claims claims = Jwts.claims();
+        claims.put("rol", Role.ADMIN.name());
+
         user.add(List.of(friend, friend2));
         friend.add(List.of(user));
         user.select(List.of(course, course, course));
@@ -97,7 +102,8 @@ public class AdminControllerTests {
         // when
         MvcResult mvcResult = mvc
                 .perform(delete("/api/admin/form")
-                        .queryParam("sid", user.getSid()))
+                        .queryParam("sid", user.getSid())
+                        .requestAttr("claims", claims))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn();

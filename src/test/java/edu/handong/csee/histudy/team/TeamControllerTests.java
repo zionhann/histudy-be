@@ -3,6 +3,7 @@ package edu.handong.csee.histudy.team;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.handong.csee.histudy.controller.TeamController;
 import edu.handong.csee.histudy.domain.Course;
+import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.domain.Team;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.CourseDto;
@@ -75,10 +76,12 @@ public class TeamControllerTests {
         User userA = User.builder()
                 .sid("201511111")
                 .email("userA@test.com")
+                .role(Role.USER)
                 .build();
         User userB = User.builder()
                 .sid("201611111")
                 .email("userB@test.com")
+                .role(Role.USER)
                 .build();
         Course courseA = Course.builder()
                 .name("courseA")
@@ -92,9 +95,6 @@ public class TeamControllerTests {
         Course savedCourse1 = courseRepository.save(courseA);
         Course savedCourse2 = courseRepository.save(courseB);
 
-        Claims claimsA = Jwts.claims();
-        claimsA.put("sub", userA.getEmail());
-
         Claims claimsB = Jwts.claims();
         claimsB.put("sub", userB.getEmail());
 
@@ -105,6 +105,11 @@ public class TeamControllerTests {
 
         save2.getTeam()
                 .select(List.of(savedCourse1, savedCourse2));
+
+        Claims claimsA = Jwts.claims();
+        claimsA.put("sub", userA.getEmail());
+        claimsA.put("rol", userA.getRole().name());
+
         // when
         MvcResult mvcResult = mvc
                 .perform(get("/api/team/courses")

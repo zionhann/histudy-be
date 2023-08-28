@@ -57,6 +57,7 @@ public class User {
     public void belongTo(Team team) {
         this.team = team;
         team.getUsers().add(this);
+        this.role = Role.MEMBER;
     }
 
     public void add(List<User> users) {
@@ -97,7 +98,7 @@ public class User {
         this.team = null;
     }
 
-    public void edit(UserDto.UserEdit dto,Team team) {
+    public void edit(UserDto.UserEdit dto, Team team) {
         this.sid = dto.getSid();
         this.name = dto.getName();
         this.team = team;

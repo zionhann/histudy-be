@@ -28,13 +28,11 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -80,6 +78,7 @@ public class UserControllerTests {
                 .sid("123")
                 .name("test")
                 .email("test@example.com")
+                .role(Role.USER)
                 .build());
         User friend = userRepository.save(User.builder()
                 .sid("234")
@@ -97,8 +96,9 @@ public class UserControllerTests {
                         .build(),
                 saved.getEmail());
 
-        Claims claims = Jwts.claims(
-                Collections.singletonMap("sub", saved.getEmail()));
+        Claims claims = Jwts.claims();
+        claims.put("sub", saved.getEmail());
+        claims.put("rol", saved.getRole().name());
 
         // when
         MvcResult mvcResult = mvc
@@ -125,6 +125,7 @@ public class UserControllerTests {
                 .sid("123")
                 .name("test")
                 .email("test@example.com")
+                .role(Role.USER)
                 .build());
         User friend = userRepository.save(User.builder()
                 .sid("234")
@@ -157,8 +158,9 @@ public class UserControllerTests {
                         .build(),
                 saved.getEmail());
 
-        Claims claims = Jwts.claims(
-                Collections.singletonMap("sub", saved.getEmail()));
+        Claims claims = Jwts.claims();
+        claims.put("sub", saved.getEmail());
+        claims.put("rol", saved.getRole().name());
 
         // when
         MvcResult mvcResult = mvc
@@ -187,10 +189,12 @@ public class UserControllerTests {
                 .sid("123")
                 .name("test")
                 .email("test@example.com")
+                .role(Role.USER)
                 .build());
 
-        Claims claims = Jwts.claims(
-                Collections.singletonMap("sub", saved.getEmail()));
+        Claims claims = Jwts.claims();
+        claims.put("sub", saved.getEmail());
+        claims.put("rol", saved.getRole().name());
 
         // when
         MvcResult mvcResult = mvc

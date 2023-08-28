@@ -4,6 +4,7 @@ import edu.handong.csee.histudy.controller.form.UserInfo;
 import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.dto.ApplyFormDto;
 import edu.handong.csee.histudy.dto.UserDto;
+import edu.handong.csee.histudy.exception.ForbiddenException;
 import edu.handong.csee.histudy.jwt.JwtPair;
 import edu.handong.csee.histudy.service.JwtService;
 import edu.handong.csee.histudy.service.UserService;
@@ -67,29 +68,41 @@ public class UserController {
             @SecurityRequirement(name = "ADMIN")
     })
     @GetMapping("/me")
-    public ResponseEntity<UserDto.UserMe> getMyInfo(@RequestAttribute Claims claims) {
-        Optional<UserDto.UserMe> info = userService.getUserMe(claims.getSubject());
+    public ResponseEntity<UserDto.UserMe> getMyInfo(
+            @RequestAttribute Claims claims) {
+        if (Role.isAuthorized(claims, Role.values())) {
+            Optional<UserDto.UserMe> info = userService.getUserMe(claims.getSubject());
 
-        return info
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+            return info
+                    .map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.notFound().build());
+        }
+        throw new ForbiddenException();
     }
 
     @Operation(summary = "스터디 그룹 신청 정보 조회")
     @SecurityRequirement(name = "USER")
     @GetMapping("/me/forms")
-    public ResponseEntity<ApplyFormDto> getMyApplicationForm(@RequestAttribute Claims claims) {
-        Optional<ApplyFormDto> userInfo = userService.getUserInfo(claims.getSubject());
-
-        return userInfo
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<ApplyFormDto> getMyApplicationForm(
+            @RequestAttribute Claims claims) {
+        if (Role.isAuthorized(claims, Role.USER)) {
+            Optional<ApplyFormDto> userInfo = userService.getUserInfo(claims.getSubject());
+            return userInfo
+                    .map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.notFound().build());
+        }
+        throw new ForbiddenException();
     }
 
     @Operation(summary = "전체 유저 스터디 신청 정보 조회")
     @SecurityRequirement(name = "ADMIN")
+    @Deprecated
     @GetMapping("/manageUsers")
-    public List<UserDto.UserInfo> userList(@RequestAttribute Claims claims) {
-        return userService.getUsers(claims.getSubject());
+    public List<UserDto.UserInfo> userList(
+            @RequestAttribute Claims claims) {
+        if (Role.isAuthorized(claims, Role.ADMIN)) {
+            return userService.getUsers(claims.getSubject());
+        }
+        throw new ForbiddenException();
     }
 }
