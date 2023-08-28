@@ -2,6 +2,7 @@ package edu.handong.csee.histudy.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.handong.csee.histudy.controller.form.TokenForm;
+import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.jwt.GrantType;
@@ -55,6 +56,7 @@ public class AuthControllerTests {
                 .email("test@example.com")
                 .name("username")
                 .sub("1234")
+                .role(Role.USER)
                 .build();
         userRepository.save(user);
 

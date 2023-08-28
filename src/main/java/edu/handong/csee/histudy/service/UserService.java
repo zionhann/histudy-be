@@ -119,10 +119,11 @@ public class UserService {
 
         return new UserDto.UserInfo(user);
     }
+
     public UserDto.UserInfo editUser(UserDto.UserEdit dto) {
         User user = userRepository.findById(dto.getId()).orElseThrow();
         Team team = teamRepository.findByTag(dto.getTeam()).orElseThrow();
-        user.edit(dto,team);
+        user.edit(dto, team);
         return new UserDto.UserInfo(user);
     }
 }

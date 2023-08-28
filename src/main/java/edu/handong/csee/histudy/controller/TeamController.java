@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Tag(name = "스터디 그룹 API")
-@SecurityRequirement(name = "General")
+@SecurityRequirement(name = "MEMBER")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/team")

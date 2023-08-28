@@ -24,7 +24,7 @@ public class CourseController {
 
     private final CourseService courseService;
 
-    @SecurityRequirement(name = "Admin")
+    @SecurityRequirement(name = "ADMIN")
     @Operation(summary = "강의 목록 업로드")
     @PostMapping
     public ResponseEntity<String> importCourses(@RequestParam("file") MultipartFile file) throws IOException {
@@ -43,7 +43,7 @@ public class CourseController {
         }
     }
 
-    @SecurityRequirement(name = "Admin")
+    @SecurityRequirement(name = "ADMIN")
     @Operation(summary = "강의 삭제")
     @PostMapping("/delete")
     public int deleteCourse(@RequestBody CourseIdDto dto) {
@@ -51,8 +51,8 @@ public class CourseController {
     }
 
     @SecurityRequirements({
-            @SecurityRequirement(name = "Admin"),
-            @SecurityRequirement(name = "General")
+            @SecurityRequirement(name = "ADMIN"),
+            @SecurityRequirement(name = "USER")
     })
     @Operation(summary = "강의 목록 조회")
     @GetMapping

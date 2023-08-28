@@ -49,6 +49,9 @@ public class UserDto {
 
         @Schema(description = "Token pairs", type = "object")
         private JwtPair tokens;
+
+        @Schema(description = "Role", example = "USER")
+        private String role;
     }
 
     @Builder
@@ -143,6 +146,7 @@ public class UserDto {
         }
 
     }
+
     @Builder
     @Getter
     @NoArgsConstructor

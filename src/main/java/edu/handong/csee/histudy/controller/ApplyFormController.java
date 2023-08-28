@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "스터디 신청 API")
-@SecurityRequirement(name = "General")
+@SecurityRequirement(name = "USER")
 @RestController
 @RequestMapping("/api/forms")
 @RequiredArgsConstructor

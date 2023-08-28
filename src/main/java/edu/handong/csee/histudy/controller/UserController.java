@@ -32,12 +32,13 @@ public class UserController {
     @PostMapping
     public ResponseEntity<UserDto.UserLogin> createUser(@RequestBody UserInfo userInfo) {
         if (userService.signUp(userInfo)) {
-            JwtPair tokens = jwtService.issueToken(userInfo.getEmail(), userInfo.getName());
+            JwtPair tokens = jwtService.issueToken(userInfo.getEmail(), userInfo.getName(), Role.USER);
 
             return ResponseEntity.ok(UserDto.UserLogin.builder()
                     .isRegistered(true)
                     .tokenType("Bearer ")
                     .tokens(tokens)
+                    .role(Role.USER.name())
                     .build());
         }
         return ResponseEntity.badRequest().build();
@@ -61,8 +62,9 @@ public class UserController {
 
     @Operation(summary = "내 정보 조회")
     @SecurityRequirements({
-            @SecurityRequirement(name = "General"),
-            @SecurityRequirement(name = "Admin")
+            @SecurityRequirement(name = "USER"),
+            @SecurityRequirement(name = "MEMBER"),
+            @SecurityRequirement(name = "ADMIN")
     })
     @GetMapping("/me")
     public ResponseEntity<UserDto.UserMe> getMyInfo(@RequestAttribute Claims claims) {
@@ -74,7 +76,7 @@ public class UserController {
     }
 
     @Operation(summary = "스터디 그룹 신청 정보 조회")
-    @SecurityRequirement(name = "General")
+    @SecurityRequirement(name = "USER")
     @GetMapping("/me/forms")
     public ResponseEntity<ApplyFormDto> getMyApplicationForm(@RequestAttribute Claims claims) {
         Optional<ApplyFormDto> userInfo = userService.getUserInfo(claims.getSubject());
@@ -85,7 +87,7 @@ public class UserController {
     }
 
     @Operation(summary = "전체 유저 스터디 신청 정보 조회")
-    @SecurityRequirement(name = "Admin")
+    @SecurityRequirement(name = "ADMIN")
     @GetMapping("/manageUsers")
     public List<UserDto.UserInfo> userList(@RequestAttribute Claims claims) {
         return userService.getUsers(claims.getSubject());

@@ -38,13 +38,14 @@ public class AuthController {
 
         if (userOr.isPresent()) {
             User user = userOr.get();
-            JwtPair tokens = jwtService.issueToken(user.getEmail(), user.getName());
+            JwtPair tokens = jwtService.issueToken(user.getEmail(), user.getName(), user.getRole());
 
             return ResponseEntity.ok(
                     UserDto.UserLogin.builder()
                             .isRegistered(true)
                             .tokenType("Bearer ")
                             .tokens(tokens)
+                            .role(user.getRole().name())
                             .build());
         }
         return ResponseEntity
@@ -68,9 +69,7 @@ public class AuthController {
                     .build();
         }
         Claims claims = claimsOr.get();
-        String email = claims.getSubject();
-        String name = claims.get("name", String.class);
-        String accessToken = jwtService.issueToken(email, name, GrantType.ACCESS_TOKEN);
+        String accessToken = jwtService.issueToken(claims, GrantType.ACCESS_TOKEN);
 
         return ResponseEntity.ok(new TokenInfo(GrantType.ACCESS_TOKEN, accessToken));
     }

@@ -22,21 +22,24 @@ public class JwtService {
 
     private final JwtProperties jwtProperties;
 
-    public String issueToken(String email, String name, GrantType typ) {
-        Map<String, Date> pair = calcExpiry(jwtProperties.getTokenExpiry(typ));
+    public String issueToken(Claims claims, GrantType typ) {
+        Map<String, Date> time = calcExpiry(jwtProperties.getTokenExpiry(typ));
+        String email = claims.getSubject();
+        String name = claims.get("name", String.class);
+        String role = claims.get("rol", String.class);
 
         return build(
-                email, name,
-                pair.get(Claims.ISSUED_AT),
-                pair.get(Claims.EXPIRATION));
+                email, name, role,
+                time.get(Claims.ISSUED_AT),
+                time.get(Claims.EXPIRATION));
     }
 
-    public JwtPair issueToken(String email, String name) {
+    public JwtPair issueToken(String email, String name, Role role) {
         List<String> tokens = Arrays.stream(GrantType.values())
                 .map(jwtProperties::getTokenExpiry)
                 .map(this::calcExpiry)
                 .map(pair -> this.build(
-                        email, name,
+                        email, name, role.name(),
                         pair.get(Claims.ISSUED_AT),
                         pair.get(Claims.EXPIRATION)))
                 .toList();
@@ -58,7 +61,7 @@ public class JwtService {
                             .parseClaimsJws(jwt.get())
                             .getBody());
         } catch (JwtException e) {
-            log.debug(e.getMessage());
+            log.info(e.getMessage());
         }
         return Optional.empty();
     }
@@ -75,7 +78,7 @@ public class JwtService {
                 Claims.EXPIRATION, exp);
     }
 
-    private String build(String email, String name, Date iat, Date exp) {
+    private String build(String email, String name, String role, Date iat, Date exp) {
         return Jwts.builder()
                 .setHeaderParam("typ", "JWT")
                 .setIssuer(jwtProperties.getIssuer())

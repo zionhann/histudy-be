@@ -28,10 +28,10 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
         Optional<String> token = Optional.ofNullable(request.getHeader(HttpHeaders.AUTHORIZATION))
                 .filter(value -> value.startsWith(BEARER))
                 .map(value -> value.substring(BEARER.length()));
-        Optional<Claims> claims = jwtService.validate(token);
+        Optional<Claims> claimsOr = jwtService.validate(token);
 
-        if (claims.isPresent()) {
-            request.setAttribute("claims", claims.get());
+        if (claimsOr.isPresent()) {
+            request.setAttribute("claims", claimsOr.get());
             return true;
         }
         response.sendError(HttpStatus.UNAUTHORIZED.value());

@@ -141,7 +141,7 @@ public class UserControllerMockTests {
 
         // when
         when(userService.signUp(any())).thenReturn(true);
-        when(jwtService.issueToken(any(), any())).thenReturn(new JwtPair(tokens));
+        when(jwtService.issueToken(any(), any(), any())).thenReturn(new JwtPair(tokens));
 
         MvcResult mvcResult = mockMvc
                 .perform(post("/api/users")

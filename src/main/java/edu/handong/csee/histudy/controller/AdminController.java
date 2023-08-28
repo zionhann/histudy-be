@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Tag(name = "관리자 API")
-@SecurityRequirement(name = "Admin")
+@SecurityRequirement(name = "ADMIN")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/admin")
