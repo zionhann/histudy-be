@@ -3,10 +3,7 @@ package edu.handong.csee.histudy.report;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.handong.csee.histudy.controller.TeamController;
 import edu.handong.csee.histudy.controller.form.ReportForm;
-import edu.handong.csee.histudy.domain.Course;
-import edu.handong.csee.histudy.domain.Report;
-import edu.handong.csee.histudy.domain.Team;
-import edu.handong.csee.histudy.domain.User;
+import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.ReportDto;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
 import edu.handong.csee.histudy.repository.CourseRepository;
@@ -80,6 +77,7 @@ public class ReportControllerTests {
                 .sid("21811111")
                 .name("username")
                 .email("user@test.com")
+                .role(Role.MEMBER)
                 .build());
         user.belongTo(new Team(1));
 
@@ -97,8 +95,9 @@ public class ReportControllerTests {
                 .build();
         reportRepository.save(report);
 
-        Claims claims = Jwts.claims(
-                Collections.singletonMap(Claims.SUBJECT, user.getEmail()));
+        Claims claims = Jwts.claims();
+        claims.put("sub", user.getEmail());
+        claims.put("rol", user.getRole().name());
 
         // when
         MvcResult mvcResult = mvc
@@ -124,6 +123,7 @@ public class ReportControllerTests {
                 .sid("21811111")
                 .name("username")
                 .email("user@test.com")
+                .role(Role.MEMBER)
                 .build());
         user.belongTo(new Team(1));
 
@@ -141,8 +141,9 @@ public class ReportControllerTests {
                 .build();
         reportRepository.save(report);
 
-        Claims claims = Jwts.claims(
-                Collections.singletonMap(Claims.SUBJECT, user.getEmail()));
+        Claims claims = Jwts.claims();
+        claims.put("sub", user.getEmail());
+        claims.put("rol", user.getRole().name());
 
         // when
         MvcResult mvcResult = mvc
@@ -205,6 +206,7 @@ public class ReportControllerTests {
                 .sid("21811111")
                 .name("username")
                 .email("user@test.com")
+                .role(Role.MEMBER)
                 .build());
         user.belongTo(new Team(1));
 
@@ -226,10 +228,15 @@ public class ReportControllerTests {
                 .title("modified title")
                 .build());
 
+        Claims claims = Jwts.claims();
+        claims.put("sub", user.getEmail());
+        claims.put("rol", user.getRole().name());
+
         // when
         mvc
                 .perform(patch("/api/team/reports/{reportId}", report.getId())
                         .contentType(MediaType.APPLICATION_JSON)
+                        .requestAttr("claims", claims)
                         .content(form))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -244,6 +251,7 @@ public class ReportControllerTests {
                 .sid("21811111")
                 .name("username")
                 .email("user@test.com")
+                .role(Role.USER)
                 .build());
         user.belongTo(new Team(1));
 
@@ -261,13 +269,14 @@ public class ReportControllerTests {
                 .build();
         reportRepository.save(report);
 
-        String form = mapper.writeValueAsString(ReportForm.builder()
-                .title("modified title")
-                .build());
+        Claims claims = Jwts.claims();
+        claims.put("sub", user.getEmail());
+        claims.put("rol", user.getRole().name());
 
         // when
         mvc
-                .perform(delete("/api/team/reports/{reportId}", report.getId()))
+                .perform(delete("/api/team/reports/{reportId}", report.getId())
+                        .requestAttr("claims", claims))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn();
@@ -281,6 +290,7 @@ public class ReportControllerTests {
                 .sid("21811111")
                 .name("username")
                 .email("user@test.com")
+                .role(Role.MEMBER)
                 .build());
         user.belongTo(new Team(1));
 
@@ -298,9 +308,14 @@ public class ReportControllerTests {
                 .build();
         reportRepository.save(report);
 
+        Claims claims = Jwts.claims();
+        claims.put("sub", user.getEmail());
+        claims.put("rol", user.getRole().name());
+
         // when
         mvc
-                .perform(delete("/api/team/reports/{reportId}", 333))
+                .perform(delete("/api/team/reports/{reportId}", 333)
+                        .requestAttr("claims", claims))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andReturn();

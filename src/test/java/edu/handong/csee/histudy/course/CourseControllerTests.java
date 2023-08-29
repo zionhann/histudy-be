@@ -4,9 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.handong.csee.histudy.controller.ApplyFormController;
 import edu.handong.csee.histudy.controller.CourseController;
 import edu.handong.csee.histudy.domain.Course;
+import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.dto.CourseDto;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
 import edu.handong.csee.histudy.repository.CourseRepository;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -74,10 +77,14 @@ public class CourseControllerTests {
                 .build();
         courseRepository.save(c);
 
+        Claims claims = Jwts.claims();
+        claims.put("rol", Role.USER.name());
+
         // when
         MvcResult mvcResult = mvc
                 .perform(get("/api/courses")
-                        .queryParam("search", "soft"))
+                        .queryParam("search", "soft")
+                        .requestAttr("claims", claims))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andReturn();
@@ -93,8 +100,12 @@ public class CourseControllerTests {
     @DisplayName("해당하는 목록이 없는 경우 빈 배열을 응답한다")
     @Test
     void CourseControllerTests_88() throws Exception {
+        Claims claims = Jwts.claims();
+        claims.put("rol", Role.USER.name());
+
         MvcResult mvcResult = mvc
-                .perform(get("/api/courses"))
+                .perform(get("/api/courses")
+                        .requestAttr("claims", claims))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andReturn();
@@ -127,9 +138,13 @@ public class CourseControllerTests {
         courseRepository.save(c1);
         courseRepository.save(c2);
 
+        Claims claims = Jwts.claims();
+        claims.put("rol", Role.USER.name());
+
         // when
         MvcResult mvcResult = mvc
-                .perform(get("/api/courses"))
+                .perform(get("/api/courses")
+                        .requestAttr("claims", claims))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andReturn();

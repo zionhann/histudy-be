@@ -2,8 +2,10 @@ package edu.handong.csee.histudy.app;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.handong.csee.histudy.controller.ApplyFormController;
+import edu.handong.csee.histudy.controller.ExceptionController;
 import edu.handong.csee.histudy.controller.form.ApplyForm;
 import edu.handong.csee.histudy.domain.Course;
+import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.ApplyFormDto;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
@@ -60,6 +62,7 @@ public class AppControllerTests {
         mvc = MockMvcBuilders
                 .standaloneSetup(applyFormController)
                 .addInterceptors(interceptor)
+                .setControllerAdvice(ExceptionController.class)
                 .build();
         when(interceptor.preHandle(any(), any(), any())).thenReturn(true);
     }
@@ -68,9 +71,10 @@ public class AppControllerTests {
     @Test
     void AppControllerTests_26() throws Exception {
         // given
-        userRepository.save(
+        User saved = userRepository.save(
                 User.builder()
                         .email("test@example.com")
+                        .role(Role.USER)
                         .build());
 
         courseRepository.save(
@@ -89,7 +93,8 @@ public class AppControllerTests {
         String form = mapper.writeValueAsString(applyForm);
 
         Claims claims = Jwts.claims();
-        claims.put("sub", "test@example.com");
+        claims.put("sub", saved.getEmail());
+        claims.put("rol", saved.getRole().name());
 
         // when
         mvc.perform(post("/api/forms")
@@ -123,6 +128,7 @@ public class AppControllerTests {
 
         Claims claims = Jwts.claims();
         claims.put("sub", "subB");
+        claims.put("rol", Role.USER.name());
 
         // when
         mvc.perform(post("/api/forms")
@@ -140,6 +146,8 @@ public class AppControllerTests {
         // given
         userRepository.save(
                 User.builder()
+                        .sub("subA")
+                        .role(Role.USER)
                         .build());
 
         ApplyForm applyForm = ApplyForm.builder()
@@ -150,6 +158,7 @@ public class AppControllerTests {
 
         Claims claims = Jwts.claims();
         claims.put("sub", "subA");
+        claims.put("rol", Role.USER.name());
 
         // when
         mvc
@@ -166,10 +175,11 @@ public class AppControllerTests {
     @Test
     void AppControllerTests_166() throws Exception {
         // given
-        userRepository.save(
+        User saved = userRepository.save(
                 User.builder()
                         .sid("sidA")
                         .email("test@example.com")
+                        .role(Role.USER)
                         .build());
         userRepository.save(
                 User.builder()
@@ -197,7 +207,8 @@ public class AppControllerTests {
         String form = mapper.writeValueAsString(applyForm);
 
         Claims claims = Jwts.claims();
-        claims.put("sub", "test@example.com");
+        claims.put("sub", saved.getEmail());
+        claims.put("rol", saved.getRole().name());
 
         // when
         mvc.perform(post("/api/forms")
