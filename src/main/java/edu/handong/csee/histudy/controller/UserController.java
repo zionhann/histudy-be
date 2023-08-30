@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,13 +48,20 @@ public class UserController {
 
     @Operation(summary = "유저 검색")
     @GetMapping
-    public ResponseEntity<UserDto> searchUser(@RequestParam(name = "search") String keyword) {
+    public ResponseEntity<UserDto> searchUser(
+            @RequestParam(name = "search") String keyword,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) Optional<String> header) {
         if (keyword == null) {
             return ResponseEntity.badRequest().build();
         }
+        String token = jwtService.extractToken(header);
+        Claims claims = jwtService.validate(token);
+        String email = claims.getSubject();
+
         List<UserDto.UserMatching> users = userService.search(keyword)
                 .stream()
                 .filter(u -> u.getRole().equals(Role.USER))
+                .filter(u -> !u.getEmail().equals(email))
                 .map(UserDto.UserMatching::new)
                 .toList();
 
