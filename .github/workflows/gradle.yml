@@ -36,4 +36,4 @@ jobs:
           java-version: 17
 
       - name: Run Tests
-        run: ./gradlew test
+        run: ./gradlew test -i
