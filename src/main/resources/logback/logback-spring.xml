@@ -8,7 +8,7 @@
 
     <appender name="FILE" class="RollingFileAppender">
         <rollingPolicy class="TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}/${LOGBACK_ROLLINGPOLICY_FILE_NAME_PATTERN}</fileNamePattern>
+            <fileNamePattern>${LOG_PATH}/%d.log</fileNamePattern>
             <maxHistory>${LOGBACK_ROLLINGPOLICY_MAX_HISTORY}</maxHistory>
             <maxFileSize>${LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE}</maxFileSize>
         </rollingPolicy>
