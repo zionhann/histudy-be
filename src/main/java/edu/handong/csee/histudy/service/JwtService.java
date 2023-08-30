@@ -1,11 +1,11 @@
 package edu.handong.csee.histudy.service;
 
 import edu.handong.csee.histudy.domain.Role;
+import edu.handong.csee.histudy.exception.InvalidTokenTypeException;
 import edu.handong.csee.histudy.jwt.GrantType;
 import edu.handong.csee.histudy.jwt.JwtPair;
 import edu.handong.csee.histudy.jwt.JwtProperties;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +21,7 @@ import java.util.*;
 public class JwtService {
 
     private final JwtProperties jwtProperties;
+    private final static String BEARER = "Bearer ";
 
     public String issueToken(Claims claims, GrantType typ) {
         Map<String, Date> time = calcExpiry(jwtProperties.getTokenExpiry(typ));
@@ -48,22 +49,22 @@ public class JwtService {
         return new JwtPair(tokens);
     }
 
-    public Optional<Claims> validate(Optional<String> token) {
+    public Claims validate(String token) {
         JwtParser parser = Jwts.parserBuilder()
                 .setSigningKey(jwtProperties.getKey())
                 .requireIssuer(jwtProperties.getIssuer())
                 .build();
 
-        try {
-            return Optional.of(token)
-                    .filter(Optional::isPresent)
-                    .map(jwt -> parser
-                            .parseClaimsJws(jwt.get())
-                            .getBody());
-        } catch (JwtException e) {
-            log.info(e.getMessage());
-        }
-        return Optional.empty();
+        return parser
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    public String extractToken(Optional<String> headerOr) {
+        return headerOr
+                .filter(value -> value.startsWith(BEARER))
+                .map(value -> value.substring(BEARER.length()))
+                .orElseThrow(InvalidTokenTypeException::new);
     }
 
     private Map<String, Date> calcExpiry(String expiryAsString) {

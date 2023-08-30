@@ -2,6 +2,7 @@ package edu.handong.csee.histudy.controller;
 
 import edu.handong.csee.histudy.dto.ExceptionResponse;
 import edu.handong.csee.histudy.exception.ForbiddenException;
+import io.jsonwebtoken.JwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,6 +18,16 @@ public class ExceptionController {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(ExceptionResponse.builder()
                         .status(HttpStatus.FORBIDDEN)
+                        .message(e.getMessage())
+                        .trace(Arrays.toString(e.getStackTrace()))
+                        .build());
+    }
+
+    @ExceptionHandler(JwtException.class)
+    public ResponseEntity<ExceptionResponse> jwtException(JwtException e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ExceptionResponse.builder()
+                        .status(HttpStatus.UNAUTHORIZED)
                         .message(e.getMessage())
                         .trace(Arrays.toString(e.getStackTrace()))
                         .build());

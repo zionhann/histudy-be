@@ -10,6 +10,7 @@ import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
 import edu.handong.csee.histudy.jwt.JwtPair;
 import edu.handong.csee.histudy.service.JwtService;
 import edu.handong.csee.histudy.service.UserService;
+import io.jsonwebtoken.Jwts;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -83,6 +85,11 @@ public class UserControllerMockTests {
                                 .role(Role.USER)
                                 .build()));
 
+        when(jwtService.validate(any()))
+                .thenReturn(Jwts.claims(
+                        Collections.singletonMap("sub", "test2@example.com")
+                ));
+
         // when
         MvcResult mvcResult = mockMvc
                 .perform(get("/api/users")
@@ -113,6 +120,11 @@ public class UserControllerMockTests {
                                 .email("test@example.com")
                                 .role(Role.USER)
                                 .build()));
+
+        when(jwtService.validate(any()))
+                .thenReturn(Jwts.claims(
+                        Collections.singletonMap("sub", "test2@example.com")
+                ));
 
         // when
         MvcResult mvcResult = mockMvc
@@ -174,6 +186,11 @@ public class UserControllerMockTests {
                                 .role(Role.USER)
                                 .build()));
 
+        when(jwtService.validate(any()))
+                .thenReturn(Jwts.claims(
+                        Collections.singletonMap("sub", "test2@example.com")
+                ));
+
         // when
         MvcResult mvcResult = mockMvc
                 .perform(get("/api/users")
@@ -216,5 +233,38 @@ public class UserControllerMockTests {
                         .content(form))
                 .andExpect(status().isBadRequest())
                 .andDo(print());
+    }
+
+    @DisplayName("자기 자신은 목록에 없어야 한다")
+    @Test
+    void UserControllerMockTests_240() throws Exception {
+        // given
+        when(userService.search(any()))
+                .thenReturn(List.of(
+                        User.builder()
+                                .name("username")
+                                .sid("21800123")
+                                .email("test@example.com")
+                                .role(Role.USER)
+                                .build()));
+
+        when(jwtService.validate(any()))
+                .thenReturn(Jwts.claims(
+                        Collections.singletonMap("sub", "test@example.com")
+                ));
+
+        // when
+        MvcResult mvcResult = mockMvc
+                .perform(get("/api/users")
+                        .queryParam("search", "test"))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        UserDto res = mapper.readValue(mvcResult.getResponse().getContentAsString(),
+                UserDto.class);
+
+        // then
+        assertTrue(res.getUsers().isEmpty());
     }
 }
