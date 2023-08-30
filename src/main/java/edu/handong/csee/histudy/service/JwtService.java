@@ -84,7 +84,7 @@ public class JwtService {
                 .setIssuer(jwtProperties.getIssuer())
                 .setSubject(email)
                 .claim("name", name)
-                .claim("rol", Role.USER.name())
+                .claim("rol", role)
                 .setIssuedAt(iat)
                 .setExpiration(exp)
                 .signWith(jwtProperties.getKey())
