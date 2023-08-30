@@ -3,6 +3,7 @@ package edu.handong.csee.histudy.controller;
 import edu.handong.csee.histudy.controller.form.TokenForm;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.UserDto;
+import edu.handong.csee.histudy.exception.TokenNotFoundException;
 import edu.handong.csee.histudy.jwt.GrantType;
 import edu.handong.csee.histudy.jwt.JwtPair;
 import edu.handong.csee.histudy.jwt.TokenInfo;
@@ -58,17 +59,9 @@ public class AuthController {
     @Operation(summary = "토큰 재발급")
     @PostMapping("/token")
     public ResponseEntity<TokenInfo> issueAccessToken(@RequestBody TokenForm tokenForm) {
-        Optional<String> refreshTokenOr = Optional.ofNullable(tokenForm.getRefreshToken());
-        Optional<Claims> claimsOr = jwtService.validate(refreshTokenOr);
-
-        if (refreshTokenOr.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .build();
-        } else if (claimsOr.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .build();
-        }
-        Claims claims = claimsOr.get();
+        String refreshToken = Optional.ofNullable(tokenForm.getRefreshToken())
+                .orElseThrow(TokenNotFoundException::new);
+        Claims claims = jwtService.validate(refreshToken);
         String accessToken = jwtService.issueToken(claims, GrantType.ACCESS_TOKEN);
 
         return ResponseEntity.ok(new TokenInfo(GrantType.ACCESS_TOKEN, accessToken));

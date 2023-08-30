@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.cors.CorsUtils;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -17,7 +16,6 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 public class AuthenticationInterceptor implements HandlerInterceptor {
-    private final static String BEARER = "Bearer ";
     private final JwtService jwtService;
 
     @Override
@@ -25,16 +23,11 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
         if (CorsUtils.isPreFlightRequest(request)) {
             return true;
         }
-        Optional<String> token = Optional.ofNullable(request.getHeader(HttpHeaders.AUTHORIZATION))
-                .filter(value -> value.startsWith(BEARER))
-                .map(value -> value.substring(BEARER.length()));
-        Optional<Claims> claimsOr = jwtService.validate(token);
+        Optional<String> headerOr = Optional.ofNullable(request.getHeader(HttpHeaders.AUTHORIZATION));
+        String token = jwtService.extractToken(headerOr);
+        Claims claims = jwtService.validate(token);
+        request.setAttribute("claims", claims);
 
-        if (claimsOr.isPresent()) {
-            request.setAttribute("claims", claimsOr.get());
-            return true;
-        }
-        response.sendError(HttpStatus.UNAUTHORIZED.value());
-        return false;
+        return true;
     }
 }
