@@ -13,7 +13,7 @@
             <maxFileSize>${LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE}</maxFileSize>
         </rollingPolicy>
         <encoder class="PatternLayoutEncoder">
-            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <pattern>%-40.40(%d{HH:mm:ss.SSS} [%thread]) [%-5level] [%-40.40logger{36}] - %msg%n</pattern>
         </encoder>
     </appender>
 
