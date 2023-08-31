@@ -8,6 +8,10 @@ import edu.handong.csee.histudy.domain.Team;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.ApplyFormDto;
 import edu.handong.csee.histudy.dto.UserDto;
+import edu.handong.csee.histudy.exception.MissingEmailException;
+import edu.handong.csee.histudy.exception.MissingSubException;
+import edu.handong.csee.histudy.exception.UserAlreadyExistsException;
+import edu.handong.csee.histudy.exception.UserNotFoundException;
 import edu.handong.csee.histudy.repository.ChoiceRepository;
 import edu.handong.csee.histudy.repository.CourseRepository;
 import edu.handong.csee.histudy.repository.TeamRepository;
@@ -56,25 +60,28 @@ public class UserService {
                 });
     }
 
-    public boolean signUp(UserInfo userInfo) {
-        Optional<User> userOr = userRepository.findUserBySub(userInfo.getSub());
-
-        if (userOr.isEmpty()) {
-            User user = User.builder()
-                    .sid(userInfo.getSid())
-                    .email(userInfo.getEmail())
-                    .name(userInfo.getName())
-                    .sub(userInfo.getSub())
-                    .role(Role.USER)
-                    .build();
-            userRepository.save(user);
-            return true;
-        }
-        return false;
+    public void signUp(UserInfo userInfo) {
+        userRepository
+                .findUserBySub(userInfo.getSub())
+                .ifPresentOrElse(
+                        __ -> {
+                            throw new UserAlreadyExistsException();
+                        },
+                        () ->
+                                userRepository.save(User.builder()
+                                        .sid(userInfo.getSid())
+                                        .email(userInfo.getEmail())
+                                        .name(userInfo.getName())
+                                        .sub(userInfo.getSub())
+                                        .role(Role.USER)
+                                        .build()));
     }
 
-    public Optional<User> isPresent(String sub) {
-        return userRepository.findUserBySub(sub);
+    public User getUser(Optional<String> subOr) {
+        String sub = subOr.orElseThrow(MissingSubException::new);
+        return userRepository
+                .findUserBySub(sub)
+                .orElseThrow(UserNotFoundException::new);
     }
 
     public List<UserDto.UserInfo> getUsers(String email) {
@@ -102,9 +109,12 @@ public class UserService {
                 .map(ApplyFormDto::new);
     }
 
-    public Optional<UserDto.UserMe> getUserMe(String email) {
-        return userRepository.findUserByEmail(email)
-                .map(UserDto.UserMe::new);
+    public UserDto.UserMe getUserMe(Optional<String> emailOr) {
+        String email = emailOr.orElseThrow(MissingEmailException::new);
+        User user = userRepository.findUserByEmail(email)
+                .orElseThrow(UserNotFoundException::new);
+
+        return new UserDto.UserMe(user);
     }
 
     public List<UserDto.UserInfo> getUnmatchedUsers() {

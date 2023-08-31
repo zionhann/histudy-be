@@ -34,17 +34,15 @@ public class UserController {
     @Operation(summary = "회원가입")
     @PostMapping
     public ResponseEntity<UserDto.UserLogin> createUser(@RequestBody UserInfo userInfo) {
-        if (userService.signUp(userInfo)) {
-            JwtPair tokens = jwtService.issueToken(userInfo.getEmail(), userInfo.getName(), Role.USER);
+        userService.signUp(userInfo);
+        JwtPair tokens = jwtService.issueToken(userInfo.getEmail(), userInfo.getName(), Role.USER);
 
-            return ResponseEntity.ok(UserDto.UserLogin.builder()
-                    .isRegistered(true)
-                    .tokenType("Bearer ")
-                    .tokens(tokens)
-                    .role(Role.USER.name())
-                    .build());
-        }
-        return ResponseEntity.badRequest().build();
+        return ResponseEntity.ok(UserDto.UserLogin.builder()
+                .isRegistered(true)
+                .tokenType("Bearer ")
+                .tokens(tokens)
+                .role(Role.USER.name())
+                .build());
     }
 
     @Operation(summary = "유저 검색")
@@ -81,11 +79,8 @@ public class UserController {
     public ResponseEntity<UserDto.UserMe> getMyInfo(
             @RequestAttribute Claims claims) {
         if (Role.isAuthorized(claims, Role.values())) {
-            Optional<UserDto.UserMe> info = userService.getUserMe(claims.getSubject());
-
-            return info
-                    .map(ResponseEntity::ok)
-                    .orElseGet(() -> ResponseEntity.notFound().build());
+            UserDto.UserMe info = userService.getUserMe(Optional.ofNullable(claims.getSubject()));
+            return ResponseEntity.ok(info);
         }
         throw new ForbiddenException();
     }

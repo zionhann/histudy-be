@@ -1,8 +1,8 @@
 package edu.handong.csee.histudy.exception;
 
-public class TokenNotFoundException extends RuntimeException {
+public class MissingTokenException extends MissingParameterException {
 
-    public TokenNotFoundException() {
+    public MissingTokenException() {
         super("토큰이 존재하지 않습니다.");
     }
 }

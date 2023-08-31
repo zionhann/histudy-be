@@ -3,7 +3,7 @@ package edu.handong.csee.histudy.controller;
 import edu.handong.csee.histudy.controller.form.TokenForm;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.UserDto;
-import edu.handong.csee.histudy.exception.TokenNotFoundException;
+import edu.handong.csee.histudy.exception.MissingTokenException;
 import edu.handong.csee.histudy.jwt.GrantType;
 import edu.handong.csee.histudy.jwt.JwtPair;
 import edu.handong.csee.histudy.jwt.TokenInfo;
@@ -13,7 +13,6 @@ import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,25 +33,16 @@ public class AuthController {
 
     @Operation(summary = "로그인")
     @GetMapping("/login")
-    public ResponseEntity<UserDto.UserLogin> login(@RequestParam String sub) {
-        Optional<User> userOr = userService.isPresent(sub);
+    public ResponseEntity<UserDto.UserLogin> login(@RequestParam("sub") Optional<String> subOr) {
+        User user = userService.getUser(subOr);
+        JwtPair tokens = jwtService.issueToken(user.getEmail(), user.getName(), user.getRole());
 
-        if (userOr.isPresent()) {
-            User user = userOr.get();
-            JwtPair tokens = jwtService.issueToken(user.getEmail(), user.getName(), user.getRole());
-
-            return ResponseEntity.ok(
-                    UserDto.UserLogin.builder()
-                            .isRegistered(true)
-                            .tokenType("Bearer ")
-                            .tokens(tokens)
-                            .role(user.getRole().name())
-                            .build());
-        }
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(UserDto.UserLogin.builder()
-                        .isRegistered(false)
+        return ResponseEntity.ok(
+                UserDto.UserLogin.builder()
+                        .isRegistered(true)
+                        .tokenType("Bearer ")
+                        .tokens(tokens)
+                        .role(user.getRole().name())
                         .build());
     }
 
@@ -60,7 +50,7 @@ public class AuthController {
     @PostMapping("/token")
     public ResponseEntity<TokenInfo> issueAccessToken(@RequestBody TokenForm tokenForm) {
         String refreshToken = Optional.ofNullable(tokenForm.getRefreshToken())
-                .orElseThrow(TokenNotFoundException::new);
+                .orElseThrow(MissingTokenException::new);
         Claims claims = jwtService.validate(refreshToken);
         String accessToken = jwtService.issueToken(claims, GrantType.ACCESS_TOKEN);
 
