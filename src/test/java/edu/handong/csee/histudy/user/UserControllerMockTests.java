@@ -1,11 +1,13 @@
 package edu.handong.csee.histudy.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.handong.csee.histudy.controller.ExceptionController;
 import edu.handong.csee.histudy.controller.UserController;
 import edu.handong.csee.histudy.controller.form.UserInfo;
 import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.UserDto;
+import edu.handong.csee.histudy.exception.UserAlreadyExistsException;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
 import edu.handong.csee.histudy.jwt.JwtPair;
 import edu.handong.csee.histudy.service.JwtService;
@@ -14,6 +16,7 @@ import io.jsonwebtoken.Jwts;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -31,6 +34,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -68,6 +72,7 @@ public class UserControllerMockTests {
         mockMvc = MockMvcBuilders
                 .standaloneSetup(userController)
                 .addInterceptors(interceptor)
+                .setControllerAdvice(ExceptionController.class)
                 .build();
         when(interceptor.preHandle(any(), any(), any())).thenReturn(true);
     }
@@ -152,7 +157,6 @@ public class UserControllerMockTests {
         String form = mapper.writeValueAsString(userInfo);
 
         // when
-        when(userService.signUp(any())).thenReturn(true);
         when(jwtService.issueToken(any(), any(), any())).thenReturn(new JwtPair(tokens));
 
         MvcResult mvcResult = mockMvc
@@ -225,13 +229,15 @@ public class UserControllerMockTests {
         UserInfo userInfo = new UserInfo("1234", "username", "user@test", "21800123");
         String form = mapper.writeValueAsString(userInfo);
 
-        when(userService.signUp(any())).thenReturn(false);
+        doThrow(UserAlreadyExistsException.class)
+                .when(userService)
+                .signUp(any());
 
         mockMvc
                 .perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(form))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isInternalServerError())
                 .andDo(print());
     }
 

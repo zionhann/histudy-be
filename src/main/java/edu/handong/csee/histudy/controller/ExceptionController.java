@@ -1,10 +1,14 @@
 package edu.handong.csee.histudy.controller;
 
 import edu.handong.csee.histudy.dto.ExceptionResponse;
+import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.exception.ForbiddenException;
+import edu.handong.csee.histudy.exception.MissingParameterException;
+import edu.handong.csee.histudy.exception.UserNotFoundException;
 import io.jsonwebtoken.JwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -28,6 +32,39 @@ public class ExceptionController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ExceptionResponse.builder()
                         .status(HttpStatus.UNAUTHORIZED)
+                        .message(e.getMessage())
+                        .trace(Arrays.toString(e.getStackTrace()))
+                        .build());
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<UserDto.UserLogin> userNotFound() {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(UserDto.UserLogin.builder()
+                        .isRegistered(false)
+                        .build());
+    }
+
+    @ExceptionHandler({
+            MissingParameterException.class,
+            HttpMessageNotReadableException.class
+    })
+    public ResponseEntity<ExceptionResponse> missingParameter(MissingParameterException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ExceptionResponse.builder()
+                        .status(HttpStatus.BAD_REQUEST)
+                        .message(e.getMessage())
+                        .trace(Arrays.toString(e.getStackTrace()))
+                        .build());
+    }
+
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ExceptionResponse> runtimeException(RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ExceptionResponse.builder()
+                        .status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .message(e.getMessage())
                         .trace(Arrays.toString(e.getStackTrace()))
                         .build());
