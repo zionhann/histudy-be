@@ -1,5 +1,6 @@
 package edu.handong.csee.histudy.admin;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.handong.csee.histudy.controller.AdminController;
 import edu.handong.csee.histudy.domain.Course;
@@ -31,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -115,5 +117,52 @@ public class AdminControllerTests {
         // then
         assertEquals(0, res.getFriends().size());
         assertEquals(0, res.getCourses().size());
+    }
+
+    @DisplayName("그룹 미배정 학생 목록에서 미신청자는 제외되어야 함")
+    @Test
+    void AdminControllerTests_122() throws Exception {
+        // Given
+        User userA = User.builder()
+                .sub("123")
+                .sid("21800012")
+                .name("test")
+                .role(Role.USER)
+                .email("test@example.com")
+                .build();
+
+        User applicant = User.builder()
+                .sub("234")
+                .sid("21800345")
+                .name("test2")
+                .role(Role.USER)
+                .email("test2@example.com")
+                .build();
+
+        Course course = courseRepository.save(Course.builder()
+                .name("courseName")
+                .build());
+
+        applicant.select(List.of(course));
+
+        userRepository.save(applicant);
+        userRepository.save(userA);
+
+        Claims claims = Jwts.claims();
+        claims.put("rol", Role.ADMIN.name());
+
+        // When
+        MvcResult mvcResult = mvc
+                .perform(get("/api/admin/unmatched-users")
+                        .requestAttr("claims", claims))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        List<UserDto.UserInfo> res = mapper.readValue(
+                mvcResult.getResponse().getContentAsString(),
+                new TypeReference<>() {
+                });
+        // Then
+        assertEquals(1, res.size());
     }
 }
