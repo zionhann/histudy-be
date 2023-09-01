@@ -17,6 +17,7 @@ import edu.handong.csee.histudy.repository.CourseRepository;
 import edu.handong.csee.histudy.repository.TeamRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,8 +35,11 @@ public class UserService {
     private final ChoiceRepository choiceRepository;
     private final TeamRepository teamRepository;
 
-    public List<User> search(String keyword) {
-        return userRepository.findUserByNameOrSidOrEmail(keyword);
+    public List<User> search(Optional<String> keyword) {
+        if (keyword.isEmpty() || keyword.get().isBlank()) {
+            return userRepository.findAll(Sort.by(Sort.Direction.ASC, "sid"));
+        }
+        return userRepository.findUserByNameOrSidOrEmail(keyword.get());
     }
 
     public Optional<ApplyFormDto> apply(ApplyForm form, String email) {

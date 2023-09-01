@@ -49,11 +49,8 @@ public class UserController {
     @SecurityRequirement(name = "USER")
     @GetMapping
     public ResponseEntity<UserDto> searchUser(
-            @Parameter(allowEmptyValue = true) @RequestParam(name = "search") String keyword,
+            @Parameter(allowEmptyValue = true) @RequestParam(name = "search") Optional<String> keyword,
             @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) Optional<String> header) {
-        if (keyword == null) {
-            return ResponseEntity.badRequest().build();
-        }
         String token = jwtService.extractToken(header);
         Claims claims = jwtService.validate(token);
         String email = claims.getSubject();
@@ -65,8 +62,7 @@ public class UserController {
                 .map(UserDto.UserMatching::new)
                 .toList();
 
-        return ResponseEntity.ok(
-                new UserDto(users));
+        return ResponseEntity.ok(new UserDto(users));
     }
 
     @Operation(summary = "내 정보 조회")

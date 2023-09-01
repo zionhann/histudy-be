@@ -213,16 +213,6 @@ public class UserControllerMockTests {
         assertEquals("test@example.com", res.getUsers().get(0).getEmail());
     }
 
-    @DisplayName("스터디 친구를 검색한다: 유효하지 않은 요청")
-    @Test
-    void UserControllerTests_291() throws Exception {
-        mockMvc
-                .perform(get("/api/users"))
-                .andExpect(status().isBadRequest())
-                .andDo(print())
-                .andReturn();
-    }
-
     @DisplayName("기존 유저는 회원가입 요청이 거부되어야 한다.")
     @Test
     void UserControllerTests_206() throws Exception {
