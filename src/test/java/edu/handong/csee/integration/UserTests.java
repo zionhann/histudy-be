@@ -4,7 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.handong.csee.histudy.HistudyApplication;
 import edu.handong.csee.histudy.controller.UserController;
 import edu.handong.csee.histudy.controller.form.UserInfo;
+import edu.handong.csee.histudy.domain.Role;
+import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.UserDto;
+import edu.handong.csee.histudy.repository.UserRepository;
 import edu.handong.csee.histudy.service.UserService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.DisplayName;
@@ -42,6 +45,8 @@ public class UserTests {
 
     @Value("${custom.jwt.secret.user}")
     String userToken;
+    @Autowired
+    private UserRepository userRepository;
 
     @DisplayName("로그인시 가입여부 확인: 신규 가입")
     @Test
@@ -145,5 +150,58 @@ public class UserTests {
         assertThat(res.getEmail()).isEqualTo("test@example.com");
         assertThat(res.getName()).isEqualTo("test");
         assertThat(res.getSid()).isEqualTo("22300012");
+    }
+
+    @DisplayName("그룹 신청시 유저 검색: 자기 자신은 제외")
+    @Test
+    void UserTests_152() throws Exception {
+        // Given
+        User userA = new User("123", "22300012", "test@example.com", "test", Role.USER);
+        User userB = new User("124", "22300013", "test2@example.com", "test2", Role.USER);
+        User userC = new User("125", "22300014", "test3@example.com", "test3", Role.USER);
+        userRepository.save(userA);
+        userRepository.save(userB);
+        userRepository.save(userC);
+
+        // When
+        MvcResult mvcResult = mvc
+                .perform(get("/api/users")
+                        .queryParam("search", "22300012")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        UserDto res = objectMapper.readValue(mvcResult.getResponse().getContentAsString(),
+                UserDto.class);
+
+        // Then
+        assertThat(res.getUsers()).isEmpty();
+    }
+
+    @DisplayName("그룹 신청시 유저 검색: 검색어가 없는 경우")
+    @Test
+    void UserTests_177() throws Exception {
+        // Given
+        User userA = new User("123", "22300012", "test@example.com", "test", Role.USER);
+        User userB = new User("124", "22300013", "test2@example.com", "test2", Role.USER);
+        User userC = new User("125", "22300014", "test3@example.com", "test3", Role.USER);
+        userRepository.save(userA);
+        userRepository.save(userB);
+        userRepository.save(userC);
+
+        // When
+        MvcResult mvcResult = mvc
+                .perform(get("/api/users")
+                        .queryParam("search", "")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        UserDto res = objectMapper.readValue(mvcResult.getResponse().getContentAsString(),
+                UserDto.class);
+
+        // Then
+        assertThat(res.getUsers().get(0).getSid()).isEqualTo("22300013");
+        assertThat(res.getUsers()).hasSize(2);
     }
 }
