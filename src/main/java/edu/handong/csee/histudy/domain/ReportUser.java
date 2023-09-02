@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Participates {
+public class ReportUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,10 +18,10 @@ public class Participates {
     User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    Report report;
+    GroupReport groupReport;
 
-    public Participates(User user, Report report) {
+    public ReportUser(User user, GroupReport groupReport) {
         this.user = user;
-        this.report = report;
+        this.groupReport = groupReport;
     }
 }

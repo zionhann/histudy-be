@@ -3,7 +3,7 @@ package edu.handong.csee.histudy.algo;
 import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.TeamDto;
 import edu.handong.csee.histudy.repository.CourseRepository;
-import edu.handong.csee.histudy.repository.TeamRepository;
+import edu.handong.csee.histudy.repository.StudyGroupRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import edu.handong.csee.histudy.service.TeamService;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +37,7 @@ public class MatchingAlgorithmTests {
     CourseRepository courseRepository;
 
     @Autowired
-    TeamRepository teamRepository;
+    StudyGroupRepository studyGroupRepository;
 
     @BeforeEach
     void init() {
@@ -129,9 +129,9 @@ public class MatchingAlgorithmTests {
         AtomicInteger tag = new AtomicInteger(1);
         List<User> users = userRepository.findAll();
 
-        List<Team> teams = this.teams.matchCourseFirst(users, tag);
-        List<List<User>> list = teams.stream()
-                .map(Team::getUsers)
+        List<StudyGroup> studyGroups = this.teams.matchCourseFirst(users, tag);
+        List<List<User>> list = studyGroups.stream()
+                .map(StudyGroup::getMembers)
                 .toList();
 
         list.forEach(team -> {
@@ -150,10 +150,10 @@ public class MatchingAlgorithmTests {
 
         all
                 .stream()
-                .filter(usr -> usr.getTeam() != null)
-                .sorted(Comparator.comparingInt(usr -> usr.getTeam().getTag()))
+                .filter(usr -> usr.getStudyGroup() != null)
+                .sorted(Comparator.comparingInt(usr -> usr.getStudyGroup().getTag()))
                 .forEach(usr -> {
-                    Integer tag = usr.getTeam().getTag();
+                    Integer tag = usr.getStudyGroup().getTag();
                     System.out.println(counter.getAndIncrement() + ". " + usr.getName() + ": " + "Team " + tag);
                 });
 
@@ -195,9 +195,9 @@ public class MatchingAlgorithmTests {
         System.out.println("========================================");
         System.out.println("Members:");
         all.forEach(user -> System.out.println(user.getName() +
-                "(" + user.getChoices().get(0).getCourse().getName() + ", " +
-                user.getChoices().get(1).getCourse().getName() + ", " +
-                user.getChoices().get(2).getCourse().getName() + ")"));
+                "(" + user.getCourseSelections().get(0).getCourse().getName() + ", " +
+                user.getCourseSelections().get(1).getCourse().getName() + ", " +
+                user.getCourseSelections().get(2).getCourse().getName() + ")"));
         System.out.println("========================================");
     }
 
@@ -206,23 +206,23 @@ public class MatchingAlgorithmTests {
     void MatchingAlgorithmTests_199() {
         // Given
         teams.matchTeam();
-        List<Team> all = teamRepository.findAll();
+        List<StudyGroup> all = studyGroupRepository.findAll();
 
         all.forEach(team -> {
             System.out.println("========================================");
             System.out.println("Team " + team.getTag() + ":");
             System.out.println("Members:");
-            team.getUsers().forEach(user -> {
+            team.getMembers().forEach(user -> {
                 System.out.println(user.getName() +
-                        "(" + user.getChoices().get(0).getCourse().getName() + ", " +
-                        user.getChoices().get(1).getCourse().getName() + ", " +
-                        user.getChoices().get(2).getCourse().getName() + ")");
+                        "(" + user.getCourseSelections().get(0).getCourse().getName() + ", " +
+                        user.getCourseSelections().get(1).getCourse().getName() + ", " +
+                        user.getCourseSelections().get(2).getCourse().getName() + ")");
             });
             System.out.println("Friends:");
-            team.getUsers().forEach(u -> u.getFriendships().stream().filter(Friendship::isAccepted).forEach(friendship ->
+            team.getMembers().forEach(u -> u.getFriendships().stream().filter(Friendship::isAccepted).forEach(friendship ->
                     System.out.println(friendship.getSent().getName() + " -> " + friendship.getReceived().getName())));
             System.out.println("Common courses:");
-            team.getEnrolls().forEach(enroll -> System.out.println(enroll.getCourse().getName()));
+            team.getGroupCourses().forEach(enroll -> System.out.println(enroll.getCourse().getName()));
             System.out.println("========================================");
         });
     }

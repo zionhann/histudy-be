@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ActiveProfiles("dev")
 @Transactional
-public class ManageReportTests {
+public class ManageReportCourseReportTestsGroup {
 
     @DisplayName("보고서 작성시 참여한 인원을 선택할 수 있다.")
     @Test
@@ -35,94 +35,121 @@ public class ManageReportTests {
                 .name("courseName")
                 .build();
 
-        Team team = new Team(1);
-        Report report = Report.builder()
+        user1.select(List.of(course));
+        user2.select(List.of(course));
+        StudyGroup studyGroup = new StudyGroup(1, List.of(user1, user2));
+
+        GroupReport groupReport = GroupReport.builder()
                 .title("title")
                 .content("content")
                 .totalMinutes(60)
-                .team(team)
+                .studyGroup(studyGroup)
                 .participants(List.of(user1))
-                .courses(List.of(course))
+                .courses(studyGroup.getGroupCourses())
                 .build();
-        user1.belongTo(team);
-        user2.belongTo(team);
 
         // then
-        assertEquals(2, report.getTeam().getUsers().size());
-        assertEquals(1, report.getParticipants().size());
+        assertEquals(2, groupReport.getStudyGroup().getMembers().size());
+        assertEquals(1, groupReport.getParticipants().size());
     }
 
     @DisplayName("보고서 작성시 활동 시간을 저장할 수 있다.")
     @Test
     public void ManageReportTests_61() {
         // given
+        User user1 = User.builder()
+                .sid("22300000")
+                .email("test@histudy.com")
+                .name("user1")
+                .role(Role.USER)
+                .build();
         Course course = Course.builder()
                 .name("courseName")
                 .build();
-        Report report = Report.builder()
+
+        user1.select(List.of(course));
+        StudyGroup studyGroup = new StudyGroup(1, List.of(user1));
+        GroupReport groupReport = GroupReport.builder()
                 .title("title")
                 .content("content")
                 .totalMinutes(60)
-                .team(new Team(1))
+                .studyGroup(studyGroup)
                 .participants(List.of(User.builder().build()))
-                .courses(List.of(course))
+                .courses(studyGroup.getGroupCourses())
                 .build();
 
         // then
-        assertEquals(60, report.getTotalMinutes());
+        assertEquals(60, groupReport.getTotalMinutes());
     }
 
     @DisplayName("활동 시간은 그룹 전체 활동 시간에도 집계되어야 한다.")
     @Test
     public void ManageReportTests_76() {
         // given
+        User user1 = User.builder()
+                .sid("22300000")
+                .email("test@histudy.com")
+                .name("user1")
+                .role(Role.USER)
+                .build();
         Course course = Course.builder()
                 .name("courseName")
                 .build();
-        Team team = new Team(1);
 
-        Report report1 = Report.builder()
+        user1.select(List.of(course));
+        StudyGroup studyGroup = new StudyGroup(1, List.of(user1));
+
+        GroupReport groupReport1 = GroupReport.builder()
                 .title("title")
                 .content("content")
                 .totalMinutes(30)
-                .team(team)
-                .participants(List.of(User.builder().build()))
-                .courses(List.of(course))
+                .studyGroup(studyGroup)
+                .participants(studyGroup.getMembers())
+                .courses(studyGroup.getGroupCourses())
                 .build();
-        Report report2 = Report.builder()
+        GroupReport groupReport2 = GroupReport.builder()
                 .title("title")
                 .content("content")
                 .totalMinutes(60)
-                .team(team)
-                .participants(List.of(User.builder().build()))
-                .courses(List.of(course))
+                .studyGroup(studyGroup)
+                .participants(studyGroup.getMembers())
+                .courses(studyGroup.getGroupCourses())
                 .build();
         // then
-        assertEquals(90, team.getTotalMinutes());
+        assertEquals(90, studyGroup.getTotalMinutes());
     }
 
     @DisplayName("이미지를 1개 이상 첨부할 수 있다.")
     @Test
     public void ManageReportTests_102() {
         // given
+        User user1 = User.builder()
+                .sid("22300000")
+                .email("test@histudy.com")
+                .name("user1")
+                .role(Role.USER)
+                .build();
         Course course = Course.builder()
                 .name("courseName")
                 .build();
-        Report report = Report.builder()
+
+        user1.select(List.of(course));
+        StudyGroup studyGroup = new StudyGroup(1, List.of(user1));
+        GroupReport groupReport = GroupReport.builder()
                 .title("title")
                 .content("content")
                 .totalMinutes(0)
-                .team(new Team(1))
-                .participants(List.of(User.builder().build()))
+                .studyGroup(studyGroup)
+                .participants(studyGroup.getMembers())
                 .images(List.of("pathA", "pathB", "pathC"))
-                .courses(List.of(course))
+                .courses(studyGroup.getGroupCourses())
                 .build();
 
         // then
-        assertEquals(3, report.getImages().size());
-        assertEquals(Collections.nCopies(3, report), report.getImages()
+        assertEquals(3, groupReport.getImages().size());
+        assertEquals(Collections.nCopies(3, groupReport), groupReport.getImages()
                 .stream()
-                .map(Image::getReport)
+                .map(Image::getGroupReport)
                 .toList());
     }
 
@@ -134,20 +161,21 @@ public class ManageReportTests {
                 .name("courseName")
                 .build();
 
-        Report report = Report.builder()
+        StudyGroup studyGroup = new StudyGroup(1, List.of());
+        GroupReport groupReport = GroupReport.builder()
                 .title("title")
                 .content("content")
                 .totalMinutes(0)
-                .team(new Team(1))
-                .participants(List.of(User.builder().build()))
+                .studyGroup(studyGroup)
+                .participants(studyGroup.getMembers())
                 .images(List.of("pathA", "pathB", "pathC"))
-                .courses(List.of(course))
+                .courses(studyGroup.getGroupCourses())
                 .build();
 
         // then
-        assertEquals(3, report.getImages().size());
+        assertEquals(3, groupReport.getImages().size());
         assertEquals(List.of("pathA", "pathB", "pathC"),
-                report.getImages()
+                groupReport.getImages()
                         .stream()
                         .map(Image::getPath)
                         .toList());

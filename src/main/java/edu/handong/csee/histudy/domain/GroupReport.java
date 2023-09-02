@@ -15,7 +15,7 @@ import static java.util.Objects.requireNonNullElse;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Report extends BaseTime {
+public class GroupReport extends BaseTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,44 +25,44 @@ public class Report extends BaseTime {
     private long totalMinutes;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private Team team;
+    private StudyGroup studyGroup;
 
-    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Participates> participants = new ArrayList<>();
+    @OneToMany(mappedBy = "groupReport", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReportUser> participants = new ArrayList<>();
 
-    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "groupReport", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images = new ArrayList<>();
 
-    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Study> studies = new ArrayList<>();
+    @OneToMany(mappedBy = "groupReport", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReportCourse> courses = new ArrayList<>();
 
     @Builder
-    public Report(String title,
-                  String content,
-                  long totalMinutes,
-                  Team team,
-                  List<User> participants,
-                  List<String> images,
-                  List<Course> courses) {
+    public GroupReport(String title,
+                       String content,
+                       long totalMinutes,
+                       StudyGroup studyGroup,
+                       List<User> participants,
+                       List<String> images,
+                       List<GroupCourse> courses) {
         this.title = title;
         this.content = content;
         this.totalMinutes = totalMinutes;
 
-        this.writtenBy(team);
+        this.writtenBy(studyGroup);
         this.add(participants);
         this.insert(images);
         this.study(courses);
-        team.increase(totalMinutes);
+        studyGroup.increase(totalMinutes);
     }
 
-    private void study(List<Course> courses) {
-        if (!studies.isEmpty()) {
-            studies.clear();
+    private void study(List<GroupCourse> groupCourses) {
+        if (!courses.isEmpty()) {
+            courses.clear();
         }
-        List<Study> studies = courses.stream()
-                .map(course -> new Study(this, course))
+        List<ReportCourse> reportCourses = groupCourses.stream()
+                .map(course -> new ReportCourse(this, course))
                 .toList();
-        this.studies.addAll(studies);
+        this.courses.addAll(reportCourses);
     }
 
     private void add(List<User> users) {
@@ -71,15 +71,15 @@ public class Report extends BaseTime {
         }
         users
                 .forEach(user -> {
-                    Participates participates = new Participates(user, this);
-                    this.participants.add(participates);
-                    user.getParticipates().add(participates);
+                    ReportUser reportUser = new ReportUser(user, this);
+                    this.participants.add(reportUser);
+                    user.getReportParticipation().add(reportUser);
                 });
     }
 
-    private void writtenBy(Team team) {
-        this.team = team;
-        team.getReports().add(this);
+    private void writtenBy(StudyGroup studyGroup) {
+        this.studyGroup = studyGroup;
+        studyGroup.getReports().add(this);
     }
 
     private void insert(List<String> images) {
@@ -94,7 +94,7 @@ public class Report extends BaseTime {
         this.images.addAll(paths);
     }
 
-    public boolean update(ReportForm form, List<User> participants, List<Course> courses) {
+    public boolean update(ReportForm form, List<User> participants, List<GroupCourse> courses) {
         this.title = requireNonNullElse(form.getTitle(), this.title);
         this.content = requireNonNullElse(form.getContent(), this.content);
         this.totalMinutes = requireNonNullElse(form.getTotalMinutes(), this.totalMinutes);
@@ -102,7 +102,7 @@ public class Report extends BaseTime {
         this.add(participants);
         this.insert(form.getImages());
         this.study(courses);
-        team.update(totalMinutes, this.totalMinutes);
+        studyGroup.update(totalMinutes, this.totalMinutes);
 
         return true;
     }

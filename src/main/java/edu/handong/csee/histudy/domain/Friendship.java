@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Entity
@@ -50,8 +51,7 @@ public class Friendship {
             User temp = sent;
             sent = received;
             received = temp;
-        }
-        else {
+        } else {
             received.getFriendships().remove(this);
         }
     }
@@ -65,23 +65,20 @@ public class Friendship {
         received.getFriendships().add(this);
     }
 
-    public Team makeTeam(AtomicInteger tag) {
-        if (sent.getTeam() != null && received.getTeam() != null) {
-            assert sent.getTeam().equals(received.getTeam());
-            return sent.getTeam();
-        } else if (sent.getTeam() != null) {
+    public StudyGroup makeTeam(AtomicInteger tag) {
+        if (sent.getStudyGroup() != null && received.getStudyGroup() != null) {
+            assert sent.getStudyGroup().equals(received.getStudyGroup());
+            return sent.getStudyGroup();
+        } else if (sent.getStudyGroup() != null) {
             // (a <-> b) -> c]
-            received.belongTo(sent.getTeam());
-            return sent.getTeam();
-        } else if (received.getTeam() != null) {
+            return sent.getStudyGroup()
+                    .join(List.of(received));
+        } else if (received.getStudyGroup() != null) {
             // (a <-> b) <- c
-            sent.belongTo(received.getTeam());
-            return received.getTeam();
+            return received.getStudyGroup()
+                    .join(List.of(sent));
         }
-        Team team = new Team(tag.getAndIncrement());
-        sent.belongTo(team);
-        received.belongTo(team);
-        return team;
+        return new StudyGroup(tag.getAndIncrement(), List.of(sent, received));
     }
 
     public User getFriendOf(User u) {

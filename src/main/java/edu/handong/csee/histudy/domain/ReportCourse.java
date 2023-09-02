@@ -8,19 +8,18 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Study {
+public class ReportCourse {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
-    private Report report;
+    private GroupReport groupReport;
     @ManyToOne(fetch = FetchType.LAZY)
-    private Course course;
+    private GroupCourse groupCourse;
 
     @Builder
-    public Study(Report report, Course course) {
-        this.course = course;
-        this.report = report;
+    public ReportCourse(GroupReport report, GroupCourse groupCourse) {
+        this.groupCourse = groupCourse;
+        this.groupReport = report;
     }
-
 }

@@ -3,11 +3,11 @@ package edu.handong.csee.histudy.report;
 import edu.handong.csee.histudy.controller.form.ReportForm;
 import edu.handong.csee.histudy.domain.Course;
 import edu.handong.csee.histudy.domain.Role;
-import edu.handong.csee.histudy.domain.Team;
+import edu.handong.csee.histudy.domain.StudyGroup;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.ReportDto;
 import edu.handong.csee.histudy.repository.CourseRepository;
-import edu.handong.csee.histudy.repository.TeamRepository;
+import edu.handong.csee.histudy.repository.StudyGroupRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import edu.handong.csee.histudy.service.ReportService;
 import org.junit.jupiter.api.DisplayName;
@@ -23,13 +23,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ActiveProfiles("dev")
 @SpringBootTest
-public class ReportServiceTest {
+public class ReportCourseReportServiceTestGroup {
     @Autowired
     ReportService reportService;
     @Autowired
     UserRepository userRepository;
     @Autowired
-    TeamRepository teamRepository;
+    StudyGroupRepository studyGroupRepository;
     @Autowired
     CourseRepository courseRepository;
 
@@ -37,6 +37,19 @@ public class ReportServiceTest {
     @Transactional
     @Test
     public void reportServiceTest() {
+        User userA = User.builder()
+                .sid("22000328")
+                .email("a@a.com")
+                .role(Role.USER)
+                .build();
+        User userB = User.builder()
+                .sid("22000329")
+                .email("a@b.com")
+                .role(Role.USER)
+                .build();
+        User saved = userRepository.save(userA);
+        User saved2 = userRepository.save(userB);
+
         Course course = Course.builder()
                 .name("기초전자공학실험")
                 .code("ECE20007")
@@ -60,6 +73,13 @@ public class ReportServiceTest {
                 .semester(1)
                 .build();
         courseRepository.save(courseC);
+
+        saved.select(List.of(course, courseB, courseC));
+        saved2.select(List.of(course, courseB, courseC));
+
+        StudyGroup studyGroup = new StudyGroup(1, List.of(saved, saved2));
+        studyGroupRepository.save(studyGroup);
+
         ReportForm form = ReportForm.builder()
                 .title("title")
                 .content("content")
@@ -67,13 +87,7 @@ public class ReportServiceTest {
                 .participants(List.of("22000328"))
                 .courses(List.of(course.getId(), courseB.getId(), courseC.getId()))
                 .build();
-        User user = User.builder()
-                .sid("22000328")
-                .email("a@a.com")
-                .role(Role.USER)
-                .build();
-        User saved = userRepository.save(user);
-        saved.belongTo(new Team(1));
+
         ReportDto.ReportInfo response = reportService.createReport(form, "a@a.com");
         assertThat(response.getCourses().size()).isEqualTo(3);
     }
@@ -118,8 +132,9 @@ public class ReportServiceTest {
                 .role(Role.USER)
                 .build();
         User saved = userRepository.save(user);
-        Team team = teamRepository.save(new Team(1));
-        saved.belongTo(team);
+        saved.select(List.of(course, courseB, courseC));
+        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(1, List.of(saved)));
+
         ReportDto.ReportInfo response = reportService.createReport(form, "a@a.com");
         ReportDto.ReportInfo detail = reportService.getReport(response.getId())
                 .orElseThrow();

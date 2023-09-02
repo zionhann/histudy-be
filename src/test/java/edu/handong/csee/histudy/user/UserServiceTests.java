@@ -35,17 +35,17 @@ public class UserServiceTests {
     @Autowired
     UserRepository userRepository;
     @Autowired
-    TeamRepository teamRepository;
+    StudyGroupRepository studyGroupRepository;
     @Autowired
     CourseRepository courseRepository;
     @Autowired
-    ChoiceRepository choiceRepository;
+    UserCourseRepository userCourseRepository;
     @Autowired
     ReportService reportService;
     @MockBean
     AuthenticationInterceptor interceptor;
     @Autowired
-    private ReportRepository reportRepository;
+    private GroupReportRepository groupReportRepository;
 
     @BeforeEach
     void setup() throws IOException {
@@ -107,25 +107,23 @@ public class UserServiceTests {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
-        List<Choice> choices = courses.stream().map(c -> choiceRepository.save(Choice.builder()
+        List<UserCourse> preferredCours = courses.stream().map(c -> userCourseRepository.save(UserCourse.builder()
                 .user(savedA)
                 .course(c)
                 .build())).toList();
-        savedA.getChoices().addAll(choices);
+        savedA.getCourseSelections().addAll(preferredCours);
         List<Long> courseIdxList2 = List.of(1L, 2L, 3L);
         List<Course> courses2 = courseIdxList2.stream()
                 .map(courseRepository::findById)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
-        List<Choice> choices2 = courses2.stream().map(c -> choiceRepository.save(Choice.builder()
+        List<UserCourse> choices2 = courses2.stream().map(c -> userCourseRepository.save(UserCourse.builder()
                 .user(savedB)
                 .course(c)
                 .build())).toList();
-        savedB.getChoices().addAll(choices2);
-        Team team = teamRepository.save(new Team(111));
-        savedA.belongTo(team);
-        savedB.belongTo(team);
+        savedB.getCourseSelections().addAll(choices2);
+        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(111, List.of(savedA, savedB)));
         ReportForm form = ReportForm.builder()
                 .title("title")
                 .content("content")
@@ -137,8 +135,8 @@ public class UserServiceTests {
         List<UserDto.UserInfo> users = userService.getUsers("");
         assertThat(users).isNotEmpty();
         assertThat(users.size()).isEqualTo(3);
-        List<Report> reports = reportRepository.findAll();
-        System.out.println("reports = " + reports);
+        List<GroupReport> groupReports = groupReportRepository.findAll();
+        System.out.println("reports = " + groupReports);
         System.out.println("users = " + users);
         assertThat(users.get(0).getTotalMinutes()).isEqualTo(60L);
         System.out.println("users = " + users);
@@ -176,25 +174,23 @@ public class UserServiceTests {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
-        List<Choice> choices = courses.stream().map(c -> choiceRepository.save(Choice.builder()
+        List<UserCourse> preferredCours = courses.stream().map(c -> userCourseRepository.save(UserCourse.builder()
                 .user(savedA)
                 .course(c)
                 .build())).toList();
-        savedA.getChoices().addAll(choices);
+        savedA.getCourseSelections().addAll(preferredCours);
         List<Long> courseIdxList2 = courseRepository.findAll().stream().map(Course::getId).toList();
         List<Course> courses2 = courseIdxList2.stream()
                 .map(courseRepository::findById)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
-        List<Choice> choices2 = courses2.stream().map(c -> choiceRepository.save(Choice.builder()
+        List<UserCourse> choices2 = courses2.stream().map(c -> userCourseRepository.save(UserCourse.builder()
                 .user(savedB)
                 .course(c)
                 .build())).toList();
-        savedB.getChoices().addAll(choices2);
-        Team team = teamRepository.save(new Team(111));
-        savedA.belongTo(team);
-        savedB.belongTo(team);
+        savedB.getCourseSelections().addAll(choices2);
+        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(111, List.of(savedA, savedB)));
         List<UserDto.UserInfo> users = userService.getAppliedUsers();
         assertThat(users.size()).isEqualTo(2);
         System.out.println("users = " + users);
@@ -254,8 +250,9 @@ public class UserServiceTests {
                 .toList()
                 .size()
         ).isNotZero();
-        assertThat(savedA.getChoices().size()).isZero();
+        assertThat(savedA.getCourseSelections().size()).isZero();
     }
+
     @DisplayName("유저의 정보를 수정할 수 있어야한다")
     @Test
     public void userEditTest() {
@@ -266,18 +263,17 @@ public class UserServiceTests {
                 .role(Role.USER)
                 .build();
         User saved = userRepository.save(user);
-        Team team = teamRepository.save(new Team(111));
-        Team newTeam = teamRepository.save(new Team(222));
-        saved.belongTo(team);
+        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(111, List.of(saved)));
+        StudyGroup newStudyGroup = studyGroupRepository.save(new StudyGroup(222, List.of()));
         UserDto.UserEdit dto = UserDto.UserEdit.builder()
-                                                .id(saved.getId())
-                                                .sid("12345678")
-                                                .name("조용히해라")
-                                                .team(222)
-                                                .build();
+                .id(saved.getId())
+                .sid("12345678")
+                .name("조용히해라")
+                .team(222)
+                .build();
         UserDto.UserInfo edited = userService.editUser(dto);
         assertThat(edited.getName()).isEqualTo("조용히해라");
         assertThat(edited.getSid()).isEqualTo("12345678");
-        assertThat(edited.getGroup()).isEqualTo(newTeam.getTag());
+        assertThat(edited.getGroup()).isEqualTo(newStudyGroup.getTag());
     }
 }

@@ -1,14 +1,15 @@
-package edu.handong.csee.histudy.team;
+package edu.handong.csee.histudy.group;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.handong.csee.histudy.controller.TeamController;
 import edu.handong.csee.histudy.domain.Course;
 import edu.handong.csee.histudy.domain.Role;
-import edu.handong.csee.histudy.domain.Team;
+import edu.handong.csee.histudy.domain.StudyGroup;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.CourseDto;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
 import edu.handong.csee.histudy.repository.CourseRepository;
+import edu.handong.csee.histudy.repository.StudyGroupRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -39,7 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @SpringBootTest
 @Transactional
-public class TeamControllerTests {
+public class ReportGroupCourseControllerTests {
 
     MockMvc mvc;
 
@@ -57,6 +58,9 @@ public class TeamControllerTests {
 
     @Autowired
     CourseRepository courseRepository;
+
+    @Autowired
+    StudyGroupRepository studyGroupRepository;
 
     @BeforeEach
     void init() throws IOException {
@@ -98,13 +102,10 @@ public class TeamControllerTests {
         Claims claimsB = Jwts.claims();
         claimsB.put("sub", userB.getEmail());
 
-        Team team = new Team(1);
-
-        save1.belongTo(team);
-        save2.belongTo(team);
-
-        save2.getTeam()
-                .select(List.of(savedCourse1, savedCourse2));
+        save1.select(List.of(savedCourse1, savedCourse2));
+        save2.select(List.of(savedCourse1, savedCourse2));
+        StudyGroup studyGroup = new StudyGroup(1, List.of(save1, save2));
+        studyGroupRepository.save(studyGroup);
 
         Claims claimsA = Jwts.claims();
         claimsA.put("sub", userA.getEmail());

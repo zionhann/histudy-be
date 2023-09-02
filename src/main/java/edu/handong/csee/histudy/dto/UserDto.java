@@ -86,17 +86,17 @@ public class UserDto {
             this.id = user.getId();
             this.name = user.getName();
             this.sid = user.getSid();
-            this.group = (user.getTeam() == null) ? 0 : user.getTeam().getTag();
+            this.group = (user.getStudyGroup() == null) ? 0 : user.getStudyGroup().getTag();
             this.friends = user.getFriendships().stream()
                     .filter(Friendship::isAccepted)
                     .map(f -> f.getFriendOf(user))
                     .map(UserBasic::new)
                     .toList();
-            this.courses = user.getChoices().stream()
+            this.courses = user.getCourseSelections().stream()
                     .map(c -> new CourseIdNameDto(c.getCourse()))
                     .toList();
-            this.totalMinutes = user.getParticipates().stream()
-                    .mapToLong(p -> p.getReport().getTotalMinutes())
+            this.totalMinutes = user.getReportParticipation().stream()
+                    .mapToLong(p -> p.getGroupReport().getTotalMinutes())
                     .sum();
         }
     }

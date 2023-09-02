@@ -1,7 +1,7 @@
 package edu.handong.csee.histudy.dto;
 
-import edu.handong.csee.histudy.domain.Report;
-import edu.handong.csee.histudy.domain.Team;
+import edu.handong.csee.histudy.domain.StudyGroup;
+import edu.handong.csee.histudy.domain.GroupReport;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -28,14 +28,14 @@ public class TeamDto {
     @Schema(description = "Total time studied", type = "number", example = "120")
     private long times; // totalMinutes
 
-    public TeamDto(Team team) {
-        this.group = team.getId();
-        this.tag = team.getTag();
-        this.members = team.getUsers().stream()
+    public TeamDto(StudyGroup studyGroup) {
+        this.group = studyGroup.getId();
+        this.tag = studyGroup.getTag();
+        this.members = studyGroup.getMembers().stream()
                 .map(UserDto.UserInfo::new).toList();
-        this.reports = team.getReports().size();
-        this.times = team.getReports().stream()
-                .mapToLong(Report::getTotalMinutes).sum();
+        this.reports = studyGroup.getReports().size();
+        this.times = studyGroup.getReports().stream()
+                .mapToLong(GroupReport::getTotalMinutes).sum();
     }
 
 
@@ -49,8 +49,8 @@ public class TeamDto {
         @Schema(description = "List of unmatched users", type = "array")
         private List<UserDto.UserInfo> unmatchedUsers;
 
-        public MatchResults(List<Team> matchedTeams, List<UserDto.UserInfo> unmatchedUsers) {
-            this.matchedTeams = matchedTeams.stream()
+        public MatchResults(List<StudyGroup> matchedStudyGroups, List<UserDto.UserInfo> unmatchedUsers) {
+            this.matchedTeams = matchedStudyGroups.stream()
                     .map(TeamMatching::new).toList();
             this.unmatchedUsers = unmatchedUsers;
         }
@@ -72,12 +72,12 @@ public class TeamDto {
         @Schema(description = "Team courses", type = "array")
         private List<CourseDto.CourseInfo> courses;
 
-        public TeamMatching(Team team) {
-            this.id = team.getId();
-            this.tag = team.getTag();
-            this.users = team.getUsers().stream()
+        public TeamMatching(StudyGroup studyGroup) {
+            this.id = studyGroup.getId();
+            this.tag = studyGroup.getTag();
+            this.users = studyGroup.getMembers().stream()
                     .map(UserDto.UserMatching::new).toList();
-            this.courses = team.getEnrolls().stream()
+            this.courses = studyGroup.getGroupCourses().stream()
                     .map(enroll -> new CourseDto.CourseInfo(enroll.getCourse()))
                     .toList();
         }

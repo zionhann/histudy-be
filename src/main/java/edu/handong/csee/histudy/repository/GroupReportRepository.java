@@ -1,10 +1,10 @@
 package edu.handong.csee.histudy.repository;
 
-import edu.handong.csee.histudy.domain.Report;
+import edu.handong.csee.histudy.domain.GroupReport;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ReportRepository extends JpaRepository<Report, Long> {
+public interface GroupReportRepository extends JpaRepository<GroupReport, Long> {
 
 }
