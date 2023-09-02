@@ -1,4 +1,4 @@
-package edu.handong.csee.histudy.studyGroup;
+package edu.handong.csee.histudy.group;
 
 import edu.handong.csee.histudy.controller.form.ReportForm;
 import edu.handong.csee.histudy.domain.*;

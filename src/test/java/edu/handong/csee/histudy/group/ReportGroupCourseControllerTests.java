@@ -1,4 +1,4 @@
-package edu.handong.csee.histudy.team;
+package edu.handong.csee.histudy.group;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.handong.csee.histudy.controller.TeamController;
