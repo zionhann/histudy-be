@@ -7,7 +7,7 @@ import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.ReportDto;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
 import edu.handong.csee.histudy.repository.CourseRepository;
-import edu.handong.csee.histudy.repository.ReportRepository;
+import edu.handong.csee.histudy.repository.GroupReportRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -40,7 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @SpringBootTest
 @Transactional
-public class ReportControllerTests {
+public class ReportCourseReportControllerTestsGroup {
 
     MockMvc mvc;
 
@@ -55,7 +55,7 @@ public class ReportControllerTests {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private ReportRepository reportRepository;
+    private GroupReportRepository groupReportRepository;
     @Autowired
     private CourseRepository courseRepository;
 
@@ -79,21 +79,21 @@ public class ReportControllerTests {
                 .email("user@test.com")
                 .role(Role.MEMBER)
                 .build());
-        user.belongTo(new Team(1));
+        user.belongTo(new StudyGroup(1));
 
         Course course = courseRepository.save(Course.builder()
                 .name("courseName")
                 .build());
 
-        Report report = Report.builder()
+        GroupReport groupReport = GroupReport.builder()
                 .title("reportTitle")
                 .content("reportContent")
-                .team(user.getTeam())
+                .studyGroup(user.getStudyGroup())
                 .totalMinutes(60L)
                 .participants(List.of(user))
                 .courses(List.of(course))
                 .build();
-        reportRepository.save(report);
+        groupReportRepository.save(groupReport);
 
         Claims claims = Jwts.claims();
         claims.put("sub", user.getEmail());
@@ -125,21 +125,21 @@ public class ReportControllerTests {
                 .email("user@test.com")
                 .role(Role.MEMBER)
                 .build());
-        user.belongTo(new Team(1));
+        user.belongTo(new StudyGroup(1));
 
         Course course = courseRepository.save(Course.builder()
                 .name("courseName")
                 .build());
 
-        Report report = Report.builder()
+        GroupReport groupReport = GroupReport.builder()
                 .title("reportTitle")
                 .content("reportContent")
-                .team(user.getTeam())
+                .studyGroup(user.getStudyGroup())
                 .totalMinutes(60L)
                 .participants(List.of(user))
                 .courses(List.of(course))
                 .build();
-        reportRepository.save(report);
+        groupReportRepository.save(groupReport);
 
         Claims claims = Jwts.claims();
         claims.put("sub", user.getEmail());
@@ -147,7 +147,7 @@ public class ReportControllerTests {
 
         // when
         MvcResult mvcResult = mvc
-                .perform(get("/api/team/reports/{id}", report.getId())
+                .perform(get("/api/team/reports/{id}", groupReport.getId())
                         .requestAttr("claims", claims))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -158,7 +158,7 @@ public class ReportControllerTests {
                 ReportDto.ReportInfo.class);
 
         // then
-        assertEquals(report.getId(), res.getId());
+        assertEquals(groupReport.getId(), res.getId());
     }
 
     @DisplayName("그룹의 보고서를 수정할 수 있다: 요청폼 없음")
@@ -170,28 +170,28 @@ public class ReportControllerTests {
                 .name("username")
                 .email("user@test.com")
                 .build());
-        user.belongTo(new Team(1));
+        user.belongTo(new StudyGroup(1));
 
         Course course = courseRepository.save(Course.builder()
                 .name("courseName")
                 .build());
 
-        Report report = Report.builder()
+        GroupReport groupReport = GroupReport.builder()
                 .title("reportTitle")
                 .content("reportContent")
-                .team(user.getTeam())
+                .studyGroup(user.getStudyGroup())
                 .totalMinutes(60L)
                 .participants(List.of(user))
                 .courses(List.of(course))
                 .build();
-        reportRepository.save(report);
+        groupReportRepository.save(groupReport);
 
         Claims claims = Jwts.claims(
                 Collections.singletonMap(Claims.SUBJECT, user.getEmail()));
 
         // when
         mvc
-                .perform(patch("/api/team/reports/{reportId}", report.getId())
+                .perform(patch("/api/team/reports/{reportId}", groupReport.getId())
                         .requestAttr("claims", claims))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
@@ -208,21 +208,21 @@ public class ReportControllerTests {
                 .email("user@test.com")
                 .role(Role.MEMBER)
                 .build());
-        user.belongTo(new Team(1));
+        user.belongTo(new StudyGroup(1));
 
         Course course = courseRepository.save(Course.builder()
                 .name("courseName")
                 .build());
 
-        Report report = Report.builder()
+        GroupReport groupReport = GroupReport.builder()
                 .title("reportTitle")
                 .content("reportContent")
-                .team(user.getTeam())
+                .studyGroup(user.getStudyGroup())
                 .totalMinutes(60L)
                 .participants(List.of(user))
                 .courses(List.of(course))
                 .build();
-        reportRepository.save(report);
+        groupReportRepository.save(groupReport);
 
         String form = mapper.writeValueAsString(ReportForm.builder()
                 .title("modified title")
@@ -234,7 +234,7 @@ public class ReportControllerTests {
 
         // when
         mvc
-                .perform(patch("/api/team/reports/{reportId}", report.getId())
+                .perform(patch("/api/team/reports/{reportId}", groupReport.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .requestAttr("claims", claims)
                         .content(form))
@@ -253,21 +253,21 @@ public class ReportControllerTests {
                 .email("user@test.com")
                 .role(Role.USER)
                 .build());
-        user.belongTo(new Team(1));
+        user.belongTo(new StudyGroup(1));
 
         Course course = courseRepository.save(Course.builder()
                 .name("courseName")
                 .build());
 
-        Report report = Report.builder()
+        GroupReport groupReport = GroupReport.builder()
                 .title("reportTitle")
                 .content("reportContent")
-                .team(user.getTeam())
+                .studyGroup(user.getStudyGroup())
                 .totalMinutes(60L)
                 .participants(List.of(user))
                 .courses(List.of(course))
                 .build();
-        reportRepository.save(report);
+        groupReportRepository.save(groupReport);
 
         Claims claims = Jwts.claims();
         claims.put("sub", user.getEmail());
@@ -275,7 +275,7 @@ public class ReportControllerTests {
 
         // when
         mvc
-                .perform(delete("/api/team/reports/{reportId}", report.getId())
+                .perform(delete("/api/team/reports/{reportId}", groupReport.getId())
                         .requestAttr("claims", claims))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -292,21 +292,21 @@ public class ReportControllerTests {
                 .email("user@test.com")
                 .role(Role.MEMBER)
                 .build());
-        user.belongTo(new Team(1));
+        user.belongTo(new StudyGroup(1));
 
         Course course = courseRepository.save(Course.builder()
                 .name("courseName")
                 .build());
 
-        Report report = Report.builder()
+        GroupReport groupReport = GroupReport.builder()
                 .title("reportTitle")
                 .content("reportContent")
-                .team(user.getTeam())
+                .studyGroup(user.getStudyGroup())
                 .totalMinutes(60L)
                 .participants(List.of(user))
                 .courses(List.of(course))
                 .build();
-        reportRepository.save(report);
+        groupReportRepository.save(groupReport);
 
         Claims claims = Jwts.claims();
         claims.put("sub", user.getEmail());

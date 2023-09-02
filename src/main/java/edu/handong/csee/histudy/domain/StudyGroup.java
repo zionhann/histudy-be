@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Team {
+public class StudyGroup {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,16 +22,16 @@ public class Team {
     private Integer tag;
     private long totalMinutes;
 
-    @OneToMany(mappedBy = "team")
-    private List<Report> reports = new ArrayList<>();
+    @OneToMany(mappedBy = "studyGroup")
+    private List<GroupReport> reports = new ArrayList<>();
 
-    @OneToMany(mappedBy = "team")
-    private List<User> users = new ArrayList<>();
+    @OneToMany(mappedBy = "studyGroup")
+    private List<User> members = new ArrayList<>();
 
-    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL)
-    private List<Enrollment> enrolls = new ArrayList<>();
+    @OneToMany(mappedBy = "studyGroup", cascade = CascadeType.ALL)
+    private List<GroupCourse> groupCourses = new ArrayList<>();
 
-    public Team(Integer tag) {
+    public StudyGroup(Integer tag) {
         this.tag = tag;
     }
 
@@ -39,22 +39,22 @@ public class Team {
         this.totalMinutes += totalMinutes;
     }
 
-    public void select(List<Course> courses) {
-        if (!enrolls.isEmpty()) {
-            this.enrolls.clear();
+    public void select(List<Course> _courses) {
+        if (!groupCourses.isEmpty()) {
+            this.groupCourses.clear();
         }
-        courses
+        _courses
                 .forEach(course -> {
-                    Enrollment enrollment = new Enrollment(this, course);
-                    enrolls.add(enrollment);
-                    course.getEnrolls().add(enrollment);
+                    GroupCourse groupCourse = new GroupCourse(this, course);
+                    groupCourses.add(groupCourse);
+                    course.getGroupCourses().add(groupCourse);
                 });
     }
 
     @PreRemove
     void preRemove() {
-        this.users.forEach(User::removeTeam);
-        this.users.clear();
+        this.members.forEach(User::removeTeam);
+        this.members.clear();
     }
 
     public void update(long newTotalMinutes, long oldTotalMinutes) {
@@ -62,9 +62,9 @@ public class Team {
     }
 
     private List<Course> commonCourses() {
-        Map<Course, Long> courseCountMap = users.stream()
-                .flatMap(u -> u.getChoices().stream())
-                .map(Choice::getCourse)
+        Map<Course, Long> courseCountMap = members.stream()
+                .flatMap(u -> u.getCourseSelections().stream())
+                .map(UserCourse::getCourse)
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
         return courseCountMap.entrySet().stream()
@@ -74,19 +74,19 @@ public class Team {
     }
 
     public void enroll(List<User> group) {
-        if (!enrolls.isEmpty()) {
-            this.enrolls
+        if (!groupCourses.isEmpty()) {
+            this.groupCourses
                     .forEach(e -> e.getCourse()
-                            .getEnrolls()
+                            .getGroupCourses()
                             .remove(e));
-            this.enrolls.clear();
+            this.groupCourses.clear();
         }
         group.forEach(u -> u.belongTo(this));
         commonCourses()
                 .forEach(course -> {
-                    Enrollment enrollment = new Enrollment(this, course);
-                    enrolls.add(enrollment);
-                    course.getEnrolls().add(enrollment);
+                    GroupCourse groupCourse = new GroupCourse(this, course);
+                    groupCourses.add(groupCourse);
+                    course.getGroupCourses().add(groupCourse);
                 });
     }
 }

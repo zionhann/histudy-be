@@ -3,8 +3,8 @@ package edu.handong.csee.histudy.service;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
 import edu.handong.csee.histudy.domain.Course;
-import edu.handong.csee.histudy.domain.Enrollment;
-import edu.handong.csee.histudy.domain.Team;
+import edu.handong.csee.histudy.domain.GroupCourse;
+import edu.handong.csee.histudy.domain.StudyGroup;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.CourseDto;
 import edu.handong.csee.histudy.dto.CourseIdDto;
@@ -76,10 +76,10 @@ public class CourseService {
 
     public List<CourseDto.CourseInfo> getTeamCourses(String email) {
         List<Course> courses = userRepository.findUserByEmail(email).stream()
-                .map(User::getTeam)
-                .map(Team::getEnrolls)
+                .map(User::getStudyGroup)
+                .map(StudyGroup::getGroupCourses)
                 .flatMap(list -> list.stream()
-                        .map(Enrollment::getCourse))
+                        .map(GroupCourse::getCourse))
                 .toList();
 
         return courses.stream()

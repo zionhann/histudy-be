@@ -34,16 +34,16 @@ public class User {
     private Role role;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Team team;
+    private StudyGroup studyGroup;
 
     @OneToMany(mappedBy = "user")
-    private List<Participates> participates = new ArrayList<>();
+    private List<ReportUser> reportParticipation = new ArrayList<>();
 
     @OneToMany(mappedBy = "sent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Friendship> friendships = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Choice> choices = new ArrayList<>();
+    private List<UserCourse> courseSelections = new ArrayList<>();
 
     @Builder
     public User(String sub, String sid, String email, String name, Role role) {
@@ -54,9 +54,9 @@ public class User {
         this.role = role;
     }
 
-    public void belongTo(Team team) {
-        this.team = team;
-        team.getUsers().add(this);
+    public void belongTo(StudyGroup studyGroup) {
+        this.studyGroup = studyGroup;
+        studyGroup.getMembers().add(this);
         this.role = Role.MEMBER;
     }
 
@@ -83,25 +83,25 @@ public class User {
     }
 
     public void select(List<Course> courses) {
-        if (!choices.isEmpty()) {
-            this.choices.clear();
+        if (!courseSelections.isEmpty()) {
+            this.courseSelections.clear();
         }
         courses
                 .forEach(c -> {
-                    Choice choice = new Choice(this, c);
-                    this.choices.add(choice);
-                    c.getChoices().add(choice);
+                    UserCourse userCourse = new UserCourse(this, c);
+                    this.courseSelections.add(userCourse);
+                    c.getUserCourses().add(userCourse);
                 });
     }
 
     public void removeTeam() {
-        this.team = null;
+        this.studyGroup = null;
     }
 
-    public void edit(UserDto.UserEdit dto, Team team) {
+    public void edit(UserDto.UserEdit dto, StudyGroup studyGroup) {
         this.sid = dto.getSid();
         this.name = dto.getName();
-        this.team = team;
-        team.getUsers().add(this);
+        this.studyGroup = studyGroup;
+        studyGroup.getMembers().add(this);
     }
 }

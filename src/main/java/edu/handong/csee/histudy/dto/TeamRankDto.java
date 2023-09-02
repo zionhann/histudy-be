@@ -1,7 +1,7 @@
 package edu.handong.csee.histudy.dto;
 
 import edu.handong.csee.histudy.domain.Image;
-import edu.handong.csee.histudy.domain.Team;
+import edu.handong.csee.histudy.domain.StudyGroup;
 import edu.handong.csee.histudy.domain.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
@@ -39,15 +39,15 @@ public class TeamRankDto {
         @Schema(description = "Team thumbnail(from the latest report)", type = "string", example = "https://i.imgur.com/3QXm2oF.png")
         private String thumbnail;
 
-        public TeamInfo(Team team) {
-            this.id = team.getTag();
-            this.members = team.getUsers()
+        public TeamInfo(StudyGroup studyGroup) {
+            this.id = studyGroup.getTag();
+            this.members = studyGroup.getMembers()
                     .stream()
                     .map(User::getName)
                     .toList();
-            this.reports = team.getReports().size();
-            this.totalMinutes = team.getTotalMinutes();
-            this.thumbnail = team.getReports()
+            this.reports = studyGroup.getReports().size();
+            this.totalMinutes = studyGroup.getTotalMinutes();
+            this.thumbnail = studyGroup.getReports()
                     .stream()
                     .reduce((first, second) -> second)
                     .flatMap((report -> report.getImages()

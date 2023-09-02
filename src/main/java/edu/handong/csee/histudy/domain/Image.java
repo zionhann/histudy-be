@@ -18,11 +18,11 @@ public class Image {
     private String path;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private Report report;
+    private GroupReport groupReport;
 
     @Builder
-    public Image(String path, Report report) {
+    public Image(String path, GroupReport groupReport) {
         this.path = path;
-        this.report = report;
+        this.groupReport = groupReport;
     }
 }

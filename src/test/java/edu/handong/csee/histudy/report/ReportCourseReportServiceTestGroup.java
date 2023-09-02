@@ -3,11 +3,11 @@ package edu.handong.csee.histudy.report;
 import edu.handong.csee.histudy.controller.form.ReportForm;
 import edu.handong.csee.histudy.domain.Course;
 import edu.handong.csee.histudy.domain.Role;
-import edu.handong.csee.histudy.domain.Team;
+import edu.handong.csee.histudy.domain.StudyGroup;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.ReportDto;
 import edu.handong.csee.histudy.repository.CourseRepository;
-import edu.handong.csee.histudy.repository.TeamRepository;
+import edu.handong.csee.histudy.repository.StudyGroupRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import edu.handong.csee.histudy.service.ReportService;
 import org.junit.jupiter.api.DisplayName;
@@ -23,13 +23,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ActiveProfiles("dev")
 @SpringBootTest
-public class ReportServiceTest {
+public class ReportCourseReportServiceTestGroup {
     @Autowired
     ReportService reportService;
     @Autowired
     UserRepository userRepository;
     @Autowired
-    TeamRepository teamRepository;
+    StudyGroupRepository studyGroupRepository;
     @Autowired
     CourseRepository courseRepository;
 
@@ -73,7 +73,7 @@ public class ReportServiceTest {
                 .role(Role.USER)
                 .build();
         User saved = userRepository.save(user);
-        saved.belongTo(new Team(1));
+        saved.belongTo(new StudyGroup(1));
         ReportDto.ReportInfo response = reportService.createReport(form, "a@a.com");
         assertThat(response.getCourses().size()).isEqualTo(3);
     }
@@ -118,8 +118,8 @@ public class ReportServiceTest {
                 .role(Role.USER)
                 .build();
         User saved = userRepository.save(user);
-        Team team = teamRepository.save(new Team(1));
-        saved.belongTo(team);
+        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(1));
+        saved.belongTo(studyGroup);
         ReportDto.ReportInfo response = reportService.createReport(form, "a@a.com");
         ReportDto.ReportInfo detail = reportService.getReport(response.getId())
                 .orElseThrow();

@@ -4,7 +4,7 @@ import edu.handong.csee.histudy.controller.form.ApplyForm;
 import edu.handong.csee.histudy.controller.form.UserInfo;
 import edu.handong.csee.histudy.domain.Course;
 import edu.handong.csee.histudy.domain.Role;
-import edu.handong.csee.histudy.domain.Team;
+import edu.handong.csee.histudy.domain.StudyGroup;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.ApplyFormDto;
 import edu.handong.csee.histudy.dto.UserDto;
@@ -12,9 +12,9 @@ import edu.handong.csee.histudy.exception.MissingEmailException;
 import edu.handong.csee.histudy.exception.MissingSubException;
 import edu.handong.csee.histudy.exception.UserAlreadyExistsException;
 import edu.handong.csee.histudy.exception.UserNotFoundException;
-import edu.handong.csee.histudy.repository.ChoiceRepository;
+import edu.handong.csee.histudy.repository.StudyGroupRepository;
+import edu.handong.csee.histudy.repository.UserCourseRepository;
 import edu.handong.csee.histudy.repository.CourseRepository;
-import edu.handong.csee.histudy.repository.TeamRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
@@ -32,8 +32,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
-    private final ChoiceRepository choiceRepository;
-    private final TeamRepository teamRepository;
+    private final UserCourseRepository userCourseRepository;
+    private final StudyGroupRepository studyGroupRepository;
 
     public List<User> search(Optional<String> keyword) {
         if (keyword.isEmpty() || keyword.get().isBlank()) {
@@ -96,7 +96,7 @@ public class UserService {
     public List<UserDto.UserInfo> getAppliedUsers() {
         List<User> users = userRepository.findAll()
                 .stream()
-                .filter(u -> !u.getChoices().isEmpty())
+                .filter(u -> !u.getCourseSelections().isEmpty())
                 .toList();
         return getInfoFromUser(users);
     }
@@ -128,7 +128,7 @@ public class UserService {
     public UserDto.UserInfo deleteUserForm(String sid) {
         User user = userRepository.findUserBySid(sid).orElseThrow();
 
-        user.getChoices().clear();
+        user.getCourseSelections().clear();
         user.add(Collections.emptyList());
 
         return new UserDto.UserInfo(user);
@@ -136,8 +136,8 @@ public class UserService {
 
     public UserDto.UserInfo editUser(UserDto.UserEdit dto) {
         User user = userRepository.findById(dto.getId()).orElseThrow();
-        Team team = teamRepository.findByTag(dto.getTeam()).orElseThrow();
-        user.edit(dto, team);
+        StudyGroup studyGroup = studyGroupRepository.findByTag(dto.getTeam()).orElseThrow();
+        user.edit(dto, studyGroup);
         return new UserDto.UserInfo(user);
     }
 }

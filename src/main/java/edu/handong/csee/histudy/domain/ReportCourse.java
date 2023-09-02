@@ -1,27 +1,25 @@
 package edu.handong.csee.histudy.domain;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Enrollment {
-
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class ReportCourse {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    private Team team;
-
+    private GroupReport groupReport;
     @ManyToOne(fetch = FetchType.LAZY)
     private Course course;
 
-    public Enrollment(Team team, Course course) {
-        this.team = team;
+    @Builder
+    public ReportCourse(GroupReport report, Course course) {
         this.course = course;
+        this.groupReport = report;
     }
 }

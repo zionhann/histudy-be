@@ -2,12 +2,12 @@ package edu.handong.csee.histudy.service;
 
 import edu.handong.csee.histudy.controller.form.ReportForm;
 import edu.handong.csee.histudy.domain.Course;
-import edu.handong.csee.histudy.domain.Report;
-import edu.handong.csee.histudy.domain.Team;
+import edu.handong.csee.histudy.domain.GroupReport;
+import edu.handong.csee.histudy.domain.StudyGroup;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.ReportDto;
 import edu.handong.csee.histudy.repository.CourseRepository;
-import edu.handong.csee.histudy.repository.ReportRepository;
+import edu.handong.csee.histudy.repository.GroupReportRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,7 +20,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Transactional
 public class ReportService {
-    private final ReportRepository reportRepository;
+    private final GroupReportRepository groupReportRepository;
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
 
@@ -41,25 +41,25 @@ public class ReportService {
                 .map(Optional::get)
                 .toList();
 
-        Report saved = reportRepository.save(
-                form.toEntity(user.getTeam(), participants, courses));
+        GroupReport saved = groupReportRepository.save(
+                form.toEntity(user.getStudyGroup(), participants, courses));
 
         return new ReportDto.ReportInfo(saved);
     }
 
     public List<ReportDto.ReportInfo> getReports(String email) {
-        Team team = userRepository.findUserByEmail(email)
+        StudyGroup studyGroup = userRepository.findUserByEmail(email)
                 .orElseThrow()
-                .getTeam();
+                .getStudyGroup();
 
-        return team.getReports()
+        return studyGroup.getReports()
                 .stream()
                 .map(ReportDto.ReportInfo::new)
                 .toList();
     }
 
     public List<ReportDto.ReportInfo> getAllReports() {
-        return reportRepository.findAll()
+        return groupReportRepository.findAll()
                 .stream()
                 .map(ReportDto.ReportInfo::new)
                 .toList();
@@ -80,23 +80,23 @@ public class ReportService {
                 .map(Optional::get)
                 .toList();
 
-        return reportRepository.findById(reportId)
+        return groupReportRepository.findById(reportId)
                 .map(report -> report.update(form, participants, courses))
                 .orElse(false);
     }
 
     public Optional<ReportDto.ReportInfo> getReport(Long reportId) {
-        return reportRepository.findById(reportId)
+        return groupReportRepository.findById(reportId)
                 .map(ReportDto.ReportInfo::new);
     }
 
     public boolean deleteReport(Long reportId) {
-        Optional<Report> reportOr = reportRepository.findById(reportId);
+        Optional<GroupReport> reportOr = groupReportRepository.findById(reportId);
 
         if (reportOr.isEmpty()) {
             return false;
         } else {
-            reportRepository.delete(reportOr.get());
+            groupReportRepository.delete(reportOr.get());
             return true;
         }
     }

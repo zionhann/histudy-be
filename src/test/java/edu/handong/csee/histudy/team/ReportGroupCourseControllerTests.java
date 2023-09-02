@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.handong.csee.histudy.controller.TeamController;
 import edu.handong.csee.histudy.domain.Course;
 import edu.handong.csee.histudy.domain.Role;
-import edu.handong.csee.histudy.domain.Team;
+import edu.handong.csee.histudy.domain.StudyGroup;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.CourseDto;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
@@ -39,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @SpringBootTest
 @Transactional
-public class TeamControllerTests {
+public class ReportGroupCourseControllerTests {
 
     MockMvc mvc;
 
@@ -98,12 +98,12 @@ public class TeamControllerTests {
         Claims claimsB = Jwts.claims();
         claimsB.put("sub", userB.getEmail());
 
-        Team team = new Team(1);
+        StudyGroup studyGroup = new StudyGroup(1);
 
-        save1.belongTo(team);
-        save2.belongTo(team);
+        save1.belongTo(studyGroup);
+        save2.belongTo(studyGroup);
 
-        save2.getTeam()
+        save2.getStudyGroup()
                 .select(List.of(savedCourse1, savedCourse2));
 
         Claims claimsA = Jwts.claims();

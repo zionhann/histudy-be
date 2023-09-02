@@ -1,4 +1,4 @@
-package edu.handong.csee.histudy.team;
+package edu.handong.csee.histudy.studyGroup;
 
 import edu.handong.csee.histudy.controller.form.ReportForm;
 import edu.handong.csee.histudy.domain.*;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @Transactional
-public class TeamServiceTest {
+public class ReportGroupCourseServiceTest {
     @Autowired
     TeamService teamService;
     @Autowired
@@ -36,17 +36,17 @@ public class TeamServiceTest {
     @Autowired
     CourseRepository courseRepository;
     @Autowired
-    ChoiceRepository choiceRepository;
+    UserCourseRepository userCourseRepository;
     @Autowired
     FriendshipRepository friendshipRepository;
     @MockBean
     AuthenticationInterceptor interceptor;
     @Autowired
-    TeamRepository teamRepository;
+    StudyGroupRepository studyGroupRepository;
     @Autowired
     ReportService reportService;
     @Autowired
-    private ReportRepository reportRepository;
+    private GroupReportRepository groupReportRepository;
 
     @BeforeEach
     void setup() throws IOException {
@@ -106,25 +106,25 @@ public class TeamServiceTest {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
-        List<Choice> choices = courses.stream().map(c -> choiceRepository.save(Choice.builder()
+        List<UserCourse> preferredCours = courses.stream().map(c -> userCourseRepository.save(UserCourse.builder()
                 .user(savedA)
                 .course(c)
                 .build())).toList();
-        savedA.getChoices().addAll(choices);
+        savedA.getCourseSelections().addAll(preferredCours);
         List<Long> courseIdxList2 = List.of(1L, 2L, 3L);
         List<Course> courses2 = courseIdxList2.stream()
                 .map(courseRepository::findById)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
-        List<Choice> choices2 = courses2.stream().map(c -> choiceRepository.save(Choice.builder()
+        List<UserCourse> choices2 = courses2.stream().map(c -> userCourseRepository.save(UserCourse.builder()
                 .user(savedB)
                 .course(c)
                 .build())).toList();
-        savedB.getChoices().addAll(choices2);
-        Team team = teamRepository.save(new Team(111));
-        savedA.belongTo(team);
-        savedB.belongTo(team);
+        savedB.getCourseSelections().addAll(choices2);
+        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(111));
+        savedA.belongTo(studyGroup);
+        savedB.belongTo(studyGroup);
 
         String email = "";
         List<TeamDto> teams = teamService.getTeams(email);
@@ -143,11 +143,11 @@ public class TeamServiceTest {
                 .role(Role.USER)
                 .build();
         User savedA = userRepository.save(userA);
-        Team team = teamRepository.save(new Team(111));
-        savedA.belongTo(team);
-        int result = teamService.deleteTeam(new TeamIdDto(savedA.getTeam().getId()), "");
+        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(111));
+        savedA.belongTo(studyGroup);
+        int result = teamService.deleteTeam(new TeamIdDto(savedA.getStudyGroup().getId()), "");
         assertThat(result).isNotZero();
-        assertThat(savedA.getTeam()).isNull();
+        assertThat(savedA.getStudyGroup()).isNull();
     }
 
     @DisplayName("팀의 보고서를 확인할 수 있다")
@@ -168,9 +168,9 @@ public class TeamServiceTest {
                 .build();
         User savedA = userRepository.save(userA);
         User savedB = userRepository.save(userB);
-        Team team = teamRepository.save(new Team(111));
-        savedA.belongTo(team);
-        savedB.belongTo(team);
+        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(111));
+        savedA.belongTo(studyGroup);
+        savedB.belongTo(studyGroup);
         ReportForm form = ReportForm.builder()
                 .title("title")
                 .content("content")
@@ -179,7 +179,7 @@ public class TeamServiceTest {
                 .courses(List.of(1L, 2L, 3L))
                 .build();
         reportService.createReport(form, "a@b.com");
-        TeamReportDto dto = teamService.getTeamReports(team.getId(), "");
+        TeamReportDto dto = teamService.getTeamReports(studyGroup.getId(), "");
         assertThat(dto.getMembers().size()).isEqualTo(2);
         assertThat(dto.getReports().size()).isEqualTo(1);
         assertThat(dto.getTotalTime()).isEqualTo(60L);
@@ -201,45 +201,45 @@ public class TeamServiceTest {
         User savedUser = userRepository.save(userA);
         User savedUser2 = userRepository.save(userB);
 
-        Team team = new Team(1);
-        savedUser.belongTo(team);
+        StudyGroup studyGroup = new StudyGroup(1);
+        savedUser.belongTo(studyGroup);
 
-        Team team2 = new Team(2);
-        savedUser2.belongTo(team2);
+        StudyGroup studyGroup2 = new StudyGroup(2);
+        savedUser2.belongTo(studyGroup2);
 
-        Report report = Report.builder()
+        GroupReport groupReport = GroupReport.builder()
                 .title("title")
                 .content("content")
                 .totalMinutes(60L)
                 .participants(List.of())
                 .courses(List.of())
-                .team(team)
+                .studyGroup(studyGroup)
                 .images(List.of("img.jpg"))
                 .build();
 
-        Report report2 = Report.builder()
+        GroupReport groupReport2 = GroupReport.builder()
                 .title("title")
                 .content("content")
                 .totalMinutes(120L)
                 .participants(List.of())
                 .courses(List.of())
-                .team(team)
+                .studyGroup(studyGroup)
                 .images(List.of("img2.jpg"))
                 .build();
 
-        Report report3 = Report.builder()
+        GroupReport groupReport3 = GroupReport.builder()
                 .title("title")
                 .content("content")
                 .totalMinutes(210L)
                 .participants(List.of())
                 .courses(List.of())
-                .team(team2)
+                .studyGroup(studyGroup2)
                 .images(List.of("img3.jpg"))
                 .build();
 
-        reportRepository.save(report);
-        reportRepository.save(report2); // the latest report of team 1
-        reportRepository.save(report3); // the latest report of team 2
+        groupReportRepository.save(groupReport);
+        groupReportRepository.save(groupReport2); // the latest report of team 1
+        groupReportRepository.save(groupReport3); // the latest report of team 2
 
         // when
         TeamRankDto res = teamService.getAllTeams();

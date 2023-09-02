@@ -22,17 +22,17 @@ public class ReportDto {
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class ReportInfo {
 
-        public ReportInfo(Report entity) {
+        public ReportInfo(GroupReport entity) {
             this.id = entity.getId();
             this.title = entity.getTitle();
             this.content = entity.getContent();
             this.totalMinutes = entity.getTotalMinutes();
             this.participants = entity.getParticipants().stream()
-                    .map(Participates::getUser)
+                    .map(ReportUser::getUser)
                     .map(UserDto.UserBasic::new)
                     .toList();
-            this.courses = entity.getStudies().stream()
-                    .map(Study::getCourse)
+            this.courses = entity.getCourses().stream()
+                    .map(ReportCourse::getCourse)
                     .map(Course::getName)
                     .toList();
             this.images = entity.getImages().stream()
@@ -70,12 +70,12 @@ public class ReportDto {
     @Getter
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static class ReportBasic {
-        public ReportBasic(Report report) {
-            this.id = report.getId();
-            this.title = report.getTitle();
-            this.regDate = report.getLastModifiedDate().toString();
-            this.totalMinutes = report.getTotalMinutes();
-            this.thumbnail = report.getImages()
+        public ReportBasic(GroupReport groupReport) {
+            this.id = groupReport.getId();
+            this.title = groupReport.getTitle();
+            this.regDate = groupReport.getLastModifiedDate().toString();
+            this.totalMinutes = groupReport.getTotalMinutes();
+            this.thumbnail = groupReport.getImages()
                     .stream()
                     .findFirst()
                     .map(Image::getPath)

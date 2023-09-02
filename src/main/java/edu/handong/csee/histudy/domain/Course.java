@@ -28,13 +28,13 @@ public class Course {
     private int semester;
 
     @OneToMany(mappedBy = "course", orphanRemoval = true)
-    private List<Choice> choices = new ArrayList<>();
+    private List<UserCourse> userCourses = new ArrayList<>();
 
-    @OneToMany(mappedBy = "course", orphanRemoval = true)
-    private List<Study> studies = new ArrayList<>();
+//    @OneToMany(mappedBy = "course", orphanRemoval = true)
+//    private List<ReportCourse> reportCourses = new ArrayList<>();
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.REMOVE)
-    private List<Enrollment> enrolls = new ArrayList<>();
+    private List<GroupCourse> groupCourses = new ArrayList<>();
 
     @Builder
     public Course(String name, String code, String professor, int courseYear, int semester) {
