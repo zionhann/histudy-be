@@ -1,12 +1,11 @@
 package edu.handong.csee.histudy.service;
 
 import edu.handong.csee.histudy.controller.form.ReportForm;
-import edu.handong.csee.histudy.domain.Course;
-import edu.handong.csee.histudy.domain.GroupReport;
-import edu.handong.csee.histudy.domain.StudyGroup;
-import edu.handong.csee.histudy.domain.User;
+import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.ReportDto;
+import edu.handong.csee.histudy.exception.ReportNotFoundException;
 import edu.handong.csee.histudy.repository.CourseRepository;
+import edu.handong.csee.histudy.repository.GroupCourseRepository;
 import edu.handong.csee.histudy.repository.GroupReportRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +22,7 @@ public class ReportService {
     private final GroupReportRepository groupReportRepository;
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
+    private final GroupCourseRepository groupCourseRepository;
 
     public ReportDto.ReportInfo createReport(ReportForm form, String email) {
         User user = userRepository.findUserByEmail(email).orElseThrow();
@@ -41,8 +41,13 @@ public class ReportService {
                 .map(Optional::get)
                 .toList();
 
+        // filter groupCourses by form.getCourses()
+        List<GroupCourse> groupCourses = groupCourseRepository
+                .findAllByStudyGroup(user.getStudyGroup());
+        groupCourses.removeIf(gc -> !courses.contains(gc.getCourse()));
+
         GroupReport saved = groupReportRepository.save(
-                form.toEntity(user.getStudyGroup(), participants, courses));
+                form.toEntity(user.getStudyGroup(), participants, groupCourses));
 
         return new ReportDto.ReportInfo(saved);
     }
@@ -80,9 +85,16 @@ public class ReportService {
                 .map(Optional::get)
                 .toList();
 
-        return groupReportRepository.findById(reportId)
-                .map(report -> report.update(form, participants, courses))
-                .orElse(false);
+        GroupReport targetReport = groupReportRepository.findById(reportId)
+                .orElseThrow(ReportNotFoundException::new);
+
+        // filter groupCourses by form.getCourses()
+        List<GroupCourse> groupCourses = groupCourseRepository
+                .findAllByStudyGroup(targetReport.getStudyGroup());
+        groupCourses.removeIf(gc -> !courses.contains(gc.getCourse()));
+        targetReport.update(form, participants, groupCourses);
+
+        return true;
     }
 
     public Optional<ReportDto.ReportInfo> getReport(Long reportId) {

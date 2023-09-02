@@ -1,11 +1,12 @@
 package edu.handong.csee.histudy.choice;
 
 import edu.handong.csee.histudy.domain.*;
-import edu.handong.csee.histudy.repository.UserCourseRepository;
 import edu.handong.csee.histudy.repository.CourseRepository;
 import edu.handong.csee.histudy.repository.StudyGroupRepository;
+import edu.handong.csee.histudy.repository.UserCourseRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,8 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Transactional
@@ -27,6 +27,7 @@ public class UserCourseTest {
     UserCourseRepository userCourseRepository;
     @Autowired
     StudyGroupRepository studyGroupRepository;
+
     @DisplayName("유저는 과목을 선택할 수 있어야 한다")
     @Test
     public void choiceTest() {
@@ -61,15 +62,14 @@ public class UserCourseTest {
                 .role(Role.USER)
                 .build();
         User saved = userRepository.save(user);
-        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(1));
-        saved.belongTo(studyGroup);
-        List<Long> courseIdxList = List.of(1L,2L);
+        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(1, List.of(saved)));
+        List<Long> courseIdxList = List.of(1L, 2L);
         List<Course> courses = courseIdxList.stream()
                 .map(courseRepository::findById)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
-        List<UserCourse> preferredCours = courses.stream().map(c -> userCourseRepository.save(new UserCourse(user,c))).toList();
+        List<UserCourse> preferredCours = courses.stream().map(c -> userCourseRepository.save(new UserCourse(user, c))).toList();
         user.getCourseSelections().addAll(preferredCours);
 
         assertThat(user.getCourseSelections().stream().map(UserCourse::getCourse).toList()).isNotNull();

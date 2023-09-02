@@ -1,9 +1,6 @@
 package edu.handong.csee.histudy.controller.form;
 
-import edu.handong.csee.histudy.domain.Course;
-import edu.handong.csee.histudy.domain.StudyGroup;
-import edu.handong.csee.histudy.domain.GroupReport;
-import edu.handong.csee.histudy.domain.User;
+import edu.handong.csee.histudy.domain.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -43,7 +40,7 @@ public class ReportForm {
     @Schema(description = "Course IDs of the report", type = "array", example = "[1, 2]")
     private List<Long> courses = new ArrayList<>();
 
-    public GroupReport toEntity(StudyGroup studyGroup, List<User> participants, List<Course> courses) {
+    public GroupReport toEntity(StudyGroup studyGroup, List<User> participants, List<GroupCourse> courses) {
         return GroupReport.builder()
                 .title(title)
                 .content(content)

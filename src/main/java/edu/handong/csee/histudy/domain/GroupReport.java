@@ -43,7 +43,7 @@ public class GroupReport extends BaseTime {
                        StudyGroup studyGroup,
                        List<User> participants,
                        List<String> images,
-                       List<Course> courses) {
+                       List<GroupCourse> courses) {
         this.title = title;
         this.content = content;
         this.totalMinutes = totalMinutes;
@@ -55,11 +55,11 @@ public class GroupReport extends BaseTime {
         studyGroup.increase(totalMinutes);
     }
 
-    private void study(List<Course> _courses) {
+    private void study(List<GroupCourse> groupCourses) {
         if (!courses.isEmpty()) {
             courses.clear();
         }
-        List<ReportCourse> reportCourses = _courses.stream()
+        List<ReportCourse> reportCourses = groupCourses.stream()
                 .map(course -> new ReportCourse(this, course))
                 .toList();
         this.courses.addAll(reportCourses);
@@ -94,7 +94,7 @@ public class GroupReport extends BaseTime {
         this.images.addAll(paths);
     }
 
-    public boolean update(ReportForm form, List<User> participants, List<Course> courses) {
+    public boolean update(ReportForm form, List<User> participants, List<GroupCourse> courses) {
         this.title = requireNonNullElse(form.getTitle(), this.title);
         this.content = requireNonNullElse(form.getContent(), this.content);
         this.totalMinutes = requireNonNullElse(form.getTotalMinutes(), this.totalMinutes);

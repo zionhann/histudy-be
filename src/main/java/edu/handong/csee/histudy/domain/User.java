@@ -101,7 +101,6 @@ public class User {
     public void edit(UserDto.UserEdit dto, StudyGroup studyGroup) {
         this.sid = dto.getSid();
         this.name = dto.getName();
-        this.studyGroup = studyGroup;
-        studyGroup.getMembers().add(this);
+        studyGroup.join(List.of(this));
     }
 }

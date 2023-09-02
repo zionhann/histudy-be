@@ -6,9 +6,7 @@ import edu.handong.csee.histudy.controller.form.ReportForm;
 import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.ReportDto;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
-import edu.handong.csee.histudy.repository.CourseRepository;
-import edu.handong.csee.histudy.repository.GroupReportRepository;
-import edu.handong.csee.histudy.repository.UserRepository;
+import edu.handong.csee.histudy.repository.*;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,6 +56,10 @@ public class ReportCourseReportControllerTestsGroup {
     private GroupReportRepository groupReportRepository;
     @Autowired
     private CourseRepository courseRepository;
+    @Autowired
+    private StudyGroupRepository studyGroupRepository;
+    @Autowired
+    private GroupCourseRepository groupCourseRepository;
 
     @BeforeEach
     void init() throws IOException {
@@ -79,11 +81,13 @@ public class ReportCourseReportControllerTestsGroup {
                 .email("user@test.com")
                 .role(Role.MEMBER)
                 .build());
-        user.belongTo(new StudyGroup(1));
 
         Course course = courseRepository.save(Course.builder()
                 .name("courseName")
                 .build());
+        user.select(List.of(course));
+
+        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(1, List.of(user)));
 
         GroupReport groupReport = GroupReport.builder()
                 .title("reportTitle")
@@ -91,7 +95,7 @@ public class ReportCourseReportControllerTestsGroup {
                 .studyGroup(user.getStudyGroup())
                 .totalMinutes(60L)
                 .participants(List.of(user))
-                .courses(List.of(course))
+                .courses(studyGroup.getGroupCourses())
                 .build();
         groupReportRepository.save(groupReport);
 
@@ -125,11 +129,13 @@ public class ReportCourseReportControllerTestsGroup {
                 .email("user@test.com")
                 .role(Role.MEMBER)
                 .build());
-        user.belongTo(new StudyGroup(1));
+        user.belongTo(new StudyGroup(1, List.of(user)));
 
         Course course = courseRepository.save(Course.builder()
                 .name("courseName")
                 .build());
+
+        GroupCourse groupCourse = new GroupCourse(user.getStudyGroup(), course);
 
         GroupReport groupReport = GroupReport.builder()
                 .title("reportTitle")
@@ -137,7 +143,7 @@ public class ReportCourseReportControllerTestsGroup {
                 .studyGroup(user.getStudyGroup())
                 .totalMinutes(60L)
                 .participants(List.of(user))
-                .courses(List.of(course))
+                .courses(List.of(groupCourse))
                 .build();
         groupReportRepository.save(groupReport);
 
@@ -170,11 +176,13 @@ public class ReportCourseReportControllerTestsGroup {
                 .name("username")
                 .email("user@test.com")
                 .build());
-        user.belongTo(new StudyGroup(1));
+        user.belongTo(new StudyGroup(1, List.of(user)));
 
         Course course = courseRepository.save(Course.builder()
                 .name("courseName")
                 .build());
+
+        GroupCourse groupCourse = new GroupCourse(user.getStudyGroup(), course);
 
         GroupReport groupReport = GroupReport.builder()
                 .title("reportTitle")
@@ -182,7 +190,7 @@ public class ReportCourseReportControllerTestsGroup {
                 .studyGroup(user.getStudyGroup())
                 .totalMinutes(60L)
                 .participants(List.of(user))
-                .courses(List.of(course))
+                .courses(List.of(groupCourse))
                 .build();
         groupReportRepository.save(groupReport);
 
@@ -208,19 +216,21 @@ public class ReportCourseReportControllerTestsGroup {
                 .email("user@test.com")
                 .role(Role.MEMBER)
                 .build());
-        user.belongTo(new StudyGroup(1));
+        StudyGroup group = studyGroupRepository.save(new StudyGroup(1, List.of(user)));
+        user.belongTo(group);
 
         Course course = courseRepository.save(Course.builder()
                 .name("courseName")
                 .build());
 
+        GroupCourse groupCourse = groupCourseRepository.save(new GroupCourse(user.getStudyGroup(), course));
         GroupReport groupReport = GroupReport.builder()
                 .title("reportTitle")
                 .content("reportContent")
                 .studyGroup(user.getStudyGroup())
                 .totalMinutes(60L)
                 .participants(List.of(user))
-                .courses(List.of(course))
+                .courses(List.of(groupCourse))
                 .build();
         groupReportRepository.save(groupReport);
 
@@ -253,11 +263,13 @@ public class ReportCourseReportControllerTestsGroup {
                 .email("user@test.com")
                 .role(Role.USER)
                 .build());
-        user.belongTo(new StudyGroup(1));
+        user.belongTo(new StudyGroup(1, List.of(user)));
 
         Course course = courseRepository.save(Course.builder()
                 .name("courseName")
                 .build());
+
+        GroupCourse groupCourse = new GroupCourse(user.getStudyGroup(), course);
 
         GroupReport groupReport = GroupReport.builder()
                 .title("reportTitle")
@@ -265,7 +277,7 @@ public class ReportCourseReportControllerTestsGroup {
                 .studyGroup(user.getStudyGroup())
                 .totalMinutes(60L)
                 .participants(List.of(user))
-                .courses(List.of(course))
+                .courses(List.of(groupCourse))
                 .build();
         groupReportRepository.save(groupReport);
 
@@ -292,11 +304,13 @@ public class ReportCourseReportControllerTestsGroup {
                 .email("user@test.com")
                 .role(Role.MEMBER)
                 .build());
-        user.belongTo(new StudyGroup(1));
+        user.belongTo(new StudyGroup(1, List.of(user)));
 
         Course course = courseRepository.save(Course.builder()
                 .name("courseName")
                 .build());
+
+        GroupCourse groupCourse = new GroupCourse(user.getStudyGroup(), course);
 
         GroupReport groupReport = GroupReport.builder()
                 .title("reportTitle")
@@ -304,7 +318,7 @@ public class ReportCourseReportControllerTestsGroup {
                 .studyGroup(user.getStudyGroup())
                 .totalMinutes(60L)
                 .participants(List.of(user))
-                .courses(List.of(course))
+                .courses(List.of(groupCourse))
                 .build();
         groupReportRepository.save(groupReport);
 

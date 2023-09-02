@@ -15,11 +15,11 @@ public class ReportCourse {
     @ManyToOne(fetch = FetchType.LAZY)
     private GroupReport groupReport;
     @ManyToOne(fetch = FetchType.LAZY)
-    private Course course;
+    private GroupCourse groupCourse;
 
     @Builder
-    public ReportCourse(GroupReport report, Course course) {
-        this.course = course;
+    public ReportCourse(GroupReport report, GroupCourse groupCourse) {
+        this.groupCourse = groupCourse;
         this.groupReport = report;
     }
 }

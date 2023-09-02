@@ -30,9 +30,6 @@ public class Course {
     @OneToMany(mappedBy = "course", orphanRemoval = true)
     private List<UserCourse> userCourses = new ArrayList<>();
 
-//    @OneToMany(mappedBy = "course", orphanRemoval = true)
-//    private List<ReportCourse> reportCourses = new ArrayList<>();
-
     @OneToMany(mappedBy = "course", cascade = CascadeType.REMOVE)
     private List<GroupCourse> groupCourses = new ArrayList<>();
 

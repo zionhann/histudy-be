@@ -31,8 +31,9 @@ public class StudyGroup {
     @OneToMany(mappedBy = "studyGroup", cascade = CascadeType.ALL)
     private List<GroupCourse> groupCourses = new ArrayList<>();
 
-    public StudyGroup(Integer tag) {
+    public StudyGroup(Integer tag, List<User> members) {
         this.tag = tag;
+        join(members);
     }
 
     public void increase(long totalMinutes) {
@@ -61,8 +62,8 @@ public class StudyGroup {
         this.totalMinutes += newTotalMinutes - oldTotalMinutes;
     }
 
-    private List<Course> commonCourses() {
-        Map<Course, Long> courseCountMap = members.stream()
+    private List<Course> getCommonCourses() {
+        Map<Course, Long> courseCountMap = this.members.stream()
                 .flatMap(u -> u.getCourseSelections().stream())
                 .map(UserCourse::getCourse)
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
@@ -73,20 +74,14 @@ public class StudyGroup {
                 .collect(Collectors.toList());
     }
 
-    public void enroll(List<User> group) {
-        if (!groupCourses.isEmpty()) {
-            this.groupCourses
-                    .forEach(e -> e.getCourse()
-                            .getGroupCourses()
-                            .remove(e));
-            this.groupCourses.clear();
-        }
-        group.forEach(u -> u.belongTo(this));
-        commonCourses()
+    protected StudyGroup join(List<User> users) {
+        users.forEach(u -> u.belongTo(this));
+        getCommonCourses()
                 .forEach(course -> {
                     GroupCourse groupCourse = new GroupCourse(this, course);
                     groupCourses.add(groupCourse);
                     course.getGroupCourses().add(groupCourse);
                 });
+        return this;
     }
 }

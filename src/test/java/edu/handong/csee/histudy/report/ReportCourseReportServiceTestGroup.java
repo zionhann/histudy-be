@@ -37,6 +37,19 @@ public class ReportCourseReportServiceTestGroup {
     @Transactional
     @Test
     public void reportServiceTest() {
+        User userA = User.builder()
+                .sid("22000328")
+                .email("a@a.com")
+                .role(Role.USER)
+                .build();
+        User userB = User.builder()
+                .sid("22000329")
+                .email("a@b.com")
+                .role(Role.USER)
+                .build();
+        User saved = userRepository.save(userA);
+        User saved2 = userRepository.save(userB);
+
         Course course = Course.builder()
                 .name("기초전자공학실험")
                 .code("ECE20007")
@@ -60,6 +73,13 @@ public class ReportCourseReportServiceTestGroup {
                 .semester(1)
                 .build();
         courseRepository.save(courseC);
+
+        saved.select(List.of(course, courseB, courseC));
+        saved2.select(List.of(course, courseB, courseC));
+
+        StudyGroup studyGroup = new StudyGroup(1, List.of(saved, saved2));
+        studyGroupRepository.save(studyGroup);
+
         ReportForm form = ReportForm.builder()
                 .title("title")
                 .content("content")
@@ -67,13 +87,7 @@ public class ReportCourseReportServiceTestGroup {
                 .participants(List.of("22000328"))
                 .courses(List.of(course.getId(), courseB.getId(), courseC.getId()))
                 .build();
-        User user = User.builder()
-                .sid("22000328")
-                .email("a@a.com")
-                .role(Role.USER)
-                .build();
-        User saved = userRepository.save(user);
-        saved.belongTo(new StudyGroup(1));
+
         ReportDto.ReportInfo response = reportService.createReport(form, "a@a.com");
         assertThat(response.getCourses().size()).isEqualTo(3);
     }
@@ -118,8 +132,9 @@ public class ReportCourseReportServiceTestGroup {
                 .role(Role.USER)
                 .build();
         User saved = userRepository.save(user);
-        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(1));
-        saved.belongTo(studyGroup);
+        saved.select(List.of(course, courseB, courseC));
+        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(1, List.of(saved)));
+
         ReportDto.ReportInfo response = reportService.createReport(form, "a@a.com");
         ReportDto.ReportInfo detail = reportService.getReport(response.getId())
                 .orElseThrow();

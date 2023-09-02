@@ -9,6 +9,7 @@ import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.CourseDto;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
 import edu.handong.csee.histudy.repository.CourseRepository;
+import edu.handong.csee.histudy.repository.StudyGroupRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -58,6 +59,9 @@ public class ReportGroupCourseControllerTests {
     @Autowired
     CourseRepository courseRepository;
 
+    @Autowired
+    StudyGroupRepository studyGroupRepository;
+
     @BeforeEach
     void init() throws IOException {
         mvc = MockMvcBuilders
@@ -98,13 +102,10 @@ public class ReportGroupCourseControllerTests {
         Claims claimsB = Jwts.claims();
         claimsB.put("sub", userB.getEmail());
 
-        StudyGroup studyGroup = new StudyGroup(1);
-
-        save1.belongTo(studyGroup);
-        save2.belongTo(studyGroup);
-
-        save2.getStudyGroup()
-                .select(List.of(savedCourse1, savedCourse2));
+        save1.select(List.of(savedCourse1, savedCourse2));
+        save2.select(List.of(savedCourse1, savedCourse2));
+        StudyGroup studyGroup = new StudyGroup(1, List.of(save1, save2));
+        studyGroupRepository.save(studyGroup);
 
         Claims claimsA = Jwts.claims();
         claimsA.put("sub", userA.getEmail());

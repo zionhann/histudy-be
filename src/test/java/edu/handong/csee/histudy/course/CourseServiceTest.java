@@ -3,9 +3,9 @@ package edu.handong.csee.histudy.course;
 import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.CourseDto;
 import edu.handong.csee.histudy.dto.CourseIdDto;
+import edu.handong.csee.histudy.repository.CourseRepository;
 import edu.handong.csee.histudy.repository.StudyGroupRepository;
 import edu.handong.csee.histudy.repository.UserCourseRepository;
-import edu.handong.csee.histudy.repository.CourseRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import edu.handong.csee.histudy.service.CourseService;
 import org.junit.jupiter.api.AfterEach;
@@ -74,8 +74,7 @@ public class CourseServiceTest {
                 .role(Role.USER)
                 .build();
         User saved = userRepository.save(user);
-        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(1));
-        saved.belongTo(studyGroup);
+        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(1, List.of(saved)));
         List<Long> courseIdxList = List.of(1L);
         List<Course> courses = courseIdxList.stream()
                 .map(courseRepository::findById)

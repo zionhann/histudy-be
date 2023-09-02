@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Entity
@@ -50,8 +51,7 @@ public class Friendship {
             User temp = sent;
             sent = received;
             received = temp;
-        }
-        else {
+        } else {
             received.getFriendships().remove(this);
         }
     }
@@ -71,17 +71,14 @@ public class Friendship {
             return sent.getStudyGroup();
         } else if (sent.getStudyGroup() != null) {
             // (a <-> b) -> c]
-            received.belongTo(sent.getStudyGroup());
-            return sent.getStudyGroup();
+            return sent.getStudyGroup()
+                    .join(List.of(received));
         } else if (received.getStudyGroup() != null) {
             // (a <-> b) <- c
-            sent.belongTo(received.getStudyGroup());
-            return received.getStudyGroup();
+            return received.getStudyGroup()
+                    .join(List.of(sent));
         }
-        StudyGroup studyGroup = new StudyGroup(tag.getAndIncrement());
-        sent.belongTo(studyGroup);
-        received.belongTo(studyGroup);
-        return studyGroup;
+        return new StudyGroup(tag.getAndIncrement(), List.of(sent, received));
     }
 
     public User getFriendOf(User u) {

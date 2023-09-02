@@ -26,7 +26,7 @@ public class TeamService {
 
     public List<TeamDto> getTeams(String email) {
         return studyGroupRepository.findAll(
-                Sort.by(Sort.DEFAULT_DIRECTION,"tag"))
+                        Sort.by(Sort.DEFAULT_DIRECTION, "tag"))
                 .stream()
                 .map(TeamDto::new)
                 .toList();
@@ -56,13 +56,12 @@ public class TeamService {
 
     public List<UserDto.UserMe> getTeamUsers(String email) {
         User user = userRepository.findUserByEmail(email).orElseThrow();
-        if(user.getStudyGroup()!=null) {
+        if (user.getStudyGroup() != null) {
             return user.getStudyGroup().getMembers()
                     .stream()
                     .map(UserDto.UserMe::new)
                     .toList();
-        }
-        else return Collections.emptyList();
+        } else return Collections.emptyList();
     }
 
     public TeamRankDto getAllTeams() {
@@ -140,8 +139,7 @@ public class TeamService {
                         List<User> subGroup = group.subList(0, 5);
 
                         // Create a team with only 5 elements
-                        StudyGroup studyGroup = new StudyGroup(tag.getAndIncrement());
-                        studyGroup.enroll(subGroup);
+                        StudyGroup studyGroup = new StudyGroup(tag.getAndIncrement(), subGroup);
                         teamsWithoutFriends.add(studyGroup);
 
                         // Remove the elements that have already been added to the team
@@ -152,8 +150,7 @@ public class TeamService {
                 if (group.size() >= 3) {
                     // If the remaining elements are 3 ~ 5
                     // Create a team with 3 ~ 5 elements
-                    StudyGroup studyGroup = new StudyGroup(tag.getAndIncrement());
-                    studyGroup.enroll(group);
+                    StudyGroup studyGroup = new StudyGroup(tag.getAndIncrement(), group);
                     teamsWithoutFriends.add(studyGroup);
                 }
             });

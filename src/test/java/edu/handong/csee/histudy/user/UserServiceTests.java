@@ -123,9 +123,7 @@ public class UserServiceTests {
                 .course(c)
                 .build())).toList();
         savedB.getCourseSelections().addAll(choices2);
-        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(111));
-        savedA.belongTo(studyGroup);
-        savedB.belongTo(studyGroup);
+        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(111, List.of(savedA, savedB)));
         ReportForm form = ReportForm.builder()
                 .title("title")
                 .content("content")
@@ -192,9 +190,7 @@ public class UserServiceTests {
                 .course(c)
                 .build())).toList();
         savedB.getCourseSelections().addAll(choices2);
-        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(111));
-        savedA.belongTo(studyGroup);
-        savedB.belongTo(studyGroup);
+        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(111, List.of(savedA, savedB)));
         List<UserDto.UserInfo> users = userService.getAppliedUsers();
         assertThat(users.size()).isEqualTo(2);
         System.out.println("users = " + users);
@@ -256,6 +252,7 @@ public class UserServiceTests {
         ).isNotZero();
         assertThat(savedA.getCourseSelections().size()).isZero();
     }
+
     @DisplayName("유저의 정보를 수정할 수 있어야한다")
     @Test
     public void userEditTest() {
@@ -266,15 +263,14 @@ public class UserServiceTests {
                 .role(Role.USER)
                 .build();
         User saved = userRepository.save(user);
-        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(111));
-        StudyGroup newStudyGroup = studyGroupRepository.save(new StudyGroup(222));
-        saved.belongTo(studyGroup);
+        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(111, List.of(saved)));
+        StudyGroup newStudyGroup = studyGroupRepository.save(new StudyGroup(222, List.of()));
         UserDto.UserEdit dto = UserDto.UserEdit.builder()
-                                                .id(saved.getId())
-                                                .sid("12345678")
-                                                .name("조용히해라")
-                                                .team(222)
-                                                .build();
+                .id(saved.getId())
+                .sid("12345678")
+                .name("조용히해라")
+                .team(222)
+                .build();
         UserDto.UserInfo edited = userService.editUser(dto);
         assertThat(edited.getName()).isEqualTo("조용히해라");
         assertThat(edited.getSid()).isEqualTo("12345678");

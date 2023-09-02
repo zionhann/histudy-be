@@ -122,9 +122,7 @@ public class ReportGroupCourseServiceTest {
                 .course(c)
                 .build())).toList();
         savedB.getCourseSelections().addAll(choices2);
-        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(111));
-        savedA.belongTo(studyGroup);
-        savedB.belongTo(studyGroup);
+        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(111, List.of(savedA, savedB)));
 
         String email = "";
         List<TeamDto> teams = teamService.getTeams(email);
@@ -143,7 +141,7 @@ public class ReportGroupCourseServiceTest {
                 .role(Role.USER)
                 .build();
         User savedA = userRepository.save(userA);
-        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(111));
+        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(111, List.of(savedA)));
         savedA.belongTo(studyGroup);
         int result = teamService.deleteTeam(new TeamIdDto(savedA.getStudyGroup().getId()), "");
         assertThat(result).isNotZero();
@@ -168,9 +166,7 @@ public class ReportGroupCourseServiceTest {
                 .build();
         User savedA = userRepository.save(userA);
         User savedB = userRepository.save(userB);
-        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(111));
-        savedA.belongTo(studyGroup);
-        savedB.belongTo(studyGroup);
+        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(111, List.of(savedA, savedB)));
         ReportForm form = ReportForm.builder()
                 .title("title")
                 .content("content")
@@ -201,11 +197,8 @@ public class ReportGroupCourseServiceTest {
         User savedUser = userRepository.save(userA);
         User savedUser2 = userRepository.save(userB);
 
-        StudyGroup studyGroup = new StudyGroup(1);
-        savedUser.belongTo(studyGroup);
-
-        StudyGroup studyGroup2 = new StudyGroup(2);
-        savedUser2.belongTo(studyGroup2);
+        StudyGroup studyGroup = new StudyGroup(1, List.of(savedUser));
+        StudyGroup studyGroup2 = new StudyGroup(2, List.of(savedUser2));
 
         GroupReport groupReport = GroupReport.builder()
                 .title("title")

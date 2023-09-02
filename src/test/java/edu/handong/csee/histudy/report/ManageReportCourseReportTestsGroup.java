@@ -35,17 +35,18 @@ public class ManageReportCourseReportTestsGroup {
                 .name("courseName")
                 .build();
 
-        StudyGroup studyGroup = new StudyGroup(1);
+        user1.select(List.of(course));
+        user2.select(List.of(course));
+        StudyGroup studyGroup = new StudyGroup(1, List.of(user1, user2));
+
         GroupReport groupReport = GroupReport.builder()
                 .title("title")
                 .content("content")
                 .totalMinutes(60)
                 .studyGroup(studyGroup)
                 .participants(List.of(user1))
-                .courses(List.of(course))
+                .courses(studyGroup.getGroupCourses())
                 .build();
-        user1.belongTo(studyGroup);
-        user2.belongTo(studyGroup);
 
         // then
         assertEquals(2, groupReport.getStudyGroup().getMembers().size());
@@ -56,16 +57,25 @@ public class ManageReportCourseReportTestsGroup {
     @Test
     public void ManageReportTests_61() {
         // given
+        User user1 = User.builder()
+                .sid("22300000")
+                .email("test@histudy.com")
+                .name("user1")
+                .role(Role.USER)
+                .build();
         Course course = Course.builder()
                 .name("courseName")
                 .build();
+
+        user1.select(List.of(course));
+        StudyGroup studyGroup = new StudyGroup(1, List.of(user1));
         GroupReport groupReport = GroupReport.builder()
                 .title("title")
                 .content("content")
                 .totalMinutes(60)
-                .studyGroup(new StudyGroup(1))
+                .studyGroup(studyGroup)
                 .participants(List.of(User.builder().build()))
-                .courses(List.of(course))
+                .courses(studyGroup.getGroupCourses())
                 .build();
 
         // then
@@ -76,26 +86,34 @@ public class ManageReportCourseReportTestsGroup {
     @Test
     public void ManageReportTests_76() {
         // given
+        User user1 = User.builder()
+                .sid("22300000")
+                .email("test@histudy.com")
+                .name("user1")
+                .role(Role.USER)
+                .build();
         Course course = Course.builder()
                 .name("courseName")
                 .build();
-        StudyGroup studyGroup = new StudyGroup(1);
+
+        user1.select(List.of(course));
+        StudyGroup studyGroup = new StudyGroup(1, List.of(user1));
 
         GroupReport groupReport1 = GroupReport.builder()
                 .title("title")
                 .content("content")
                 .totalMinutes(30)
                 .studyGroup(studyGroup)
-                .participants(List.of(User.builder().build()))
-                .courses(List.of(course))
+                .participants(studyGroup.getMembers())
+                .courses(studyGroup.getGroupCourses())
                 .build();
         GroupReport groupReport2 = GroupReport.builder()
                 .title("title")
                 .content("content")
                 .totalMinutes(60)
                 .studyGroup(studyGroup)
-                .participants(List.of(User.builder().build()))
-                .courses(List.of(course))
+                .participants(studyGroup.getMembers())
+                .courses(studyGroup.getGroupCourses())
                 .build();
         // then
         assertEquals(90, studyGroup.getTotalMinutes());
@@ -105,17 +123,26 @@ public class ManageReportCourseReportTestsGroup {
     @Test
     public void ManageReportTests_102() {
         // given
+        User user1 = User.builder()
+                .sid("22300000")
+                .email("test@histudy.com")
+                .name("user1")
+                .role(Role.USER)
+                .build();
         Course course = Course.builder()
                 .name("courseName")
                 .build();
+
+        user1.select(List.of(course));
+        StudyGroup studyGroup = new StudyGroup(1, List.of(user1));
         GroupReport groupReport = GroupReport.builder()
                 .title("title")
                 .content("content")
                 .totalMinutes(0)
-                .studyGroup(new StudyGroup(1))
-                .participants(List.of(User.builder().build()))
+                .studyGroup(studyGroup)
+                .participants(studyGroup.getMembers())
                 .images(List.of("pathA", "pathB", "pathC"))
-                .courses(List.of(course))
+                .courses(studyGroup.getGroupCourses())
                 .build();
 
         // then
@@ -134,14 +161,15 @@ public class ManageReportCourseReportTestsGroup {
                 .name("courseName")
                 .build();
 
+        StudyGroup studyGroup = new StudyGroup(1, List.of());
         GroupReport groupReport = GroupReport.builder()
                 .title("title")
                 .content("content")
                 .totalMinutes(0)
-                .studyGroup(new StudyGroup(1))
-                .participants(List.of(User.builder().build()))
+                .studyGroup(studyGroup)
+                .participants(studyGroup.getMembers())
                 .images(List.of("pathA", "pathB", "pathC"))
-                .courses(List.of(course))
+                .courses(studyGroup.getGroupCourses())
                 .build();
 
         // then
