@@ -124,6 +124,7 @@ public class TeamService {
 
             // Group users by course
             Map<Course, List<User>> entries = users.stream()
+                    .filter(u -> u.getCourseSelections().size() > priority)
                     .collect(Collectors.groupingBy(
                             u -> u.getCourseSelections()
                                     .get(priority)
