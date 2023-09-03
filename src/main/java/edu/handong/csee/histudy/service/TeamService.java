@@ -107,7 +107,7 @@ public class TeamService {
         // First matching
         // Make teams with friends
         return users.stream()
-                .map(User::getFriendships)
+                .map(User::getSentRequests)
                 .flatMap(Collection::stream)
                 .filter(Friendship::isAccepted)
                 .map(f -> f.makeTeam(tag))
@@ -124,6 +124,7 @@ public class TeamService {
 
             // Group users by course
             Map<Course, List<User>> entries = users.stream()
+                    .filter(u -> u.getCourseSelections().size() > priority)
                     .collect(Collectors.groupingBy(
                             u -> u.getCourseSelections()
                                     .get(priority)

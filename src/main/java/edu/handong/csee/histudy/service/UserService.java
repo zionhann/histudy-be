@@ -12,16 +12,15 @@ import edu.handong.csee.histudy.exception.MissingEmailException;
 import edu.handong.csee.histudy.exception.MissingSubException;
 import edu.handong.csee.histudy.exception.UserAlreadyExistsException;
 import edu.handong.csee.histudy.exception.UserNotFoundException;
+import edu.handong.csee.histudy.repository.CourseRepository;
 import edu.handong.csee.histudy.repository.StudyGroupRepository;
 import edu.handong.csee.histudy.repository.UserCourseRepository;
-import edu.handong.csee.histudy.repository.CourseRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,8 +57,8 @@ public class UserService {
 
         return userRepository.findUserByEmail(email)
                 .map(u -> {
-                    u.add(friends);
-                    u.select(courses);
+                    u.addUser(friends);
+                    u.selectCourse(courses);
                     return new ApplyFormDto(u);
                 });
     }
@@ -126,10 +125,9 @@ public class UserService {
     }
 
     public UserDto.UserInfo deleteUserForm(String sid) {
-        User user = userRepository.findUserBySid(sid).orElseThrow();
-
-        user.getCourseSelections().clear();
-        user.add(Collections.emptyList());
+        User user = userRepository.findUserBySid(sid)
+                .orElseThrow(UserNotFoundException::new);
+        user.resetPreferences();
 
         return new UserDto.UserInfo(user);
     }

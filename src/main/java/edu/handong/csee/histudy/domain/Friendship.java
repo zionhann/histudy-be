@@ -26,10 +26,10 @@ public class Friendship {
     @Enumerated(EnumType.STRING)
     private FriendshipStatus status;
 
-    public Friendship(User sent, User received) {
+    public Friendship(User sent, User received, FriendshipStatus status) {
         this.sent = sent;
         this.received = received;
-        this.status = FriendshipStatus.PENDING;
+        this.status = status;
     }
 
     public void accept() {
@@ -38,21 +38,9 @@ public class Friendship {
         }
     }
 
-    public void cancel() {
+    public void unfriend() {
         if (this.status == FriendshipStatus.ACCEPTED) {
             this.status = FriendshipStatus.PENDING;
-        }
-    }
-
-    public void disconnect() {
-        sent.getFriendships().remove(this);
-        if (this.status == FriendshipStatus.ACCEPTED) {
-            this.status = FriendshipStatus.PENDING;
-            User temp = sent;
-            sent = received;
-            received = temp;
-        } else {
-            received.getFriendships().remove(this);
         }
     }
 
@@ -60,9 +48,8 @@ public class Friendship {
         return status.equals(FriendshipStatus.ACCEPTED);
     }
 
-    public void connect() {
-        sent.getFriendships().add(this);
-        received.getFriendships().add(this);
+    public boolean isPending() {
+        return status.equals(FriendshipStatus.PENDING);
     }
 
     public StudyGroup makeTeam(AtomicInteger tag) {
@@ -81,9 +68,11 @@ public class Friendship {
         return new StudyGroup(tag.getAndIncrement(), List.of(sent, received));
     }
 
-    public User getFriendOf(User u) {
-        return (this.sent.equals(u))
-                ? this.received
-                : this.sent;
+    public boolean isSentFrom(User u) {
+        return this.sent.equals(u);
+    }
+
+    public void removeFromReceivedRequests() {
+        this.received.getReceivedRequests().remove(this);
     }
 }

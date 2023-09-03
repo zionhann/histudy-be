@@ -98,8 +98,8 @@ public class ReportGroupCourseServiceTest {
         User savedC = userRepository.save(userC);
         User savedA = userRepository.save(userA);
         User savedB = userRepository.save(userB);
-        savedA.add(List.of(savedB));
-        savedB.getFriendships().stream().findAny().ifPresent(Friendship::accept);
+        savedA.addUser(List.of(savedB));
+        savedB.getReceivedRequests().stream().findAny().ifPresent(Friendship::accept);
         List<Long> courseIdxList = List.of(1L, 2L);
         List<Course> courses = courseIdxList.stream()
                 .map(courseRepository::findById)
