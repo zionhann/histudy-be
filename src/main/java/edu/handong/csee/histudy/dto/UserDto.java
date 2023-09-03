@@ -87,9 +87,9 @@ public class UserDto {
             this.name = user.getName();
             this.sid = user.getSid();
             this.group = (user.getStudyGroup() == null) ? 0 : user.getStudyGroup().getTag();
-            this.friends = user.getFriendships().stream()
+            this.friends = user.getSentRequests().stream()
                     .filter(Friendship::isAccepted)
-                    .map(f -> f.getFriendOf(user))
+                    .map(Friendship::getReceived)
                     .map(UserBasic::new)
                     .toList();
             this.courses = user.getCourseSelections().stream()

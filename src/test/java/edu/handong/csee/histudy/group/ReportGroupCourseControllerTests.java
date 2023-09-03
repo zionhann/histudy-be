@@ -102,8 +102,8 @@ public class ReportGroupCourseControllerTests {
         Claims claimsB = Jwts.claims();
         claimsB.put("sub", userB.getEmail());
 
-        save1.select(List.of(savedCourse1, savedCourse2));
-        save2.select(List.of(savedCourse1, savedCourse2));
+        save1.selectCourse(List.of(savedCourse1, savedCourse2));
+        save2.selectCourse(List.of(savedCourse1, savedCourse2));
         StudyGroup studyGroup = new StudyGroup(1, List.of(save1, save2));
         studyGroupRepository.save(studyGroup);
 

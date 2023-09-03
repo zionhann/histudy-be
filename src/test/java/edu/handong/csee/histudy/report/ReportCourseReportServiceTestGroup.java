@@ -74,8 +74,8 @@ public class ReportCourseReportServiceTestGroup {
                 .build();
         courseRepository.save(courseC);
 
-        saved.select(List.of(course, courseB, courseC));
-        saved2.select(List.of(course, courseB, courseC));
+        saved.selectCourse(List.of(course, courseB, courseC));
+        saved2.selectCourse(List.of(course, courseB, courseC));
 
         StudyGroup studyGroup = new StudyGroup(1, List.of(saved, saved2));
         studyGroupRepository.save(studyGroup);
@@ -132,7 +132,7 @@ public class ReportCourseReportServiceTestGroup {
                 .role(Role.USER)
                 .build();
         User saved = userRepository.save(user);
-        saved.select(List.of(course, courseB, courseC));
+        saved.selectCourse(List.of(course, courseB, courseC));
         StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(1, List.of(saved)));
 
         ReportDto.ReportInfo response = reportService.createReport(form, "a@a.com");

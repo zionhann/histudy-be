@@ -35,8 +35,8 @@ public class ManageReportCourseReportTestsGroup {
                 .name("courseName")
                 .build();
 
-        user1.select(List.of(course));
-        user2.select(List.of(course));
+        user1.selectCourse(List.of(course));
+        user2.selectCourse(List.of(course));
         StudyGroup studyGroup = new StudyGroup(1, List.of(user1, user2));
 
         GroupReport groupReport = GroupReport.builder()
@@ -67,7 +67,7 @@ public class ManageReportCourseReportTestsGroup {
                 .name("courseName")
                 .build();
 
-        user1.select(List.of(course));
+        user1.selectCourse(List.of(course));
         StudyGroup studyGroup = new StudyGroup(1, List.of(user1));
         GroupReport groupReport = GroupReport.builder()
                 .title("title")
@@ -96,7 +96,7 @@ public class ManageReportCourseReportTestsGroup {
                 .name("courseName")
                 .build();
 
-        user1.select(List.of(course));
+        user1.selectCourse(List.of(course));
         StudyGroup studyGroup = new StudyGroup(1, List.of(user1));
 
         GroupReport groupReport1 = GroupReport.builder()
@@ -133,7 +133,7 @@ public class ManageReportCourseReportTestsGroup {
                 .name("courseName")
                 .build();
 
-        user1.select(List.of(course));
+        user1.selectCourse(List.of(course));
         StudyGroup studyGroup = new StudyGroup(1, List.of(user1));
         GroupReport groupReport = GroupReport.builder()
                 .title("title")

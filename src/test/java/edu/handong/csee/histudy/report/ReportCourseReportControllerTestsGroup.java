@@ -85,7 +85,7 @@ public class ReportCourseReportControllerTestsGroup {
         Course course = courseRepository.save(Course.builder()
                 .name("courseName")
                 .build());
-        user.select(List.of(course));
+        user.selectCourse(List.of(course));
 
         StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(1, List.of(user)));
 

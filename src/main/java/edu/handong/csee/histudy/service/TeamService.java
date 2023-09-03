@@ -107,7 +107,7 @@ public class TeamService {
         // First matching
         // Make teams with friends
         return users.stream()
-                .map(User::getFriendships)
+                .map(User::getSentRequests)
                 .flatMap(Collection::stream)
                 .filter(Friendship::isAccepted)
                 .map(f -> f.makeTeam(tag))

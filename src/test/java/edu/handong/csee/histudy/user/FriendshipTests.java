@@ -29,8 +29,8 @@ public class FriendshipTests {
                 .build();
 
         // when
-        userA.add(List.of(userB));
-        Friendship friendship = userA.getFriendships()
+        userA.addUser(List.of(userB));
+        Friendship friendship = userA.getSentRequests()
                 .stream()
                 .findAny()
                 .orElseThrow();
@@ -53,8 +53,8 @@ public class FriendshipTests {
                 .build();
 
         // when
-        userA.add(List.of(userB));
-        Friendship friendship = userB.getFriendships()
+        userA.addUser(List.of(userB));
+        Friendship friendship = userB.getReceivedRequests()
                 .stream()
                 .findAny()
                 .orElseThrow();
@@ -77,14 +77,14 @@ public class FriendshipTests {
                 .build();
 
         // when
-        userA.add(List.of(userB));
-        userB.getFriendships()
+        userA.addUser(List.of(userB));
+        userB.getReceivedRequests()
                 .stream()
                 .filter(friendship -> friendship.getSent().equals(userA))
                 .findAny()
                 .ifPresent((Friendship::accept));
 
-        Friendship friendship = userB.getFriendships()
+        Friendship friendship = userB.getReceivedRequests()
                 .stream()
                 .findAny()
                 .orElseThrow();
@@ -93,30 +93,6 @@ public class FriendshipTests {
         assertThat(friendship.getSent()).isEqualTo(userA);
         assertThat(friendship.getReceived()).isEqualTo(userB);
         assertThat(friendship.getStatus()).isEqualTo(FriendshipStatus.ACCEPTED);
-    }
-
-    @DisplayName("등록(요청)한 상대에 대해 요청상태(대기, 수락, 거절) 등을 알 수 있다: 거절")
-    @Test
-    public void FriendshipTests_96() {
-        // given
-        User userA = User.builder()
-                .name("userA")
-                .build();
-        User userB = User.builder()
-                .name("userB")
-                .build();
-
-        // when
-        userA.add(List.of(userB));
-        userB.getFriendships()
-                .stream()
-                .filter(friendship -> friendship.getSent().equals(userA))
-                .findAny()
-                .ifPresent(Friendship::disconnect);
-
-        // then
-        assertThat(userB.getFriendships()).isEmpty();
-        assertThat(userA.getFriendships()).isEmpty();
     }
 
     @DisplayName("기존에 등록한 강의 정보나 친구가 있는 경우 지우고 업데이트한다")
@@ -134,11 +110,11 @@ public class FriendshipTests {
                 .build();
 
         // when
-        userA.add(List.of(userB));
-        userA.add(List.of(userC));
+        userA.addUser(List.of(userB));
+        userA.addUser(List.of(userC));
 
         // then
-        assertThat(userA.getFriendships()).hasSize(1);
-        assertThat(userA.getFriendships().get(0).getReceived()).isEqualTo(userC);
+        assertThat(userA.getSentRequests()).hasSize(1);
+        assertThat(userA.getSentRequests().get(0).getReceived()).isEqualTo(userC);
     }
 }

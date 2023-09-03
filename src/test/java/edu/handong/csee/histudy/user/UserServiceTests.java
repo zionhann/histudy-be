@@ -99,8 +99,8 @@ public class UserServiceTests {
         User savedA = userRepository.save(userA);
         User savedB = userRepository.save(userB);
         User savedC = userRepository.save(userC);
-        savedA.add(List.of(savedB));
-        savedB.getFriendships().stream().findAny().ifPresent(Friendship::accept);
+        savedA.addUser(List.of(savedB));
+        savedB.getReceivedRequests().stream().findAny().ifPresent(Friendship::accept);
         List<Long> courseIdxList = List.of(1L, 2L);
         List<Course> courses = courseIdxList.stream()
                 .map(courseRepository::findById)
@@ -166,8 +166,8 @@ public class UserServiceTests {
         User savedA = userRepository.save(userA);
         User savedB = userRepository.save(userB);
         User savedC = userRepository.save(userC);
-        savedA.add(List.of(savedB));
-        savedB.getFriendships().stream().findAny().ifPresent(Friendship::accept);
+        savedA.addUser(List.of(savedB));
+        savedB.getReceivedRequests().stream().findAny().ifPresent(Friendship::accept);
         List<Long> courseIdxList = courseRepository.findAll().stream().map(Course::getId).toList();
         List<Course> courses = courseIdxList.stream()
                 .map(courseRepository::findById)
@@ -218,35 +218,43 @@ public class UserServiceTests {
                 .role(Role.USER)
                 .build();
         User savedA = userRepository.save(userA);
-        User accepted = userRepository.save(userB);
-        User pending = userRepository.save(userC);
+        User savedB = userRepository.save(userB);
+        User savedC = userRepository.save(userC);
+
+        Course course = Course.builder()
+                .name("courseName")
+                .build();
+        Course savedCourse = courseRepository.save(course);
 
         ApplyForm form = ApplyForm.builder()
-                .friendIds(List.of(accepted.getSid(), pending.getSid()))
-                .courseIds(List.of(1L, 1L, 2L))
+                .friendIds(List.of(savedB.getSid(), savedC.getSid()))
+                .courseIds(List.of(savedCourse.getId()))
                 .build();
+
         ApplyForm form2 = ApplyForm.builder()
                 .friendIds(List.of(savedA.getSid()))
-                .courseIds(List.of(2L, 2L, 2L))
+                .courseIds(List.of(savedCourse.getId()))
                 .build();
+
         userService.apply(form, savedA.getEmail());
-        userService.apply(form2, accepted.getEmail());
-        assertThat(accepted.getFriendships()
+        userService.apply(form2, savedB.getEmail());
+
+        assertThat(savedB.getReceivedRequests()
                 .stream()
                 .filter(Friendship::isAccepted)
                 .toList()
                 .size()
         ).isNotZero();
         userService.deleteUserForm(savedA.getSid());
-        assertThat(accepted.getFriendships()
+        assertThat(savedB.getReceivedRequests()
                 .stream()
                 .filter(Friendship::isAccepted)
                 .toList()
                 .size()
         ).isZero();
-        assertThat(accepted.getFriendships()
+        assertThat(savedB.getSentRequests()
                 .stream()
-                .filter(f -> f.getStatus() == FriendshipStatus.PENDING)
+                .filter(Friendship::isPending)
                 .toList()
                 .size()
         ).isNotZero();

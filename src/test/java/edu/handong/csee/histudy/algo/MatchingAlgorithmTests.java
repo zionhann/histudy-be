@@ -70,10 +70,10 @@ public class MatchingAlgorithmTests {
 
         for (int i = 0; i < users.size(); i++) {
             User currentUser = users.get(i);
-            currentUser.select(List.of(courses.get(random.nextInt(courses.size())), courses.get(random.nextInt(courses.size())), courses.get(random.nextInt(courses.size()))));
+            currentUser.selectCourse(List.of(courses.get(random.nextInt(courses.size())), courses.get(random.nextInt(courses.size())), courses.get(random.nextInt(courses.size()))));
 
             if (random.nextBoolean()) {
-                currentUser.add(List.of(users.get(random.nextInt(users.size())), users.get(random.nextInt(users.size())), users.get(random.nextInt(users.size()))));
+                currentUser.addUser(List.of(users.get(random.nextInt(users.size())), users.get(random.nextInt(users.size())), users.get(random.nextInt(users.size()))));
             }
         }
     }
@@ -219,7 +219,7 @@ public class MatchingAlgorithmTests {
                         user.getCourseSelections().get(2).getCourse().getName() + ")");
             });
             System.out.println("Friends:");
-            team.getMembers().forEach(u -> u.getFriendships().stream().filter(Friendship::isAccepted).forEach(friendship ->
+            team.getMembers().forEach(u -> u.getSentRequests().stream().filter(Friendship::isAccepted).forEach(friendship ->
                     System.out.println(friendship.getSent().getName() + " -> " + friendship.getReceived().getName())));
             System.out.println("Common courses:");
             team.getGroupCourses().forEach(enroll -> System.out.println(enroll.getCourse().getName()));

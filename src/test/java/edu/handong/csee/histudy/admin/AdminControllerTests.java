@@ -97,9 +97,9 @@ public class AdminControllerTests {
         Claims claims = Jwts.claims();
         claims.put("rol", Role.ADMIN.name());
 
-        user.add(List.of(friend, friend2));
-        friend.add(List.of(user));
-        user.select(List.of(course, course, course));
+        user.addUser(List.of(friend, friend2));
+        friend.addUser(List.of(user));
+        user.selectCourse(List.of(course, course, course));
 
         // when
         MvcResult mvcResult = mvc
@@ -143,7 +143,7 @@ public class AdminControllerTests {
                 .name("courseName")
                 .build());
 
-        applicant.select(List.of(course));
+        applicant.selectCourse(List.of(course));
 
         userRepository.save(applicant);
         userRepository.save(userA);

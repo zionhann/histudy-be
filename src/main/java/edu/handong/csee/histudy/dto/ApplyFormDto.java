@@ -1,8 +1,8 @@
 package edu.handong.csee.histudy.dto;
 
-import edu.handong.csee.histudy.domain.UserCourse;
 import edu.handong.csee.histudy.domain.Friendship;
 import edu.handong.csee.histudy.domain.User;
+import edu.handong.csee.histudy.domain.UserCourse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -21,7 +21,7 @@ public class ApplyFormDto {
     private List<CourseDto.CourseInfo> courses;
 
     public ApplyFormDto(User entity) {
-        this.friends = entity.getFriendships()
+        this.friends = entity.getSentRequests()
                 .stream()
                 .map(Friendship::getReceived)
                 .map(UserDto.UserBasic::new)

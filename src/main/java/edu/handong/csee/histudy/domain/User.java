@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Entity
@@ -40,7 +41,10 @@ public class User {
     private List<ReportUser> reportParticipation = new ArrayList<>();
 
     @OneToMany(mappedBy = "sent", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Friendship> friendships = new ArrayList<>();
+    private List<Friendship> sentRequests = new ArrayList<>();
+
+    @OneToMany(mappedBy = "received", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Friendship> receivedRequests = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserCourse> courseSelections = new ArrayList<>();
@@ -60,29 +64,34 @@ public class User {
         this.role = Role.MEMBER;
     }
 
-    public void add(List<User> users) {
-        if (!friendships.isEmpty()) {
-            List<Friendship> old = new ArrayList<>();
+    public void addUser(List<User> users) {
+        if (!this.sentRequests.isEmpty()) {
+            // Remove all sent requests
+            this.sentRequests.forEach(Friendship::removeFromReceivedRequests);
+            this.sentRequests.clear();
 
-            for (Friendship friendship : friendships) {
-                if (friendship.getSent().equals(this)) old.add(friendship);
-            }
-            old.forEach(Friendship::disconnect);
+            // Change all accepted requests to pending
+            this.receivedRequests.stream()
+                    .filter(Friendship::isAccepted)
+                    .forEach(Friendship::unfriend);
         }
-        users
-                .forEach(u -> u.friendships.stream()
-                        .filter(f -> f.getReceived().equals(this))
-                        .findFirst()
-                        .ifPresentOrElse(
-                                Friendship::accept,
-                                () -> {
-                                    Friendship friendship = new Friendship(this, u);
-                                    friendship.connect();
-                                }
-                        ));
+        users.forEach(u -> {
+            FriendshipStatus status = this.receivedRequests.stream()
+                    .filter(req ->
+                            req.isSentFrom(u))
+                    .findFirst()
+                    .map(req -> {
+                        req.accept();
+                        return FriendshipStatus.ACCEPTED;
+                    }).orElse(FriendshipStatus.PENDING);
+
+            Friendship friendship = new Friendship(this, u, status);
+            this.sentRequests.add(friendship);
+            u.receivedRequests.add(friendship);
+        });
     }
 
-    public void select(List<Course> courses) {
+    public void selectCourse(List<Course> courses) {
         if (!courseSelections.isEmpty()) {
             this.courseSelections.clear();
         }
@@ -102,5 +111,10 @@ public class User {
         this.sid = dto.getSid();
         this.name = dto.getName();
         studyGroup.join(List.of(this));
+    }
+
+    public void resetPreferences() {
+        this.addUser(Collections.emptyList());
+        this.selectCourse(Collections.emptyList());
     }
 }
