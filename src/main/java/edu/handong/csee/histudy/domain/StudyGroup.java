@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -68,10 +69,19 @@ public class StudyGroup {
                 .map(UserCourse::getCourse)
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
-        return courseCountMap.entrySet().stream()
+        List<Course> commonCourses = courseCountMap.entrySet().stream()
                 .filter(entry -> entry.getValue() >= 2)
+                .sorted(Map.Entry.<Course, Long>comparingByValue().reversed())
                 .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
+                .toList();
+
+        return (commonCourses.isEmpty())
+                ? this.members.stream()
+                .map(User::getCourseSelections)
+                .flatMap(Collection::stream)
+                .map(UserCourse::getCourse)
+                .toList()
+                : commonCourses;
     }
 
     protected StudyGroup join(List<User> users) {
