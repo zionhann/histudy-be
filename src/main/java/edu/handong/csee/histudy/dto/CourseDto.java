@@ -49,4 +49,20 @@ public class CourseDto {
             this.semester = course.getSemester();
         }
     }
+
+    @Getter
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class BasicCourseInfo {
+
+        @Schema(description = "Course ID", example = "1", type = "number")
+        private Long id;
+
+        @Schema(description = "Course Name", example = "Software Engineering")
+        private String name;
+
+        public BasicCourseInfo(Course course) {
+            this.id = course.getId();
+            this.name = course.getName();
+        }
+    }
 }
