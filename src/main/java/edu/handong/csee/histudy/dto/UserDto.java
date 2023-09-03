@@ -58,7 +58,6 @@ public class UserDto {
     @Getter
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    @ToString
     public static class UserInfo {
 
         @Schema(description = "User ID", example = "1", type = "number")

@@ -1,6 +1,6 @@
 package edu.handong.csee.histudy.controller;
 
-import edu.handong.csee.histudy.controller.form.UserInfo;
+import edu.handong.csee.histudy.controller.form.UserForm;
 import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.dto.ApplyFormDto;
 import edu.handong.csee.histudy.dto.UserDto;
@@ -33,9 +33,9 @@ public class UserController {
 
     @Operation(summary = "회원가입")
     @PostMapping
-    public ResponseEntity<UserDto.UserLogin> createUser(@RequestBody UserInfo userInfo) {
-        userService.signUp(userInfo);
-        JwtPair tokens = jwtService.issueToken(userInfo.getEmail(), userInfo.getName(), Role.USER);
+    public ResponseEntity<UserDto.UserLogin> createUser(@RequestBody UserForm userForm) {
+        userService.signUp(userForm);
+        JwtPair tokens = jwtService.issueToken(userForm.getEmail(), userForm.getName(), Role.USER);
 
         return ResponseEntity.ok(UserDto.UserLogin.builder()
                 .isRegistered(true)
