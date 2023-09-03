@@ -2,7 +2,6 @@ package edu.handong.csee.histudy.dto;
 
 import edu.handong.csee.histudy.domain.GroupReport;
 import edu.handong.csee.histudy.domain.Image;
-import edu.handong.csee.histudy.domain.ReportCourse;
 import edu.handong.csee.histudy.domain.ReportUser;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
@@ -34,9 +33,11 @@ public class ReportDto {
                     .map(ReportUser::getUser)
                     .map(UserDto.UserBasic::new)
                     .toList();
-            this.courses = entity.getCourses().stream()
-                    .map(ReportCourse::getGroupCourse)
-                    .map(gc -> gc.getCourse().getName())
+            this.courses = entity.getCourses()
+                    .stream()
+                    .map(rc ->
+                            rc.getGroupCourse().getCourse())
+                    .map(CourseDto.BasicCourseInfo::new)
                     .toList();
             this.images = entity.getImages().stream()
                     .map(ImageDto::new)
@@ -60,7 +61,7 @@ public class ReportDto {
         private List<UserDto.UserBasic> participants;
 
         @Schema(description = "Course names of the report", type = "array", example = "[\"OOP\", \"OS\"]")
-        private List<String> courses;
+        private List<CourseDto.BasicCourseInfo> courses;
 
         @Schema(description = "Images of the report", type = "array")
         private List<ImageDto> images;

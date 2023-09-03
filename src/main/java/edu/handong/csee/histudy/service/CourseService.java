@@ -4,10 +4,9 @@ import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
 import edu.handong.csee.histudy.domain.Course;
 import edu.handong.csee.histudy.domain.GroupCourse;
-import edu.handong.csee.histudy.domain.StudyGroup;
-import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.CourseDto;
 import edu.handong.csee.histudy.dto.CourseIdDto;
+import edu.handong.csee.histudy.exception.UserNotFoundException;
 import edu.handong.csee.histudy.repository.CourseRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -75,11 +74,12 @@ public class CourseService {
     }
 
     public List<CourseDto.CourseInfo> getTeamCourses(String email) {
-        List<Course> courses = userRepository.findUserByEmail(email).stream()
-                .map(User::getStudyGroup)
-                .map(StudyGroup::getGroupCourses)
-                .flatMap(list -> list.stream()
-                        .map(GroupCourse::getCourse))
+        List<Course> courses = userRepository.findUserByEmail(email)
+                .orElseThrow(UserNotFoundException::new)
+                .getStudyGroup()
+                .getGroupCourses()
+                .stream()
+                .map(GroupCourse::getCourse)
                 .toList();
 
         return courses.stream()

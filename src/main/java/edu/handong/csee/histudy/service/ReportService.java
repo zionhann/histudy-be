@@ -4,6 +4,7 @@ import edu.handong.csee.histudy.controller.form.ReportForm;
 import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.ReportDto;
 import edu.handong.csee.histudy.exception.ReportNotFoundException;
+import edu.handong.csee.histudy.exception.UserNotFoundException;
 import edu.handong.csee.histudy.repository.CourseRepository;
 import edu.handong.csee.histudy.repository.GroupCourseRepository;
 import edu.handong.csee.histudy.repository.GroupReportRepository;
@@ -25,7 +26,8 @@ public class ReportService {
     private final GroupCourseRepository groupCourseRepository;
 
     public ReportDto.ReportInfo createReport(ReportForm form, String email) {
-        User user = userRepository.findUserByEmail(email).orElseThrow();
+        User user = userRepository.findUserByEmail(email)
+                .orElseThrow(UserNotFoundException::new);
 
         List<User> participants = form.getParticipants()
                 .stream()

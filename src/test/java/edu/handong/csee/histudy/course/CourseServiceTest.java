@@ -8,7 +8,6 @@ import edu.handong.csee.histudy.repository.StudyGroupRepository;
 import edu.handong.csee.histudy.repository.UserCourseRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import edu.handong.csee.histudy.service.CourseService;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -60,11 +59,6 @@ public class CourseServiceTest {
         courseRepository.save(courseC);
     }
 
-    @AfterEach
-    void cleanup() {
-        courseRepository.deleteAll();
-    }
-
     @DisplayName("팀내에 인원들의 과목들을 불러들여야 한다")
     @Test
     public void teamCourseTest() {
@@ -98,7 +92,7 @@ public class CourseServiceTest {
                 .toList();
         List<UserCourse> choicesB = coursesB.stream().map(c -> userCourseRepository.save(new UserCourse(savedB, c))).toList();
         savedB.getCourseSelections().addAll(choicesB);
-        List<CourseDto.CourseInfo> result = courseService.getTeamCourses("1234");
+        List<CourseDto.CourseInfo> result = courseService.getTeamCourses("a@a.com");
 //        assertThat(result.size()).isEqualTo(2);
         System.out.println("result = " + result);
     }

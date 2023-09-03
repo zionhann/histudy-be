@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class StudyGroup {
+public class StudyGroup extends BaseTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
