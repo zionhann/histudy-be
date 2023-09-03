@@ -64,6 +64,9 @@ public class StudyGroup extends BaseTime {
     }
 
     private List<Course> getCommonCourses() {
+        if (!this.groupCourses.isEmpty()) {
+            this.groupCourses.clear();
+        }
         Map<Course, Long> courseCountMap = this.members.stream()
                 .flatMap(u -> u.getCourseSelections().stream())
                 .map(UserCourse::getCourse)
