@@ -3,7 +3,7 @@ package edu.handong.csee.integration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.handong.csee.histudy.HistudyApplication;
 import edu.handong.csee.histudy.controller.UserController;
-import edu.handong.csee.histudy.controller.form.UserInfo;
+import edu.handong.csee.histudy.controller.form.UserForm;
 import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.UserDto;
@@ -74,7 +74,7 @@ public class UserTests {
     @Test
     void UserTests_63() throws Exception {
         // Given
-        UserInfo form = new UserInfo(
+        UserForm form = new UserForm(
                 "123",
                 "test",
                 "test@example.com",
@@ -101,7 +101,7 @@ public class UserTests {
     @Test
     void UserTests_58() throws Exception {
         // Given
-        userService.signUp(new UserInfo(
+        userService.signUp(new UserForm(
                 "123",
                 "test",
                 "test@example.com",
@@ -129,7 +129,7 @@ public class UserTests {
     @Test
     void UserTests_120() throws Exception {
         // Given
-        userService.signUp(new UserInfo(
+        userService.signUp(new UserForm(
                 "123",
                 "test",
                 "test@example.com",

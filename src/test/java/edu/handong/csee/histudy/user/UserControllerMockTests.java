@@ -3,7 +3,7 @@ package edu.handong.csee.histudy.user;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.handong.csee.histudy.controller.ExceptionController;
 import edu.handong.csee.histudy.controller.UserController;
-import edu.handong.csee.histudy.controller.form.UserInfo;
+import edu.handong.csee.histudy.controller.form.UserForm;
 import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.UserDto;
@@ -16,7 +16,6 @@ import io.jsonwebtoken.Jwts;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -152,9 +151,9 @@ public class UserControllerMockTests {
     @Test
     void UserControllerTests_254() throws Exception {
         // given
-        UserInfo userInfo = new UserInfo("1234", "username", "user@test", "21800123");
+        UserForm userForm = new UserForm("1234", "username", "user@test", "21800123");
         List<String> tokens = List.of("access_token", "refresh_token");
-        String form = mapper.writeValueAsString(userInfo);
+        String form = mapper.writeValueAsString(userForm);
 
         // when
         when(jwtService.issueToken(any(), any(), any())).thenReturn(new JwtPair(tokens));
@@ -216,8 +215,8 @@ public class UserControllerMockTests {
     @DisplayName("기존 유저는 회원가입 요청이 거부되어야 한다.")
     @Test
     void UserControllerTests_206() throws Exception {
-        UserInfo userInfo = new UserInfo("1234", "username", "user@test", "21800123");
-        String form = mapper.writeValueAsString(userInfo);
+        UserForm userForm = new UserForm("1234", "username", "user@test", "21800123");
+        String form = mapper.writeValueAsString(userForm);
 
         doThrow(UserAlreadyExistsException.class)
                 .when(userService)

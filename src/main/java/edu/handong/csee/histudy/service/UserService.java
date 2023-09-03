@@ -1,7 +1,7 @@
 package edu.handong.csee.histudy.service;
 
 import edu.handong.csee.histudy.controller.form.ApplyForm;
-import edu.handong.csee.histudy.controller.form.UserInfo;
+import edu.handong.csee.histudy.controller.form.UserForm;
 import edu.handong.csee.histudy.domain.Course;
 import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.domain.StudyGroup;
@@ -63,19 +63,19 @@ public class UserService {
                 });
     }
 
-    public void signUp(UserInfo userInfo) {
+    public void signUp(UserForm userForm) {
         userRepository
-                .findUserBySub(userInfo.getSub())
+                .findUserBySub(userForm.getSub())
                 .ifPresentOrElse(
                         __ -> {
                             throw new UserAlreadyExistsException();
                         },
                         () ->
                                 userRepository.save(User.builder()
-                                        .sid(userInfo.getSid())
-                                        .email(userInfo.getEmail())
-                                        .name(userInfo.getName())
-                                        .sub(userInfo.getSub())
+                                        .sid(userForm.getSid())
+                                        .email(userForm.getEmail())
+                                        .name(userForm.getName())
+                                        .sub(userForm.getSub())
                                         .role(Role.USER)
                                         .build()));
     }

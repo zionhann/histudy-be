@@ -20,8 +20,12 @@ public class GroupReport extends BaseTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String title;
+
+    @Column(length = 2000)
     private String content;
+
     private long totalMinutes;
 
     @ManyToOne(fetch = FetchType.LAZY)

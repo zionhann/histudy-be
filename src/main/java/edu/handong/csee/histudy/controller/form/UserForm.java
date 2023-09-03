@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserInfo {
+public class UserForm {
 
     @Schema(description = "User ID", example = "1234567890")
     private String sub;
