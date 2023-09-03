@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Friendship {
+public class Friendship extends BaseTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

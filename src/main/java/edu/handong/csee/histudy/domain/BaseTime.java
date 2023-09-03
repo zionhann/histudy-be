@@ -1,6 +1,5 @@
 package edu.handong.csee.histudy.domain;
 
-import jakarta.persistence.Embeddable;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
@@ -10,7 +9,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
-@Embeddable
 @MappedSuperclass
 @EntityListeners(value = AuditingEntityListener.class)
 @Getter

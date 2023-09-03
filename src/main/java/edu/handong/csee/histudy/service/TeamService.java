@@ -116,50 +116,61 @@ public class TeamService {
     }
 
     public List<StudyGroup> matchCourseFirst(List<User> users, AtomicInteger tag) {
-        List<StudyGroup> teamsWithoutFriends = new ArrayList<>();
+        List<StudyGroup> results = new ArrayList<>();
+        Set<User> unmatchedUsers = new HashSet<>(users);
 
         for (int i = 0; i < 3; i++) {
             // Set priority: identical to the index of the choice
             final int priority = i;
 
             // Group users by course
-            Map<Course, List<User>> entries = users.stream()
-                    .filter(u -> u.getCourseSelections().size() > priority)
+            Map<Course, List<User>> entries = unmatchedUsers.stream()
+                    .filter(u ->
+                            u.getCourseSelections().size() > priority)
                     .collect(Collectors.groupingBy(
-                            u -> u.getCourseSelections()
-                                    .get(priority)
-                                    .getCourse()));
+                            u ->
+                                    u.getCourseSelections()
+                                            .get(priority)
+                                            .getCourse()));
 
             // Make teams with 3 ~ 5 elements
             entries.forEach((course, group) -> {
-                if (group.size() > 5) {
-                    // If the group has more than 5 elements, split the group
-                    while (group.size() / 5 > 0) {
-                        // Split the group into 5 elements
-                        // [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] -> [1, 2, 3, 4, 5], [6, 7, 8, 9, 10], [11]
-                        List<User> subGroup = group.subList(0, 5);
-
-                        // Create a team with only 5 elements
-                        StudyGroup studyGroup = new StudyGroup(tag.getAndIncrement(), subGroup);
-                        teamsWithoutFriends.add(studyGroup);
-
-                        // Remove the elements that have already been added to the team
-                        group.removeAll(subGroup);
-                    }
-                }
-
-                if (group.size() >= 3) {
-                    // If the remaining elements are 3 ~ 5
-                    // Create a team with 3 ~ 5 elements
-                    StudyGroup studyGroup = new StudyGroup(tag.getAndIncrement(), group);
-                    teamsWithoutFriends.add(studyGroup);
-                }
+                List<StudyGroup> matchedGroupList = createGroup(group, tag);
+                results.addAll(matchedGroupList);
             });
+
             // Remove users who have already been matched
-            users.removeAll(teamsWithoutFriends.stream()
-                    .flatMap(t -> t.getMembers().stream())
-                    .toList());
+            results.stream()
+                    .flatMap(t ->
+                            t.getMembers().stream())
+                    .toList()
+                    .forEach(unmatchedUsers::remove);
         }
-        return teamsWithoutFriends;
+        return results;
+    }
+
+    private List<StudyGroup> createGroup(List<User> group, AtomicInteger tag) {
+        List<StudyGroup> matchedGroupList = new ArrayList<>();
+
+        while (group.size() >= 5) {
+            // If the group has more than 5 elements, split the group
+            // Split the group into 5 elements
+            // [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] -> [1, 2, 3, 4, 5], [6, 7, 8, 9, 10], [11]
+            List<User> subGroup = new ArrayList<>(group.subList(0, 5));
+
+            // Create a team with only 5 elements
+            StudyGroup studyGroup = new StudyGroup(tag.getAndIncrement(), subGroup);
+            matchedGroupList.add(studyGroup);
+
+            // Remove the elements that have already been added to the team
+            group.removeAll(subGroup);
+        }
+        if (group.size() >= 3) {
+            // If the remaining elements are 3 ~ 4
+            // Create a team with 3 ~ 4 elements
+            StudyGroup studyGroup = new StudyGroup(tag.getAndIncrement(), group);
+            matchedGroupList.add(studyGroup);
+        }
+        return matchedGroupList;
     }
 }
