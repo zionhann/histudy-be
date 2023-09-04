@@ -17,10 +17,12 @@ public class UserCourse extends BaseTime {
     private User user;
     @ManyToOne(fetch = FetchType.LAZY)
     private Course course;
+    private Integer priority;
 
     @Builder
-    public UserCourse(User user, Course course) {
+    public UserCourse(User user, Course course, Integer priority) {
         this.user = user;
         this.course = course;
+        this.priority = priority;
     }
 }

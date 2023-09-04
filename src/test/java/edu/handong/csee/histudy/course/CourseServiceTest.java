@@ -75,7 +75,7 @@ public class CourseServiceTest {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
-        List<UserCourse> preferredCours = courses.stream().map(c -> userCourseRepository.save(new UserCourse(saved, c))).toList();
+        List<UserCourse> preferredCours = courses.stream().map(c -> userCourseRepository.save(new UserCourse(saved, c, 0))).toList();
         saved.getCourseSelections().addAll(preferredCours);
         User userB = User.builder()
                 .sid("22000329")
@@ -90,7 +90,7 @@ public class CourseServiceTest {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
-        List<UserCourse> choicesB = coursesB.stream().map(c -> userCourseRepository.save(new UserCourse(savedB, c))).toList();
+        List<UserCourse> choicesB = coursesB.stream().map(c -> userCourseRepository.save(new UserCourse(savedB, c, 0))).toList();
         savedB.getCourseSelections().addAll(choicesB);
         List<CourseDto.CourseInfo> result = courseService.getTeamCourses("a@a.com");
 //        assertThat(result.size()).isEqualTo(2);

@@ -87,10 +87,7 @@ public class UserController {
     public ResponseEntity<ApplyFormDto> getMyApplicationForm(
             @RequestAttribute Claims claims) {
         if (Role.isAuthorized(claims, Role.USER)) {
-            Optional<ApplyFormDto> userInfo = userService.getUserInfo(claims.getSubject());
-            return userInfo
-                    .map(ResponseEntity::ok)
-                    .orElseGet(() -> ResponseEntity.notFound().build());
+            return ResponseEntity.ok(userService.getUserInfo(claims.getSubject()));
         }
         throw new ForbiddenException();
     }

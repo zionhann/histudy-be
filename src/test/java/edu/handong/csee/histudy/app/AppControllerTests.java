@@ -135,7 +135,7 @@ public class AppControllerTests {
                         .requestAttr("claims", claims)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(form))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andDo(print())
                 .andReturn();
     }
@@ -166,7 +166,7 @@ public class AppControllerTests {
                         .requestAttr("claims", claims)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(form))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andDo(print())
                 .andReturn();
     }

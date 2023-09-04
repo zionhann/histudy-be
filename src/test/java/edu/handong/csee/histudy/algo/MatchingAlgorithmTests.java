@@ -70,10 +70,23 @@ public class MatchingAlgorithmTests {
 
         for (int i = 0; i < users.size(); i++) {
             User currentUser = users.get(i);
-            currentUser.selectCourse(List.of(courses.get(random.nextInt(courses.size())), courses.get(random.nextInt(courses.size())), courses.get(random.nextInt(courses.size()))));
+            // generate different random numbers within the range of courses.size()
+            // value of random number should be different from each other
+            List<Course> userCourses = random.ints(0, courses.size())
+                    .distinct()
+                    .limit(3)
+                    .mapToObj(courses::get)
+                    .toList();
+
+            currentUser.selectCourse(userCourses);
 
             if (random.nextBoolean()) {
-                currentUser.addUser(List.of(users.get(random.nextInt(users.size())), users.get(random.nextInt(users.size())), users.get(random.nextInt(users.size()))));
+                List<User> friends = random.ints(0, users.size())
+                        .distinct()
+                        .limit(3)
+                        .mapToObj(users::get)
+                        .toList();
+                currentUser.addUser(friends);
             }
         }
     }

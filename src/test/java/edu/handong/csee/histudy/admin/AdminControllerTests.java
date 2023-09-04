@@ -99,7 +99,7 @@ public class AdminControllerTests {
 
         user.addUser(List.of(friend, friend2));
         friend.addUser(List.of(user));
-        user.selectCourse(List.of(course, course, course));
+        user.selectCourse(List.of(course));
 
         // when
         MvcResult mvcResult = mvc

@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,9 +28,7 @@ public class ApplyFormController {
             @RequestBody ApplyForm form,
             @RequestAttribute Claims claims) {
         if (Role.isAuthorized(claims, Role.USER)) {
-            return userService.apply(form, claims.getSubject())
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
+            return ResponseEntity.ok(userService.apply(form, claims.getSubject()));
         }
         throw new ForbiddenException();
     }
