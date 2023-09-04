@@ -41,7 +41,7 @@ public class UserService {
         return userRepository.findUserByNameOrSidOrEmail(keyword.get());
     }
 
-    public Optional<ApplyFormDto> apply(ApplyForm form, String email) {
+    public ApplyFormDto apply(ApplyForm form, String email) {
         List<User> friends = form.getFriendIds()
                 .stream()
                 .map(userRepository::findUserBySid)
@@ -55,12 +55,11 @@ public class UserService {
                 .map(Optional::get)
                 .toList();
 
-        return userRepository.findUserByEmail(email)
-                .map(u -> {
-                    u.addUser(friends);
-                    u.selectCourse(courses);
-                    return new ApplyFormDto(u);
-                });
+        User user = userRepository.findUserByEmail(email)
+                .orElseThrow(UserNotFoundException::new);
+        user.addUser(friends);
+        user.selectCourse(courses);
+        return new ApplyFormDto(user);
     }
 
     public void signUp(UserForm userForm) {
@@ -107,9 +106,10 @@ public class UserService {
                 .toList();
     }
 
-    public Optional<ApplyFormDto> getUserInfo(String email) {
-        return userRepository.findUserByEmail(email)
-                .map(ApplyFormDto::new);
+    public ApplyFormDto getUserInfo(String email) {
+        User user = userRepository.findUserByEmail(email)
+                .orElseThrow(UserNotFoundException::new);
+        return new ApplyFormDto(user);
     }
 
     public UserDto.UserMe getUserMe(Optional<String> emailOr) {

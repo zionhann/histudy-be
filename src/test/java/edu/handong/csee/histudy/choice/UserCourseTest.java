@@ -69,7 +69,7 @@ public class UserCourseTest {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
-        List<UserCourse> preferredCours = courses.stream().map(c -> userCourseRepository.save(new UserCourse(user, c))).toList();
+        List<UserCourse> preferredCours = courses.stream().map(c -> userCourseRepository.save(new UserCourse(user, c, 0))).toList();
         user.getCourseSelections().addAll(preferredCours);
 
         assertThat(user.getCourseSelections().stream().map(UserCourse::getCourse).toList()).isNotNull();

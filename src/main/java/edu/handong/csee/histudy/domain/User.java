@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -95,9 +97,15 @@ public class User extends BaseTime {
         if (!courseSelections.isEmpty()) {
             this.courseSelections.clear();
         }
-        courses
-                .forEach(c -> {
-                    UserCourse userCourse = new UserCourse(this, c);
+        courses.stream()
+                .collect(
+                        Collectors.toUnmodifiableMap(
+                                Function.identity(),
+                                courses::indexOf
+                        )
+                )
+                .forEach((c, i) -> {
+                    UserCourse userCourse = new UserCourse(this, c, i);
                     this.courseSelections.add(userCourse);
                     c.getUserCourses().add(userCourse);
                 });

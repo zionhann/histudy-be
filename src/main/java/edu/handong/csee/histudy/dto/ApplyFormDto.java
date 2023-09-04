@@ -8,6 +8,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Getter
@@ -28,6 +29,7 @@ public class ApplyFormDto {
                 .toList();
         this.courses = entity.getCourseSelections()
                 .stream()
+                .sorted(Comparator.comparing(UserCourse::getPriority))
                 .map(UserCourse::getCourse)
                 .map(CourseDto.CourseInfo::new)
                 .toList();
