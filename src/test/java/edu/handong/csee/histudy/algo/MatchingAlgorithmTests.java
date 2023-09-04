@@ -221,22 +221,24 @@ public class MatchingAlgorithmTests {
         teams.matchTeam();
         List<StudyGroup> all = studyGroupRepository.findAll();
 
-        all.forEach(team -> {
-            System.out.println("========================================");
-            System.out.println("Team " + team.getTag() + ":");
-            System.out.println("Members:");
-            team.getMembers().forEach(user -> {
-                System.out.println(user.getName() +
-                        "(" + user.getCourseSelections().get(0).getCourse().getName() + ", " +
-                        user.getCourseSelections().get(1).getCourse().getName() + ", " +
-                        user.getCourseSelections().get(2).getCourse().getName() + ")");
-            });
-            System.out.println("Friends:");
-            team.getMembers().forEach(u -> u.getSentRequests().stream().filter(Friendship::isAccepted).forEach(friendship ->
-                    System.out.println(friendship.getSent().getName() + " -> " + friendship.getReceived().getName())));
-            System.out.println("Common courses:");
-            team.getGroupCourses().forEach(enroll -> System.out.println(enroll.getCourse().getName()));
-            System.out.println("========================================");
-        });
+        all.stream().sorted(Comparator.comparingInt(StudyGroup::getTag))
+                .forEach(team -> {
+                    System.out.println("========================================");
+                    System.out.println("Team " + team.getTag() + ":");
+                    System.out.println("Members:");
+                    team.getMembers().forEach(user -> {
+                        user.getCourseSelections().sort(Comparator.comparingInt(UserCourse::getPriority));
+                        System.out.println(user.getName() +
+                                "(" + user.getCourseSelections().get(0).getCourse().getName() + ", " +
+                                user.getCourseSelections().get(1).getCourse().getName() + ", " +
+                                user.getCourseSelections().get(2).getCourse().getName() + ")");
+                    });
+                    System.out.println("Friends:");
+                    team.getMembers().forEach(u -> u.getSentRequests().stream().filter(Friendship::isAccepted).forEach(friendship ->
+                            System.out.println(friendship.getSent().getName() + " -> " + friendship.getReceived().getName())));
+                    System.out.println("Common courses:");
+                    team.getGroupCourses().forEach(enroll -> System.out.println(enroll.getCourse().getName()));
+                    System.out.println("========================================");
+                });
     }
 }

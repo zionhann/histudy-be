@@ -2,10 +2,12 @@ package edu.handong.csee.histudy.dto;
 
 import edu.handong.csee.histudy.domain.Friendship;
 import edu.handong.csee.histudy.domain.User;
+import edu.handong.csee.histudy.domain.UserCourse;
 import edu.handong.csee.histudy.jwt.JwtPair;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import java.util.Comparator;
 import java.util.List;
 
 @AllArgsConstructor
@@ -92,6 +94,7 @@ public class UserDto {
                     .map(UserBasic::new)
                     .toList();
             this.courses = user.getCourseSelections().stream()
+                    .sorted(Comparator.comparing(UserCourse::getPriority))
                     .map(c -> new CourseIdNameDto(c.getCourse()))
                     .toList();
             this.totalMinutes = user.getReportParticipation().stream()

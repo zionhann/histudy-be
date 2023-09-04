@@ -125,4 +125,8 @@ public class User extends BaseTime {
         this.addUser(Collections.emptyList());
         this.selectCourse(Collections.emptyList());
     }
+
+    public boolean isNotInStudyGroup() {
+        return this.studyGroup == null;
+    }
 }

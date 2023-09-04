@@ -1,9 +1,6 @@
 package edu.handong.csee.histudy.service;
 
-import edu.handong.csee.histudy.domain.Course;
-import edu.handong.csee.histudy.domain.Friendship;
-import edu.handong.csee.histudy.domain.StudyGroup;
-import edu.handong.csee.histudy.domain.User;
+import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.*;
 import edu.handong.csee.histudy.repository.StudyGroupRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
@@ -14,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -76,7 +74,8 @@ public class TeamService {
     public TeamDto.MatchResults matchTeam() {
         // Get users who are not in a team
         List<User> users = userRepository.findAllByStudyGroupIsNullAndCourseSelectionsIsNotEmpty();
-        AtomicInteger tag = new AtomicInteger(1);
+        int latestGroupTag = (int) studyGroupRepository.count();
+        AtomicInteger tag = new AtomicInteger(latestGroupTag + 1);
 
         // First matching
         List<StudyGroup> teamsWithFriends = matchFriendFirst(users, tag);
@@ -96,9 +95,19 @@ public class TeamService {
                 .flatMap(Collection::stream)
                 .toList());
 
+        // Third matching
+        List<StudyGroup> matchedCourseSecond = matchCourseSecond(users, tag);
+
         // Results
         List<StudyGroup> matchedStudyGroups = new ArrayList<>(teamsWithFriends);
         matchedStudyGroups.addAll(teamsWithoutFriends);
+        matchedStudyGroups.addAll(matchedCourseSecond);
+
+        // Remove users who have already been matched
+        users.removeAll(matchedCourseSecond.stream()
+                .map(StudyGroup::getMembers)
+                .flatMap(Collection::stream)
+                .toList());
 
         return new TeamDto.MatchResults(matchedStudyGroups, userService.getInfoFromUser(users));
     }
@@ -117,35 +126,34 @@ public class TeamService {
 
     public List<StudyGroup> matchCourseFirst(List<User> users, AtomicInteger tag) {
         List<StudyGroup> results = new ArrayList<>();
-        Set<User> unmatchedUsers = new HashSet<>(users);
+        Set<User> targetUsers = new HashSet<>(users);
 
-        for (int i = 0; i < 3; i++) {
-            // Set priority: identical to the index of the choice
-            final int priority = i;
+        List<UserCourse> userCourses = targetUsers.stream()
+                .flatMap(u ->
+                        u.getCourseSelections().stream())
+                .sorted(Comparator.comparingInt(UserCourse::getPriority))
+                .toList();
 
-            // Group users by course
-            Map<Course, List<User>> entries = unmatchedUsers.stream()
-                    .filter(u ->
-                            u.getCourseSelections().size() > priority)
+        List<Integer> sortedKeys = userCourses.stream()
+                .collect(Collectors.groupingBy(UserCourse::getPriority))
+                .keySet().stream()
+                .sorted()
+                .toList();
+
+        sortedKeys.forEach(priority -> {
+            Map<Course, List<User>> courseToUserMap = userCourses.stream()
+                    .filter(uc ->
+                            uc.getPriority().equals(priority)
+                                    && uc.getUser().isNotInStudyGroup())
                     .collect(Collectors.groupingBy(
-                            u ->
-                                    u.getCourseSelections()
-                                            .get(priority)
-                                            .getCourse()));
+                            UserCourse::getCourse,
+                            Collectors.mapping(UserCourse::getUser, Collectors.toList())));
 
-            // Make teams with 3 ~ 5 elements
-            entries.forEach((course, group) -> {
-                List<StudyGroup> matchedGroupList = createGroup(group, tag);
+            courseToUserMap.forEach((course, _users) -> {
+                List<StudyGroup> matchedGroupList = createGroup(_users, tag);
                 results.addAll(matchedGroupList);
             });
-
-            // Remove users who have already been matched
-            results.stream()
-                    .flatMap(t ->
-                            t.getMembers().stream())
-                    .toList()
-                    .forEach(unmatchedUsers::remove);
-        }
+        });
         return results;
     }
 
@@ -172,5 +180,53 @@ public class TeamService {
             matchedGroupList.add(studyGroup);
         }
         return matchedGroupList;
+    }
+
+    private List<StudyGroup> matchCourseSecond(List<User> users, AtomicInteger tag) {
+        List<StudyGroup> results = new ArrayList<>();
+        Set<User> targetUsers = new HashSet<>(users);
+
+        Map<Course, PriorityQueue<User>> courseToUserByPriority = preparePriorityQueueOfUsers(targetUsers);
+
+        // Make teams with 3 ~ 5 elements
+        courseToUserByPriority.forEach((course, queue) -> {
+            List<User> group = queue.stream()
+                    .filter(User::isNotInStudyGroup)
+                    .sorted(queue.comparator())
+                    .collect(Collectors.toList());
+
+            List<StudyGroup> matchedGroupList = createGroup(group, tag);
+            results.addAll(matchedGroupList);
+        });
+        return results;
+    }
+
+    private Map<Course, PriorityQueue<User>> preparePriorityQueueOfUsers(Set<User> targetUsers) {
+        // Group users by course
+        Map<Course, List<UserCourse>> courseToUserCourses = targetUsers.stream()
+                .flatMap(u -> u.getCourseSelections().stream())
+                .collect(Collectors.groupingBy(
+                        UserCourse::getCourse,
+                        Collectors.mapping(
+                                Function.identity(),
+                                Collectors.toList())));
+
+        Map<Course, PriorityQueue<User>> courseToUsersByPriority = new HashMap<>();
+        courseToUserCourses.forEach((_course, _userCourses) -> {
+                    _userCourses.sort(Comparator.comparingInt(UserCourse::getPriority));
+
+                    List<User> sortedUsers = _userCourses.stream()
+                            .map(UserCourse::getUser)
+                            .toList();
+
+                    PriorityQueue<User> userPriorityQueue = new PriorityQueue<>(
+                            sortedUsers.size(),
+                            Comparator.comparingInt(sortedUsers::indexOf));
+
+                    userPriorityQueue.addAll(sortedUsers);
+                    courseToUsersByPriority.put(_course, userPriorityQueue);
+                }
+        );
+        return courseToUsersByPriority;
     }
 }
