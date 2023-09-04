@@ -106,11 +106,12 @@ public class ReportGroupCourseServiceTest {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
-        List<UserCourse> preferredCours = courses.stream().map(c -> userCourseRepository.save(UserCourse.builder()
+        List<UserCourse> preferredCourse = courses.stream().map(c -> userCourseRepository.save(UserCourse.builder()
                 .user(savedA)
                 .course(c)
+                .priority(0)
                 .build())).toList();
-        savedA.getCourseSelections().addAll(preferredCours);
+        savedA.getCourseSelections().addAll(preferredCourse);
         List<Long> courseIdxList2 = List.of(1L, 2L, 3L);
         List<Course> courses2 = courseIdxList2.stream()
                 .map(courseRepository::findById)
@@ -120,6 +121,7 @@ public class ReportGroupCourseServiceTest {
         List<UserCourse> choices2 = courses2.stream().map(c -> userCourseRepository.save(UserCourse.builder()
                 .user(savedB)
                 .course(c)
+                .priority(0)
                 .build())).toList();
         savedB.getCourseSelections().addAll(choices2);
         StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(111, List.of(savedA, savedB)));
