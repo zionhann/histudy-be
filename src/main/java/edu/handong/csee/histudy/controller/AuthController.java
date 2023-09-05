@@ -21,7 +21,13 @@ import java.util.Optional;
 @Tag(name = "인증 API")
 @CrossOrigin(
         origins = "${custom.origin.allowed}",
-        allowedHeaders = "POST, GET, DELETE, PATCH, OPTIONS",
+        methods = {
+                RequestMethod.POST,
+                RequestMethod.GET,
+                RequestMethod.DELETE,
+                RequestMethod.PATCH,
+                RequestMethod.OPTIONS
+        },
         allowCredentials = "true")
 @RestController
 @RequestMapping("/api/auth")
