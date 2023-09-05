@@ -272,16 +272,20 @@ public class UserServiceTests {
                 .email("a@a.com")
                 .role(Role.USER)
                 .build();
+
         User saved = userRepository.save(user);
         StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(111, List.of(saved)));
         StudyGroup newStudyGroup = studyGroupRepository.save(new StudyGroup(222, List.of()));
+
         UserDto.UserEdit dto = UserDto.UserEdit.builder()
                 .id(saved.getId())
                 .sid("12345678")
                 .name("조용히해라")
                 .team(222)
                 .build();
+
         UserDto.UserInfo edited = userService.editUser(dto);
+
         assertThat(edited.getName()).isEqualTo("조용히해라");
         assertThat(edited.getSid()).isEqualTo("12345678");
         assertThat(edited.getGroup()).isEqualTo(newStudyGroup.getTag());

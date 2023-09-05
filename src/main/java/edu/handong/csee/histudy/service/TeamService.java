@@ -96,18 +96,18 @@ public class TeamService {
                 .toList());
 
         // Third matching
-        List<StudyGroup> matchedCourseSecond = matchCourseSecond(users, tag);
+//        List<StudyGroup> matchedCourseSecond = matchCourseSecond(users, tag);
 
         // Results
         List<StudyGroup> matchedStudyGroups = new ArrayList<>(teamsWithFriends);
         matchedStudyGroups.addAll(teamsWithoutFriends);
-        matchedStudyGroups.addAll(matchedCourseSecond);
-
-        // Remove users who have already been matched
-        users.removeAll(matchedCourseSecond.stream()
-                .map(StudyGroup::getMembers)
-                .flatMap(Collection::stream)
-                .toList());
+//        matchedStudyGroups.addAll(matchedCourseSecond);
+//
+//        // Remove users who have already been matched
+//        users.removeAll(matchedCourseSecond.stream()
+//                .map(StudyGroup::getMembers)
+//                .flatMap(Collection::stream)
+//                .toList());
 
         return new TeamDto.MatchResults(matchedStudyGroups, userService.getInfoFromUser(users));
     }
@@ -144,7 +144,7 @@ public class TeamService {
             Map<Course, List<User>> courseToUserMap = userCourses.stream()
                     .filter(uc ->
                             uc.getPriority().equals(priority)
-                                    && uc.getUser().isNotInStudyGroup())
+                                    && uc.getUser().isNotInAnyGroup())
                     .collect(Collectors.groupingBy(
                             UserCourse::getCourse,
                             Collectors.mapping(UserCourse::getUser, Collectors.toList())));
@@ -191,7 +191,7 @@ public class TeamService {
         // Make teams with 3 ~ 5 elements
         courseToUserByPriority.forEach((course, queue) -> {
             List<User> group = queue.stream()
-                    .filter(User::isNotInStudyGroup)
+                    .filter(User::isNotInAnyGroup)
                     .sorted(queue.comparator())
                     .collect(Collectors.toList());
 

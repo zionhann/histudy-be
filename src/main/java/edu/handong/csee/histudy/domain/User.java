@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.*;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -61,6 +63,11 @@ public class User extends BaseTime {
     }
 
     public void belongTo(StudyGroup studyGroup) {
+        if (isInSameGroup(studyGroup)) {
+            return;
+        } else if (isAlreadyInOtherGroup(studyGroup)) {
+            leaveGroup();
+        }
         this.studyGroup = studyGroup;
         studyGroup.getMembers().add(this);
         this.role = Role.MEMBER;
@@ -115,10 +122,9 @@ public class User extends BaseTime {
         this.studyGroup = null;
     }
 
-    public void edit(UserDto.UserEdit dto, StudyGroup studyGroup) {
-        this.sid = dto.getSid();
-        this.name = dto.getName();
-        studyGroup.join(List.of(this));
+    public void edit(UserDto.UserEdit dto) {
+        this.sid = requireNonNullElse(dto.getSid(), this.sid);
+        this.name = requireNonNullElse(dto.getName(), this.name);
     }
 
     public void resetPreferences() {
@@ -126,7 +132,21 @@ public class User extends BaseTime {
         this.selectCourse(Collections.emptyList());
     }
 
-    public boolean isNotInStudyGroup() {
+    public boolean isNotInAnyGroup() {
         return this.studyGroup == null;
+    }
+
+    private void leaveGroup() {
+        this.studyGroup.getMembers().remove(this);
+        this.studyGroup = null;
+        this.role = Role.USER;
+    }
+
+    private boolean isAlreadyInOtherGroup(StudyGroup studyGroup) {
+        return this.studyGroup != null && !this.studyGroup.equals(studyGroup);
+    }
+
+    public boolean isInSameGroup(StudyGroup studyGroup) {
+        return this.studyGroup != null && this.studyGroup.equals(studyGroup);
     }
 }
