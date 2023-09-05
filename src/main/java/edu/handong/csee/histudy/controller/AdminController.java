@@ -103,10 +103,10 @@ public class AdminController {
     @Operation(summary = "유저 정보 수정")
     @PostMapping("/edit-user")
     public UserDto.UserInfo editUser(
-            @RequestBody UserDto.UserEdit dto,
+            @RequestBody UserDto.UserEdit form,
             @RequestAttribute Claims claims) {
         if (Role.isAuthorized(claims, Role.ADMIN)) {
-            return userService.editUser(dto);
+            return userService.editUser(form);
         }
         throw new ForbiddenException();
     }

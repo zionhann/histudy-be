@@ -71,7 +71,7 @@ public class StudyGroup extends BaseTime {
                 : commonCourses;
     }
 
-    protected StudyGroup join(List<User> users) {
+    public StudyGroup join(List<User> users) {
         users.forEach(u -> u.belongTo(this));
         getCommonCourses()
                 .forEach(course -> {

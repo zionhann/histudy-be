@@ -8,10 +8,7 @@ import edu.handong.csee.histudy.domain.StudyGroup;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.ApplyFormDto;
 import edu.handong.csee.histudy.dto.UserDto;
-import edu.handong.csee.histudy.exception.MissingEmailException;
-import edu.handong.csee.histudy.exception.MissingSubException;
-import edu.handong.csee.histudy.exception.UserAlreadyExistsException;
-import edu.handong.csee.histudy.exception.UserNotFoundException;
+import edu.handong.csee.histudy.exception.*;
 import edu.handong.csee.histudy.repository.CourseRepository;
 import edu.handong.csee.histudy.repository.StudyGroupRepository;
 import edu.handong.csee.histudy.repository.UserCourseRepository;
@@ -132,10 +129,19 @@ public class UserService {
         return new UserDto.UserInfo(user);
     }
 
-    public UserDto.UserInfo editUser(UserDto.UserEdit dto) {
-        User user = userRepository.findById(dto.getId()).orElseThrow();
-        StudyGroup studyGroup = studyGroupRepository.findByTag(dto.getTeam()).orElseThrow();
-        user.edit(dto, studyGroup);
+    public UserDto.UserInfo editUser(UserDto.UserEdit form) {
+        User user = userRepository.findById(form.getId())
+                .orElseThrow(UserNotFoundException::new);
+
+        Optional.ofNullable(form.getTeam())
+                .ifPresent(
+                        tag ->
+                                studyGroupRepository
+                                        .findByTag(tag)
+                                        .orElseThrow(StudyGroupNotFoundException::new)
+                                        .join(List.of(user))
+                );
+        user.edit(form);
         return new UserDto.UserInfo(user);
     }
 }

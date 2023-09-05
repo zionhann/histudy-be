@@ -154,9 +154,17 @@ public class UserDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class UserEdit {
+
+        @Schema(description = "User ID")
         private Long id;
-        private int team;
+
+        @Schema(description = "Group tag", example = "112")
+        private Integer team;
+
+        @Schema(description = "User name", example = "John Doe")
         private String name;
+
+        @Schema(description = "User student ID", example = "21800012")
         private String sid;
     }
 }
