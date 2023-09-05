@@ -45,6 +45,19 @@ public class UserController {
                 .build());
     }
 
+    /**
+     * 스터디 그룹 신청 단계에서
+     * 같이 스터디할 유저를 검색하는 API
+     *
+     * <p>원래 토큰 검증은 인터셉터에서 처리하고 있으나,
+     * HTTP 메서드만 다르고 동일한 URI를 가지는
+     * 회원가입 API와 요청을 구분하기가 번거로워서
+     * 이 API에 한해서만 컨트롤러에 검증을 위임하였다.
+     *
+     * @param keyword 검색 키워드: 이름 또는 학번 또는 이메일
+     * @param header  액세스 토큰
+     * @return 유저 목록
+     */
     @Operation(summary = "유저 검색")
     @SecurityRequirement(name = "USER")
     @GetMapping
@@ -57,7 +70,7 @@ public class UserController {
 
         List<UserDto.UserMatching> users = userService.search(keyword)
                 .stream()
-                .filter(u -> u.getRole().equals(Role.USER))
+                .filter(Role::isNotAdmin)
                 .filter(u -> !u.getEmail().equals(email))
                 .map(UserDto.UserMatching::new)
                 .toList();

@@ -204,4 +204,32 @@ public class UserTests {
         assertThat(res.getUsers().get(0).getSid()).isEqualTo("22300013");
         assertThat(res.getUsers()).hasSize(2);
     }
+
+    @DisplayName("그룹 신청시 유저 검색: 관리자 제외 모두")
+    @Test
+    void UserTests_210() throws Exception {
+        // Given
+        User userA = new User("123", "22300012", "test@example.com", "test", Role.USER);
+        User userB = new User("124", "22300013", "test2@example.com", "test2", Role.USER);
+        User userC = new User("125", "22300014", "test3@example.com", "test3", Role.MEMBER);
+        User userD = new User("126", "22300015", "test4@example.com", "test4", Role.ADMIN);
+        userRepository.save(userA);
+        userRepository.save(userB);
+        userRepository.save(userC);
+        userRepository.save(userD);
+
+        // When
+        MvcResult mvcResult = mvc
+                .perform(get("/api/users")
+                        .queryParam("search", "test")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + userToken))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        UserDto res = objectMapper.readValue(mvcResult.getResponse().getContentAsString(),
+                UserDto.class);
+
+        // Then
+        assertThat(res.getUsers()).hasSize(2);
+    }
 }
