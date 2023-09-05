@@ -11,6 +11,7 @@ import edu.handong.csee.histudy.repository.GroupReportRepository;
 import edu.handong.csee.histudy.repository.StudyGroupRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import edu.handong.csee.histudy.service.ReportService;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(classes = HistudyApplication.class)
 @AutoConfigureMockMvc
+@Transactional
 public class ReportTests {
 
     @Autowired
