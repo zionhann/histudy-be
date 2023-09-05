@@ -17,4 +17,8 @@ public enum Role {
                 .anyMatch(r ->
                         r.name().equals(rol));
     }
+
+    public static boolean isNotAdmin(User user) {
+        return !user.getRole().equals(Role.ADMIN);
+    }
 }
