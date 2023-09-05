@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -56,11 +57,15 @@ public class TeamController {
     }
 
     @Operation(summary = "그룹 특정 보고서 조회")
+    @SecurityRequirements({
+            @SecurityRequirement(name = "MEMBER"),
+            @SecurityRequirement(name = "ADMIN")
+    })
     @GetMapping("/reports/{reportId}")
     public ResponseEntity<ReportDto.ReportInfo> getReport(
             @PathVariable Long reportId,
             @RequestAttribute Claims claims) {
-        if (Role.isAuthorized(claims, Role.MEMBER)) {
+        if (Role.isAuthorized(claims, Role.MEMBER, Role.ADMIN)) {
             Optional<ReportDto.ReportInfo> reportsOr = reportService.getReport(reportId);
             return reportsOr
                     .map(ResponseEntity::ok)
