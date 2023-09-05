@@ -41,26 +41,10 @@ public class StudyGroup extends BaseTime {
         this.totalMinutes += totalMinutes;
     }
 
-    public void select(List<Course> _courses) {
-        if (!groupCourses.isEmpty()) {
-            this.groupCourses.clear();
-        }
-        _courses
-                .forEach(course -> {
-                    GroupCourse groupCourse = new GroupCourse(this, course);
-                    groupCourses.add(groupCourse);
-                    course.getGroupCourses().add(groupCourse);
-                });
-    }
-
     @PreRemove
     void preRemove() {
         this.members.forEach(User::removeTeam);
         this.members.clear();
-    }
-
-    public void update(long newTotalMinutes, long oldTotalMinutes) {
-        this.totalMinutes += (newTotalMinutes - oldTotalMinutes);
     }
 
     private List<Course> getCommonCourses() {
@@ -96,5 +80,12 @@ public class StudyGroup extends BaseTime {
                     course.getGroupCourses().add(groupCourse);
                 });
         return this;
+    }
+
+    public void updateTotalMinutes() {
+        this.totalMinutes = reports.stream()
+                .map(GroupReport::getTotalMinutes)
+                .mapToLong(Long::longValue)
+                .sum();
     }
 }
