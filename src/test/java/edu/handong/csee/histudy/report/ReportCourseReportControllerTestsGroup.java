@@ -26,7 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -232,10 +234,11 @@ public class ReportCourseReportControllerTestsGroup {
                 .participants(List.of(user))
                 .courses(List.of(groupCourse))
                 .build();
-        groupReportRepository.save(groupReport);
+        GroupReport savedReport = groupReportRepository.save(groupReport);
 
         String form = mapper.writeValueAsString(ReportForm.builder()
                 .title("modified title")
+                .images(List.of("path/to/image/modified"))
                 .build());
 
         Claims claims = Jwts.claims();
@@ -249,8 +252,63 @@ public class ReportCourseReportControllerTestsGroup {
                         .requestAttr("claims", claims)
                         .content(form))
                 .andDo(print())
-                .andExpect(status().isOk())
-                .andReturn();
+                .andExpect(status().isOk());
+
+        Optional<GroupReport> report = groupReportRepository.findById(savedReport.getId());
+
+        //then
+        assertThat(report).isPresent();
+        assertThat(report.get().getImages()).hasSize(1);
+        assertThat(report.get().getImages().get(0).getPath()).isEqualTo("path/to/image/modified");
+    }
+
+    @DisplayName("보고서 시간을 변경한 경우 전체 그룹의 시간에도 반영되어야 한다")
+    @Test
+    void ReportControllerTests_267() throws Exception {
+        // given
+        User user = userRepository.save(User.builder()
+                .sid("21811111")
+                .name("username")
+                .email("user@test.com")
+                .role(Role.MEMBER)
+                .build());
+        StudyGroup group = studyGroupRepository.save(new StudyGroup(1, List.of(user)));
+        user.belongTo(group);
+
+        Course course = courseRepository.save(Course.builder()
+                .name("courseName")
+                .build());
+
+        GroupCourse groupCourse = groupCourseRepository.save(new GroupCourse(user.getStudyGroup(), course));
+        GroupReport groupReport = GroupReport.builder()
+                .title("reportTitle")
+                .content("reportContent")
+                .studyGroup(user.getStudyGroup())
+                .totalMinutes(60L)
+                .participants(List.of(user))
+                .courses(List.of(groupCourse))
+                .build();
+        groupReportRepository.save(groupReport);
+
+        String form = mapper.writeValueAsString(ReportForm.builder()
+                .totalMinutes(30L)
+                .build());
+
+        Claims claims = Jwts.claims();
+        claims.put("sub", user.getEmail());
+        claims.put("rol", user.getRole().name());
+
+        // when
+        mvc
+                .perform(patch("/api/team/reports/{reportId}", groupReport.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .requestAttr("claims", claims)
+                        .content(form))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        //then
+        assertThat(user.getStudyGroup().getTotalMinutes()).isEqualTo(30L);
     }
 
     @DisplayName("그룹 보고서를 삭제할 수 있다.")

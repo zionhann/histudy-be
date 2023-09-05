@@ -99,6 +99,8 @@ public class GroupReport extends BaseTime {
     }
 
     public boolean update(ReportForm form, List<User> participants, List<GroupCourse> courses) {
+        final long oldTotalMinutes = this.totalMinutes;
+
         this.title = requireNonNullElse(form.getTitle(), this.title);
         this.content = requireNonNullElse(form.getContent(), this.content);
         this.totalMinutes = requireNonNullElse(form.getTotalMinutes(), this.totalMinutes);
@@ -106,7 +108,7 @@ public class GroupReport extends BaseTime {
         this.add(participants);
         this.insert(form.getImages());
         this.study(courses);
-        studyGroup.update(totalMinutes, this.totalMinutes);
+        studyGroup.update(totalMinutes, oldTotalMinutes);
 
         return true;
     }

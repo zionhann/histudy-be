@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ActiveProfiles("dev")
 @SpringBootTest
+@Transactional
 public class ReportCourseReportServiceTestGroup {
     @Autowired
     ReportService reportService;
