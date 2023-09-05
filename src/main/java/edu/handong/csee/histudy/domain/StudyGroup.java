@@ -60,7 +60,7 @@ public class StudyGroup extends BaseTime {
     }
 
     public void update(long newTotalMinutes, long oldTotalMinutes) {
-        this.totalMinutes += newTotalMinutes - oldTotalMinutes;
+        this.totalMinutes += (newTotalMinutes - oldTotalMinutes);
     }
 
     private List<Course> getCommonCourses() {
