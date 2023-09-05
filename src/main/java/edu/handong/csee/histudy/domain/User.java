@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.*;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -121,8 +123,8 @@ public class User extends BaseTime {
     }
 
     public void edit(UserDto.UserEdit dto) {
-        this.sid = dto.getSid();
-        this.name = dto.getName();
+        this.sid = requireNonNullElse(dto.getSid(), this.sid);
+        this.name = requireNonNullElse(dto.getName(), this.name);
     }
 
     public void resetPreferences() {
