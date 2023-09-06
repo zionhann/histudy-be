@@ -113,8 +113,6 @@ public class User extends BaseTime {
                 )
                 .forEach((c, i) -> {
                     UserCourse userCourse = new UserCourse(this, c, i);
-                    this.courseSelections.add(userCourse);
-                    c.getUserCourses().add(userCourse);
                 });
     }
 
@@ -128,6 +126,9 @@ public class User extends BaseTime {
     }
 
     public void resetPreferences() {
+        if (this.studyGroup != null) {
+            throw new IllegalStateException("그룹에 속해있는 유저는 신청내역을 초기화할 수 없습니다.");
+        }
         this.addUser(Collections.emptyList());
         this.selectCourse(Collections.emptyList());
     }
