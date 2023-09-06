@@ -63,14 +63,15 @@ public class AdminController {
     }
 
     /**
-     * 스터디그룹 신청한 유저 목록 조회
+     * 스터디 신청한 유저 목록 조회(신청O 그룹?)
      *
-     * <p>스터디 그룹 배정을 신청했으나 아직 배정되지 않은 유저 목록을 표시한다</p>
+     * <p>그룹 배정 여부와 관계 없이
+     * 스터디를 신청한 유저 목록을 표시한다</p>
      *
      * @param claims 토큰 페이로드
-     * @return 스터디그룹 신청한 유저 목록
+     * @return 스터디 신청한 유저 목록
      */
-    @Operation(summary = "신청한 유저 목록 조회")
+    @Operation(summary = "그룹 배정 여부와 관계 없이 스터디 신청한 유저 목록 조회")
     @GetMapping("/allUsers")
     public ResponseEntity<List<UserDto.UserInfo>> getAppliedUsers(@RequestAttribute Claims claims) {
         if (Role.isAuthorized(claims, Role.ADMIN)) {
@@ -89,9 +90,9 @@ public class AdminController {
     }
 
     /**
-     * 그룹 미배정 학생 목록 조회
+     * 그룹 미배정 학생 목록 조회(신청? 그룹X)
      *
-     * <p>스터디그룹 신청 여부와 관계 없이
+     * <p>스터디 신청 여부와 관계 없이
      * 가입된 유저 중에서 그룹이 배정되지 않은 유저 목록을 표시한다</p>
      *
      * @param claims 토큰 페이로드
@@ -124,6 +125,25 @@ public class AdminController {
             @RequestAttribute Claims claims) {
         if (Role.isAuthorized(claims, Role.ADMIN)) {
             return userService.editUser(form);
+        }
+        throw new ForbiddenException();
+    }
+
+    /**
+     * 스터디 신청한 유저 목록 조회(신청O 그룹X)
+     *
+     * <p>스터디를 신청했으나
+     * 그룹이 배정되지 않은 유저 목록을 조회한다
+     * 이 목록은 그룹 매칭 대상자 목록과 같다</p>
+     *
+     * @param claims 토큰 페이로드
+     * @return 스터디 신청했으나 그룹이 배정되지 않은 유저 목록
+     */
+    @Operation(summary = "스터디를 신청했으나 그룹이 배정되지 않은 유저 목록 조회")
+    @GetMapping("/users/unassigned")
+    public ResponseEntity<List<UserDto.UserInfo>> unassignedUser(@RequestAttribute Claims claims) {
+        if (Role.isAuthorized(claims, Role.ADMIN)) {
+            return ResponseEntity.ok(userService.getAppliedWithoutGroup());
         }
         throw new ForbiddenException();
     }
