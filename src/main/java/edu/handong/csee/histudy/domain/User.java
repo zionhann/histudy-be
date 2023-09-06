@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static java.util.Objects.*;
+import static java.util.Objects.requireNonNullElse;
 
 @Entity
 @Getter
@@ -136,8 +136,12 @@ public class User extends BaseTime {
         return this.studyGroup == null;
     }
 
-    private void leaveGroup() {
+    public void leaveGroup() {
+        if (this.studyGroup == null) {
+            return;
+        }
         this.studyGroup.getMembers().remove(this);
+        this.studyGroup.assignCommonCourses();
         this.studyGroup = null;
         this.role = Role.USER;
     }

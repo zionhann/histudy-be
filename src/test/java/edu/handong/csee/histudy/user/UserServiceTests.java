@@ -192,7 +192,6 @@ public class UserServiceTests {
                 .priority(0)
                 .build())).toList();
         savedB.getCourseSelections().addAll(choices2);
-        StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(111, List.of(savedA, savedB)));
         List<UserDto.UserInfo> users = userService.getAppliedUsers();
         assertThat(users.size()).isEqualTo(2);
         System.out.println("users = " + users);

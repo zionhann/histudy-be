@@ -4,7 +4,6 @@ import edu.handong.csee.histudy.controller.form.ApplyForm;
 import edu.handong.csee.histudy.controller.form.UserForm;
 import edu.handong.csee.histudy.domain.Course;
 import edu.handong.csee.histudy.domain.Role;
-import edu.handong.csee.histudy.domain.StudyGroup;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.ApplyFormDto;
 import edu.handong.csee.histudy.dto.UserDto;
@@ -89,10 +88,7 @@ public class UserService {
     }
 
     public List<UserDto.UserInfo> getAppliedUsers() {
-        List<User> users = userRepository.findAll()
-                .stream()
-                .filter(u -> !u.getCourseSelections().isEmpty())
-                .toList();
+        List<User> users = userRepository.findUnassignedApplicants();
         return getInfoFromUser(users);
     }
 
@@ -118,7 +114,7 @@ public class UserService {
     }
 
     public List<UserDto.UserInfo> getUnmatchedUsers() {
-        return getInfoFromUser(userRepository.findUsersByTeamIsNull());
+        return getInfoFromUser(userRepository.findAllByStudyGroupIsNull());
     }
 
     public UserDto.UserInfo deleteUserForm(String sid) {
@@ -134,12 +130,13 @@ public class UserService {
                 .orElseThrow(UserNotFoundException::new);
 
         Optional.ofNullable(form.getTeam())
-                .ifPresent(
+                .ifPresentOrElse(
                         tag ->
                                 studyGroupRepository
                                         .findByTag(tag)
                                         .orElseThrow(StudyGroupNotFoundException::new)
-                                        .join(List.of(user))
+                                        .join(List.of(user)),
+                        user::leaveGroup
                 );
         user.edit(form);
         return new UserDto.UserInfo(user);

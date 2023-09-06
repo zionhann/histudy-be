@@ -62,6 +62,14 @@ public class AdminController {
         throw new ForbiddenException();
     }
 
+    /**
+     * 스터디그룹 신청한 유저 목록 조회
+     *
+     * <p>스터디 그룹 배정을 신청했으나 아직 배정되지 않은 유저 목록을 표시한다</p>
+     *
+     * @param claims 토큰 페이로드
+     * @return 스터디그룹 신청한 유저 목록
+     */
     @Operation(summary = "신청한 유저 목록 조회")
     @GetMapping("/allUsers")
     public ResponseEntity<List<UserDto.UserInfo>> getAppliedUsers(@RequestAttribute Claims claims) {
@@ -80,6 +88,15 @@ public class AdminController {
         throw new ForbiddenException();
     }
 
+    /**
+     * 그룹 미배정 학생 목록 조회
+     *
+     * <p>스터디그룹 신청 여부와 관계 없이
+     * 가입된 유저 중에서 그룹이 배정되지 않은 유저 목록을 표시한다</p>
+     *
+     * @param claims 토큰 페이로드
+     * @return 그룹 미배정 학생 목록
+     */
     @Operation(summary = "매칭되지 않은 유저 목록 조회")
     @GetMapping("/unmatched-users")
     public ResponseEntity<List<UserDto.UserInfo>> getUnmatchedUsers(@RequestAttribute Claims claims) {
