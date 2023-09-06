@@ -28,10 +28,16 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findUnassignedApplicants();
 
     @Query("select u from User u " +
+            "where u.courseSelections is not empty")
+    List<User> findAllApplicants();
+
+    @Query("select u from User u " +
             "where u.studyGroup is null " +
             "and u.role = 'USER'")
     List<User> findAllByStudyGroupIsNull();
 
     @Query("select u from User u where u.sub = ?1")
     Optional<User> findUserBySub(String sub);
+
+    List<User> findAll();
 }

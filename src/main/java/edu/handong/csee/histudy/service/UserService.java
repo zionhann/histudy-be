@@ -88,7 +88,7 @@ public class UserService {
     }
 
     public List<UserDto.UserInfo> getAppliedUsers() {
-        List<User> users = userRepository.findUnassignedApplicants();
+        List<User> users = userRepository.findAllApplicants();
         return getInfoFromUser(users);
     }
 
@@ -140,5 +140,9 @@ public class UserService {
                 );
         user.edit(form);
         return new UserDto.UserInfo(user);
+    }
+
+    public List<UserDto.UserInfo> getAppliedWithoutGroup() {
+        return getInfoFromUser(userRepository.findUnassignedApplicants());
     }
 }
