@@ -73,7 +73,7 @@ public class TeamService {
 
     public TeamDto.MatchResults matchTeam() {
         // Get users who are not in a team
-        List<User> users = userRepository.findAllByStudyGroupIsNullAndCourseSelectionsIsNotEmpty();
+        List<User> users = userRepository.findUnassignedApplicants();
         int latestGroupTag = (int) studyGroupRepository.count();
         AtomicInteger tag = new AtomicInteger(latestGroupTag + 1);
 

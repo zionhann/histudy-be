@@ -29,7 +29,7 @@ public class StudyGroup extends BaseTime {
     @OneToMany(mappedBy = "studyGroup")
     private List<User> members = new ArrayList<>();
 
-    @OneToMany(mappedBy = "studyGroup", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "studyGroup", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GroupCourse> groupCourses = new ArrayList<>();
 
     public StudyGroup(Integer tag, List<User> members) {
@@ -73,12 +73,7 @@ public class StudyGroup extends BaseTime {
 
     public StudyGroup join(List<User> users) {
         users.forEach(u -> u.belongTo(this));
-        getCommonCourses()
-                .forEach(course -> {
-                    GroupCourse groupCourse = new GroupCourse(this, course);
-                    groupCourses.add(groupCourse);
-                    course.getGroupCourses().add(groupCourse);
-                });
+        assignCommonCourses();
         return this;
     }
 
@@ -87,5 +82,14 @@ public class StudyGroup extends BaseTime {
                 .map(GroupReport::getTotalMinutes)
                 .mapToLong(Long::longValue)
                 .sum();
+    }
+
+    protected void assignCommonCourses() {
+        getCommonCourses()
+                .forEach(course -> {
+                    GroupCourse groupCourse = new GroupCourse(this, course);
+                    groupCourses.add(groupCourse);
+                    course.getGroupCourses().add(groupCourse);
+                });
     }
 }

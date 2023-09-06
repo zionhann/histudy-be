@@ -119,7 +119,7 @@ public class AdminControllerTests {
         assertEquals(0, res.getCourses().size());
     }
 
-    @DisplayName("그룹 미배정 학생 목록에서 미신청자는 제외되어야 함")
+    @DisplayName("그룹 미배정 학생 목록에서 미신청자도 포함한다")
     @Test
     void AdminControllerTests_122() throws Exception {
         // Given
@@ -163,6 +163,6 @@ public class AdminControllerTests {
                 new TypeReference<>() {
                 });
         // Then
-        assertEquals(1, res.size());
+        assertEquals(2, res.size());
     }
 }

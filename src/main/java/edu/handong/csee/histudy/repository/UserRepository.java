@@ -22,10 +22,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findUserByEmail(String email);
 
-    List<User> findAllByStudyGroupIsNullAndCourseSelectionsIsNotEmpty();
+    @Query("select u from User u " +
+            "where u.studyGroup is null " +
+            "and u.courseSelections is not empty")
+    List<User> findUnassignedApplicants();
 
-    @Query("select u from User u where u.studyGroup is null and u.courseSelections is not empty")
-    List<User> findUsersByTeamIsNull();
+    @Query("select u from User u " +
+            "where u.studyGroup is null " +
+            "and u.role = 'USER'")
+    List<User> findAllByStudyGroupIsNull();
 
     @Query("select u from User u where u.sub = ?1")
     Optional<User> findUserBySub(String sub);
