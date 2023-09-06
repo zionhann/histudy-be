@@ -1,12 +1,11 @@
 package edu.handong.csee.histudy.domain;
 
 import com.opencsv.bean.CsvBindByName;
-import edu.handong.csee.histudy.dto.CourseIdNameDto;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
@@ -27,12 +26,6 @@ public class Course extends BaseTime {
     @CsvBindByName
     private int semester;
 
-    @OneToMany(mappedBy = "course", orphanRemoval = true)
-    private List<UserCourse> userCourses = new ArrayList<>();
-
-    @OneToMany(mappedBy = "course", cascade = CascadeType.REMOVE)
-    private List<GroupCourse> groupCourses = new ArrayList<>();
-
     @Builder
     public Course(String name, String code, String professor, int courseYear, int semester) {
         this.name = name;
@@ -40,12 +33,5 @@ public class Course extends BaseTime {
         this.professor = professor;
         this.courseYear = courseYear;
         this.semester = semester;
-    }
-
-    public CourseIdNameDto toIdNameDto() {
-        CourseIdNameDto dto = new CourseIdNameDto();
-        dto.setId(this.id);
-        dto.setName(this.name);
-        return dto;
     }
 }

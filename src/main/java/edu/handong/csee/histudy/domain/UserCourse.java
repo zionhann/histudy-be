@@ -24,5 +24,7 @@ public class UserCourse extends BaseTime {
         this.user = user;
         this.course = course;
         this.priority = priority;
+
+        user.getCourseSelections().add(this);
     }
 }

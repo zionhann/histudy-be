@@ -49,7 +49,7 @@ public class StudyGroup extends BaseTime {
 
     private List<Course> getCommonCourses() {
         if (!this.groupCourses.isEmpty()) {
-            this.groupCourses.clear();
+            this.groupCourses.removeIf(GroupCourse::isNotInUse);
         }
         Map<Course, Long> courseCountMap = this.members.stream()
                 .flatMap(u -> u.getCourseSelections().stream())
@@ -85,11 +85,14 @@ public class StudyGroup extends BaseTime {
     }
 
     protected void assignCommonCourses() {
-        getCommonCourses()
-                .forEach(course -> {
-                    GroupCourse groupCourse = new GroupCourse(this, course);
-                    groupCourses.add(groupCourse);
-                    course.getGroupCourses().add(groupCourse);
-                });
+        getCommonCourses().stream()
+                .filter(this::isNotInGroupCourse)
+                .forEach(course -> new GroupCourse(this, course));
+    }
+
+    private boolean isNotInGroupCourse(Course course) {
+        return this.groupCourses.stream()
+                .map(GroupCourse::getCourse)
+                .noneMatch(c -> c.equals(course));
     }
 }
