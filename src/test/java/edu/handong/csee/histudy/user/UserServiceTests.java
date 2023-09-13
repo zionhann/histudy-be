@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
@@ -273,7 +272,6 @@ public class UserServiceTests {
 
         User saved = userRepository.save(user);
         StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(111, List.of(saved)));
-        StudyGroup newStudyGroup = studyGroupRepository.save(new StudyGroup(222, List.of()));
 
         UserDto.UserEdit dto = UserDto.UserEdit.builder()
                 .id(saved.getId())
@@ -286,6 +284,6 @@ public class UserServiceTests {
 
         assertThat(edited.getName()).isEqualTo("조용히해라");
         assertThat(edited.getSid()).isEqualTo("12345678");
-        assertThat(edited.getGroup()).isEqualTo(newStudyGroup.getTag());
+        assertThat(edited.getGroup()).isEqualTo(dto.getTeam());
     }
 }

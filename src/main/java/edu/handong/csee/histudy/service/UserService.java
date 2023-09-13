@@ -4,6 +4,7 @@ import edu.handong.csee.histudy.controller.form.ApplyForm;
 import edu.handong.csee.histudy.controller.form.UserForm;
 import edu.handong.csee.histudy.domain.Course;
 import edu.handong.csee.histudy.domain.Role;
+import edu.handong.csee.histudy.domain.StudyGroup;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.ApplyFormDto;
 import edu.handong.csee.histudy.dto.UserDto;
@@ -159,9 +160,12 @@ public class UserService {
                         tag ->
                                 studyGroupRepository
                                         .findByTag(tag)
-                                        .orElseThrow(StudyGroupNotFoundException::new)
+                                        .orElse(new StudyGroup(tag))
                                         .join(List.of(user)),
-                        user::leaveGroup
+                        () -> {
+                            user.leaveGroup();
+                            studyGroupRepository.deleteEmptyGroup();
+                        }
                 );
         user.edit(form);
         return new UserDto.UserInfo(user);
