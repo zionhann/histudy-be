@@ -183,11 +183,33 @@ public class UserDto {
 
         public UserMe(User user) {
             this.id = user.getId();
+            this.sid = user.getSid();
+            this.name = user.getName();
+            this.email = user.getEmail();
+        }
+    }
+
+    @Getter
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class UserMeWithMasking extends UserMe {
+        @Schema(description = "User ID", example = "1", type = "number")
+        private Long id;
+
+        @Schema(description = "User name", example = "John Doe")
+        private String name;
+
+        @Schema(description = "User student ID", example = "223****4")
+        private String sid;
+
+        @Schema(description = "User email", example = "user@test.com")
+        private String email;
+
+        public UserMeWithMasking(User user) {
+            this.id = user.getId();
             this.sid = user.getSidWithMasking();
             this.name = user.getName();
             this.email = user.getEmail();
         }
-
     }
 
     @Builder
