@@ -5,6 +5,7 @@ import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.domain.UserCourse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -12,15 +13,17 @@ import java.util.Comparator;
 import java.util.List;
 
 @Getter
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ApplyFormDto {
 
     @Schema(description = "List of friend added to apply form", type = "array")
-    private List<UserDto.UserBasic> friends;
+    private List<? extends UserDto.UserBasic> friends;
 
     @Schema(description = "List of course added to apply form", type = "array")
     private List<CourseDto.CourseInfo> courses;
 
+    @Deprecated
     public ApplyFormDto(User entity) {
         this.friends = entity.getSentRequests()
                 .stream()
