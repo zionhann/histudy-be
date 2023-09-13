@@ -58,6 +58,32 @@ public class UserService {
         return new ApplyFormDto(user);
     }
 
+    public User apply(
+            List<Long> friendsIds,
+            List<Long> courseIds,
+            String email
+    ) {
+        List<User> friends = friendsIds
+                .stream()
+                .map(id ->
+                        userRepository.findById(id)
+                                .orElseThrow(UserNotFoundException::new))
+                .toList();
+        List<Course> courses = courseIds
+                .stream()
+                .map(id ->
+                        courseRepository.findById(id)
+                                .orElseThrow(CourseNotFoundException::new))
+                .toList();
+
+        User user = userRepository.findUserByEmail(email)
+                .orElseThrow(UserNotFoundException::new);
+        user.addUser(friends);
+        user.selectCourse(courses);
+
+        return user;
+    }
+
     public void signUp(UserForm userForm) {
         userRepository
                 .findUserBySub(userForm.getSub())
@@ -99,10 +125,9 @@ public class UserService {
                 .toList();
     }
 
-    public ApplyFormDto getUserInfo(String email) {
-        User user = userRepository.findUserByEmail(email)
+    public User getUserInfo(String email) {
+        return userRepository.findUserByEmail(email)
                 .orElseThrow(UserNotFoundException::new);
-        return new ApplyFormDto(user);
     }
 
     public UserDto.UserMe getUserMe(Optional<String> emailOr) {

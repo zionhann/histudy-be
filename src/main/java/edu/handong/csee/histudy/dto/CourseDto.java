@@ -60,9 +60,13 @@ public class CourseDto {
         @Schema(description = "Course Name", example = "Software Engineering")
         private String name;
 
+        @Schema(description = "Course Professor", example = "Prof. John Doe")
+        private String prof;
+
         public BasicCourseInfo(Course course) {
             this.id = course.getId();
             this.name = course.getName();
+            this.prof = course.getProfessor();
         }
     }
 }

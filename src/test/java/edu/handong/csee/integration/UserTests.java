@@ -43,7 +43,7 @@ public class UserTests {
     @Autowired
     ObjectMapper objectMapper;
 
-    @Value("${custom.jwt.secret.user}")
+    @Value("${custom.jwt.example.user}")
     String userToken;
     @Autowired
     private UserRepository userRepository;

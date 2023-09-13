@@ -51,7 +51,7 @@ public class ReportTests {
 
     @DisplayName("관리자 권한으로 보고서를 열람할 수 있어야 함")
     @Test
-    void ReportTests_18(@Value("${custom.jwt.secret.admin}") String adminToken) throws Exception {
+    void ReportTests_18(@Value("${custom.jwt.example.admin}") String adminToken) throws Exception {
         // Given
         User writer = User.builder()
                 .sub("123")

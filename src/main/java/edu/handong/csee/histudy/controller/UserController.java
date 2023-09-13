@@ -1,8 +1,12 @@
 package edu.handong.csee.histudy.controller;
 
 import edu.handong.csee.histudy.controller.form.UserForm;
+import edu.handong.csee.histudy.domain.Friendship;
 import edu.handong.csee.histudy.domain.Role;
+import edu.handong.csee.histudy.domain.User;
+import edu.handong.csee.histudy.domain.UserCourse;
 import edu.handong.csee.histudy.dto.ApplyFormDto;
+import edu.handong.csee.histudy.dto.CourseDto;
 import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.exception.ForbiddenException;
 import edu.handong.csee.histudy.jwt.JwtPair;
@@ -19,12 +23,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
 @Tag(name = "일반 사용자 API")
 @RestController
-@RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -32,7 +36,7 @@ public class UserController {
     private final JwtService jwtService;
 
     @Operation(summary = "회원가입")
-    @PostMapping
+    @PostMapping("/api/users")
     public ResponseEntity<UserDto.UserLogin> createUser(@RequestBody UserForm userForm) {
         userService.signUp(userForm);
         JwtPair tokens = jwtService.issueToken(userForm.getEmail(), userForm.getName(), Role.USER);
@@ -49,18 +53,16 @@ public class UserController {
      * 스터디 그룹 신청 단계에서
      * 같이 스터디할 유저를 검색하는 API
      *
-     * <p>원래 토큰 검증은 인터셉터에서 처리하고 있으나,
-     * HTTP 메서드만 다르고 동일한 URI를 가지는
-     * 회원가입 API와 요청을 구분하기가 번거로워서
-     * 이 API에 한해서만 컨트롤러에 검증을 위임하였다.
-     *
      * @param keyword 검색 키워드: 이름 또는 학번 또는 이메일
      * @param header  액세스 토큰
      * @return 유저 목록
+     * @see #searchUserWithMasking(Optional, Optional)
+     * @deprecated 마스킹된 유저 정보를 반환하는 v2 API를 사용할 것
      */
     @Operation(summary = "유저 검색")
     @SecurityRequirement(name = "USER")
-    @GetMapping
+    @Deprecated
+    @GetMapping("/api/users")
     public ResponseEntity<UserDto> searchUser(
             @Parameter(allowEmptyValue = true) @RequestParam(name = "search") Optional<String> keyword,
             @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) Optional<String> header) {
@@ -78,13 +80,46 @@ public class UserController {
         return ResponseEntity.ok(new UserDto(users));
     }
 
+    /**
+     * 스터디 그룹 신청 단계에서
+     * 같이 스터디할 유저를 검색하는 API
+     *
+     * <p>원래 토큰 검증은 인터셉터에서 처리하고 있으나,
+     * HTTP 메서드만 다르고 동일한 URI를 가지는
+     * 회원가입 API와 요청을 구분하기가 번거로워서
+     * 이 API에 한해서만 컨트롤러에 검증을 위임하였다.
+     *
+     * @param keyword 검색 키워드: 이름 또는 학번 또는 이메일
+     * @param header  액세스 토큰
+     * @return 유저 목록
+     */
+    @Operation(summary = "유저 검색")
+    @SecurityRequirement(name = "USER")
+    @GetMapping("/api/v2/users")
+    public ResponseEntity<UserDto> searchUserWithMasking(
+            @Parameter(allowEmptyValue = true) @RequestParam(name = "search") Optional<String> keyword,
+            @Parameter(hidden = true) @RequestHeader(HttpHeaders.AUTHORIZATION) Optional<String> header) {
+        String token = jwtService.extractToken(header);
+        Claims claims = jwtService.validate(token);
+        String email = claims.getSubject();
+
+        List<UserDto.UserMatchingWithMasking> users = userService.search(keyword)
+                .stream()
+                .filter(Role::isNotAdmin)
+                .filter(u -> !u.getEmail().equals(email))
+                .map(UserDto.UserMatchingWithMasking::new)
+                .toList();
+
+        return ResponseEntity.ok(new UserDto(users));
+    }
+
     @Operation(summary = "내 정보 조회")
     @SecurityRequirements({
             @SecurityRequirement(name = "USER"),
             @SecurityRequirement(name = "MEMBER"),
             @SecurityRequirement(name = "ADMIN")
     })
-    @GetMapping("/me")
+    @GetMapping("/api/users/me")
     public ResponseEntity<UserDto.UserMe> getMyInfo(
             @RequestAttribute Claims claims) {
         if (Role.isAuthorized(claims, Role.values())) {
@@ -94,13 +129,57 @@ public class UserController {
         throw new ForbiddenException();
     }
 
+    /**
+     * 나의 스터디 신청 정보를 조회하는 API
+     *
+     * @param claims 토큰 페이로드
+     * @return 스터디 신청 내역
+     * @see #getMyApplicationFormWithMasking(Claims)
+     * @deprecated 마스킹된 유저 정보를 반환하는 v2 API를 사용할 것
+     */
     @Operation(summary = "스터디 그룹 신청 정보 조회")
     @SecurityRequirement(name = "USER")
-    @GetMapping("/me/forms")
+    @Deprecated
+    @GetMapping("/api/users/me/forms")
     public ResponseEntity<ApplyFormDto> getMyApplicationForm(
             @RequestAttribute Claims claims) {
         if (Role.isAuthorized(claims, Role.USER)) {
-            return ResponseEntity.ok(userService.getUserInfo(claims.getSubject()));
+            User user = userService.getUserInfo(claims.getSubject());
+            return ResponseEntity.ok(new ApplyFormDto(user));
+        }
+        throw new ForbiddenException();
+    }
+
+    /**
+     * 나의 스터디 신청 정보를 조회하는 API
+     *
+     * <p>스터디 신청시 선택한 유저 정보와 강의 목록을 보여준다.
+     * 이때 유저 정보(학번)는 마스킹 처리한다.</p>
+     *
+     * @param claims 토큰 페이로드
+     * @return 스터디 신청 내역
+     */
+    @Operation(summary = "스터디 그룹 신청 정보 조회")
+    @SecurityRequirement(name = "USER")
+    @GetMapping("/api/v2/users/me/forms")
+    public ResponseEntity<ApplyFormDto> getMyApplicationFormWithMasking(
+            @RequestAttribute Claims claims) {
+        if (Role.isAuthorized(claims, Role.USER)) {
+            User user = userService.getUserInfo(claims.getSubject());
+
+            return ResponseEntity.ok(new ApplyFormDto(
+                    user.getSentRequests()
+                            .stream()
+                            .map(Friendship::getReceived)
+                            .map(UserDto.UserBasicWithMasking::new)
+                            .toList(),
+                    user.getCourseSelections()
+                            .stream()
+                            .sorted(Comparator.comparing(UserCourse::getPriority))
+                            .map(UserCourse::getCourse)
+                            .map(CourseDto.CourseInfo::new)
+                            .toList()
+            ));
         }
         throw new ForbiddenException();
     }
@@ -108,7 +187,7 @@ public class UserController {
     @Operation(summary = "전체 유저 스터디 신청 정보 조회")
     @SecurityRequirement(name = "ADMIN")
     @Deprecated
-    @GetMapping("/manageUsers")
+    @GetMapping("/api/users/manageUsers")
     public List<UserDto.UserInfo> userList(
             @RequestAttribute Claims claims) {
         if (Role.isAuthorized(claims, Role.ADMIN)) {

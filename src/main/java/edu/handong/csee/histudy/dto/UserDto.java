@@ -16,10 +16,11 @@ import java.util.List;
 public class UserDto {
 
     @Schema(description = "List of user", type = "array")
-    private List<UserMatching> users;
+    private List<? extends UserMatching> users;
 
     @Getter
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @Deprecated
     public static class UserMatching {
 
         @Schema(description = "User name", example = "John Doe")
@@ -35,6 +36,26 @@ public class UserDto {
             this.name = user.getName();
             this.sid = user.getSid();
             this.email = user.getEmail();
+        }
+    }
+
+    @Getter
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class UserMatchingWithMasking extends UserMatching {
+
+        @Schema(description = "User ID", example = "1")
+        private Long id;
+
+        @Schema(description = "User name", example = "John Doe")
+        private String name;
+
+        @Schema(description = "User student ID", example = "223****2")
+        private String sid;
+
+        public UserMatchingWithMasking(User user) {
+            this.id = user.getId();
+            this.name = user.getName();
+            this.sid = user.getSidWithMasking();
         }
     }
 
@@ -78,7 +99,7 @@ public class UserDto {
         private List<UserBasic> friends;
 
         @Schema(description = "list of course added", type = "array")
-        private List<CourseIdNameDto> courses;
+        private List<CourseDto.BasicCourseInfo> courses;
 
         @Schema(description = "student's total minutes studied", type = "number")
         private long totalMinutes;
@@ -95,7 +116,7 @@ public class UserDto {
                     .toList();
             this.courses = user.getCourseSelections().stream()
                     .sorted(Comparator.comparing(UserCourse::getPriority))
-                    .map(c -> new CourseIdNameDto(c.getCourse()))
+                    .map(c -> new CourseDto.BasicCourseInfo(c.getCourse()))
                     .toList();
             this.totalMinutes = user.getReportParticipation().stream()
                     .mapToLong(p -> p.getGroupReport().getTotalMinutes())
@@ -121,6 +142,26 @@ public class UserDto {
         public UserBasic(User user) {
             this.id = user.getId();
             this.sid = user.getSid();
+            this.name = user.getName();
+        }
+    }
+
+    @Getter
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class UserBasicWithMasking extends UserBasic {
+
+        @Schema(description = "User ID", example = "1")
+        private Long id;
+
+        @Schema(description = "User name", example = "John Doe")
+        private String name;
+
+        @Schema(description = "User student ID", example = "223****2")
+        private String sid;
+
+        public UserBasicWithMasking(User user) {
+            this.id = user.getId();
+            this.sid = user.getSidWithMasking();
             this.name = user.getName();
         }
     }

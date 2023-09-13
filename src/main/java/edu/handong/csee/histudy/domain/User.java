@@ -154,4 +154,8 @@ public class User extends BaseTime {
     public boolean isInSameGroup(StudyGroup studyGroup) {
         return this.studyGroup != null && this.studyGroup.equals(studyGroup);
     }
+
+    public String getSidWithMasking() {
+        return this.sid.substring(0, 3) + "****" + this.sid.substring(7);
+    }
 }
