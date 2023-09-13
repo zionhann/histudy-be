@@ -6,6 +6,7 @@ import edu.handong.csee.histudy.exception.ForbiddenException;
 import edu.handong.csee.histudy.exception.MissingParameterException;
 import edu.handong.csee.histudy.exception.UserNotFoundException;
 import io.jsonwebtoken.JwtException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Arrays;
 
+@Slf4j
 @RestControllerAdvice
 public class ExceptionController {
 
@@ -62,6 +64,7 @@ public class ExceptionController {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ExceptionResponse> runtimeException(RuntimeException e) {
+        log.error("{}({}): {}", e.getMessage(), e.getClass().getName(), Arrays.toString(e.getStackTrace()));
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ExceptionResponse.builder()
                         .status(HttpStatus.INTERNAL_SERVER_ERROR)
