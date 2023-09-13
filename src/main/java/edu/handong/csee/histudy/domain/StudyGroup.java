@@ -37,6 +37,10 @@ public class StudyGroup extends BaseTime {
         join(members);
     }
 
+    public StudyGroup(Integer tag) {
+        this.tag = tag;
+    }
+
     public void increase(long totalMinutes) {
         this.totalMinutes += totalMinutes;
     }
@@ -85,6 +89,11 @@ public class StudyGroup extends BaseTime {
     }
 
     protected void assignCommonCourses() {
+        if (this.members.isEmpty()) {
+            this.groupCourses.clear();
+            this.tag = -1;
+            return;
+        }
         getCommonCourses().stream()
                 .filter(this::isNotInGroupCourse)
                 .forEach(course -> new GroupCourse(this, course));

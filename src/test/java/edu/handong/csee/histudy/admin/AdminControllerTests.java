@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.handong.csee.histudy.controller.AdminController;
 import edu.handong.csee.histudy.domain.Course;
 import edu.handong.csee.histudy.domain.Role;
+import edu.handong.csee.histudy.domain.StudyGroup;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
@@ -19,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -31,8 +32,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -163,5 +163,67 @@ public class AdminControllerTests {
                 });
         // Then
         assertEquals(2, res.size());
+    }
+
+    @DisplayName("그룹을 새로 생성해 배정할 수 있다")
+    @Test
+    void AdminControllerTests_170() throws Exception {
+        // given
+        User userA = User.builder()
+                .sid("201511111")
+                .name("userA")
+                .email("userA@test.com")
+                .role(Role.USER)
+                .build();
+        User userB = User.builder()
+                .sid("201611111")
+                .name("userB")
+                .email("userB@test.com")
+                .role(Role.USER)
+                .build();
+        Course courseA = Course.builder()
+                .name("courseA")
+                .build();
+        Course courseB = Course.builder()
+                .name("courseB")
+                .build();
+
+        User save1 = userRepository.save(userA);
+        User save2 = userRepository.save(userB);
+        Course savedCourse1 = courseRepository.save(courseA);
+        Course savedCourse2 = courseRepository.save(courseB);
+
+        Claims claimsB = Jwts.claims();
+        claimsB.put("sub", userB.getEmail());
+
+        save1.selectCourse(List.of(savedCourse1, savedCourse2));
+        save2.selectCourse(List.of(savedCourse1, savedCourse2));
+        new StudyGroup(1, List.of(save1, save2));
+
+        Claims claimAdmin = Jwts.claims();
+        claimAdmin.put("rol", Role.ADMIN.name());
+
+        UserDto.UserEdit editForm = UserDto.UserEdit.builder()
+                .id(save2.getId())
+                .team(2)
+                .build();
+
+        // when
+        MvcResult mvcResult = mvc
+                .perform(post("/api/admin/edit-user")
+                        .requestAttr("claims", claimAdmin)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(editForm)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        UserDto.UserInfo res = mapper.readValue(
+                mvcResult.getResponse().getContentAsString(),
+                UserDto.UserInfo.class);
+
+        // then
+        assertEquals(2, res.getGroup());
+        assertEquals(userB.getSid(), res.getSid());
+        assertEquals(1, save1.getStudyGroup().getMembers().size());
     }
 }
