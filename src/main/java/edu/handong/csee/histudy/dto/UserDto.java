@@ -183,7 +183,7 @@ public class UserDto {
 
         public UserMe(User user) {
             this.id = user.getId();
-            this.sid = user.getSid();
+            this.sid = user.getSidWithMasking();
             this.name = user.getName();
             this.email = user.getEmail();
         }
