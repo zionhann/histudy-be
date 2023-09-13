@@ -2,6 +2,7 @@ package edu.handong.csee.histudy.service;
 
 import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.*;
+import edu.handong.csee.histudy.exception.UserNotFoundException;
 import edu.handong.csee.histudy.repository.StudyGroupRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -52,14 +53,15 @@ public class TeamService {
         return new TeamReportDto(studyGroup.getId(), users, studyGroup.getTotalMinutes(), reports);
     }
 
-    public List<UserDto.UserMe> getTeamUsers(String email) {
-        User user = userRepository.findUserByEmail(email).orElseThrow();
-        if (user.getStudyGroup() != null) {
-            return user.getStudyGroup().getMembers()
-                    .stream()
-                    .map(UserDto.UserMe::new)
-                    .toList();
-        } else return Collections.emptyList();
+    public List<UserDto.UserMeWithMasking> getTeamUsers(String email) {
+        User user = userRepository.findUserByEmail(email)
+                .orElseThrow(UserNotFoundException::new);
+
+        return user.getStudyGroup()
+                .getMembers()
+                .stream()
+                .map(UserDto.UserMeWithMasking::new)
+                .toList();
     }
 
     public TeamRankDto getAllTeams() {
@@ -74,7 +76,7 @@ public class TeamService {
     public TeamDto.MatchResults matchTeam() {
         // Get users who are not in a team
         List<User> users = userRepository.findUnassignedApplicants();
-        int latestGroupTag = (int) studyGroupRepository.count();
+        int latestGroupTag = studyGroupRepository.countMaxTag().orElse(0);
         AtomicInteger tag = new AtomicInteger(latestGroupTag + 1);
 
         // First matching

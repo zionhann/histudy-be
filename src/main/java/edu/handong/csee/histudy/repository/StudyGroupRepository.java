@@ -15,4 +15,7 @@ public interface StudyGroupRepository extends JpaRepository<StudyGroup, Long> {
     @Modifying
     @Query("delete from StudyGroup s where s.tag = -1")
     void deleteEmptyGroup();
+
+    @Query("select max(s.tag) from StudyGroup s")
+    Optional<Integer> countMaxTag();
 }

@@ -117,7 +117,7 @@ public class TeamController {
 
     @Operation(summary = "그룹 팀원 목록 조회")
     @GetMapping("/users")
-    public ResponseEntity<List<UserDto.UserMe>> getTeamUsers(
+    public ResponseEntity<List<UserDto.UserMeWithMasking>> getTeamUsers(
             @RequestAttribute Claims claims) {
         if (Role.isAuthorized(claims, Role.MEMBER)) {
             return ResponseEntity.ok(teamService.getTeamUsers(claims.getSubject()));
