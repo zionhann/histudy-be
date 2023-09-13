@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@ActiveProfiles("dev")
 @SpringBootTest
 @Transactional
 public class MatchingAlgorithmTests {
