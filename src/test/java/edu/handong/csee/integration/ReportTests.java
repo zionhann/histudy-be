@@ -69,7 +69,7 @@ public class ReportTests {
                 .title("title")
                 .content("content")
                 .totalMinutes(10L)
-                .participants(List.of(writer.getSid()))
+                .participants(List.of(writer.getId()))
                 .courses(List.of())
                 .build();
 

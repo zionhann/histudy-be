@@ -126,7 +126,7 @@ public class UserServiceTests {
                 .title("title")
                 .content("content")
                 .totalMinutes(60L)
-                .participants(List.of("22000329"))
+                .participants(List.of(savedA.getId()))
                 .courses(List.of(1L, 2L, 3L))
                 .build();
         ReportDto.ReportInfo report = reportService.createReport(form, "a@a.com");

@@ -31,7 +31,7 @@ public class ReportService {
 
         List<User> participants = form.getParticipants()
                 .stream()
-                .map(userRepository::findUserBySid)
+                .map(userRepository::findById)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
@@ -75,7 +75,7 @@ public class ReportService {
     public boolean updateReport(Long reportId, ReportForm form) {
         List<User> participants = form.getParticipants()
                 .stream()
-                .map(userRepository::findUserBySid)
+                .map(userRepository::findById)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();

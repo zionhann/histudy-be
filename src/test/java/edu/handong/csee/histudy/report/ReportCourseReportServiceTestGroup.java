@@ -84,7 +84,7 @@ public class ReportCourseReportServiceTestGroup {
                 .title("title")
                 .content("content")
                 .totalMinutes(60L)
-                .participants(List.of("22000328"))
+                .participants(List.of(userA.getId()))
                 .courses(List.of(course.getId(), courseB.getId(), courseC.getId()))
                 .build();
 
@@ -119,19 +119,20 @@ public class ReportCourseReportServiceTestGroup {
                 .semester(1)
                 .build();
         courseRepository.save(courseC);
-        ReportForm form = ReportForm.builder()
-                .title("title")
-                .content("content")
-                .totalMinutes(60L)
-                .participants(List.of("22000328"))
-                .courses(List.of(1L, 2L, 3L))
-                .build();
         User user = User.builder()
                 .sid("22000328")
                 .email("a@a.com")
                 .role(Role.USER)
                 .build();
         User saved = userRepository.save(user);
+        ReportForm form = ReportForm.builder()
+                .title("title")
+                .content("content")
+                .totalMinutes(60L)
+                .participants(List.of(saved.getId()))
+                .courses(List.of(1L, 2L, 3L))
+                .build();
+
         saved.selectCourse(List.of(course, courseB, courseC));
         StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(1, List.of(saved)));
 

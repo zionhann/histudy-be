@@ -1,6 +1,9 @@
 package edu.handong.csee.histudy.controller.form;
 
-import edu.handong.csee.histudy.domain.*;
+import edu.handong.csee.histudy.domain.GroupCourse;
+import edu.handong.csee.histudy.domain.GroupReport;
+import edu.handong.csee.histudy.domain.StudyGroup;
+import edu.handong.csee.histudy.domain.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -23,10 +26,10 @@ public class ReportForm {
     private Long totalMinutes;
 
     /**
-     * Contains student ID
+     * Contains student ID(PK)
      */
-    @Schema(description = "Participant SIDs of the report", type = "array", example = "[\"20200001\", \"20200002\"]")
-    private List<String> participants = new ArrayList<>();
+    @Schema(description = "Participant ID(PK) of the report", type = "array", example = "[1, 2]")
+    private List<Long> participants = new ArrayList<>();
 
     /**
      * Contains image URL
