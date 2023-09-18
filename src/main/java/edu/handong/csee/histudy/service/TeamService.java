@@ -50,7 +50,9 @@ public class TeamService {
         List<ReportDto.ReportBasic> reports = studyGroup.getReports()
                 .stream()
                 .map(ReportDto.ReportBasic::new).toList();
-        return new TeamReportDto(studyGroup.getId(), users, studyGroup.getTotalMinutes(), reports);
+        return new TeamReportDto(studyGroup.getId(),
+                studyGroup.getTag(),
+                users, studyGroup.getTotalMinutes(), reports);
     }
 
     public List<UserDto.UserMeWithMasking> getTeamUsers(String email) {

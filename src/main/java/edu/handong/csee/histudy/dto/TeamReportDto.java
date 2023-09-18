@@ -15,7 +15,11 @@ import java.util.List;
 public class TeamReportDto {
 
     @Schema(description = "Team ID", example = "1", type = "number")
+    @Deprecated
     private long group;
+
+    @Schema(description = "Team tag number", example = "1")
+    private Integer tag;
 
     @Schema(description = "Team members", type = "array")
     private List<UserDto.UserBasic> members;
