@@ -173,7 +173,7 @@ public class ReportGroupCourseServiceTest {
                 .title("title")
                 .content("content")
                 .totalMinutes(60L)
-                .participants(List.of("22000328"))
+                .participants(List.of(savedB.getId()))
                 .courses(List.of(1L, 2L, 3L))
                 .build();
         reportService.createReport(form, "a@b.com");
