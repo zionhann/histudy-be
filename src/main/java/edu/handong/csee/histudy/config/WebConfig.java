@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
@@ -24,6 +25,12 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${custom.path-patterns.include}")
     private String[] includePathPatterns;
 
+    @Value("${custom.resource.path}")
+    private String imageBasePath;
+
+    @Value("${custom.resource.location}")
+    private String imageBaseLocation;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new AuthenticationInterceptor(jwtService))
@@ -37,5 +44,11 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOriginPatterns(client)
                 .allowedMethods("GET", "POST", "DELETE", "PATCH")
                 .allowCredentials(true);
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler(imageBasePath)
+                .addResourceLocations("file://" + imageBaseLocation);
     }
 }
