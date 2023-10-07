@@ -6,12 +6,9 @@ import java.time.format.DateTimeFormatter;
 
 public class Utils {
 
-    public static String getCurrentSemester() {
+    public static int getCurrentSemester() {
         int month = LocalDate.now().getMonthValue();
-
-        return (month >= 3 && month <= 8)
-                ? "spring"
-                : "fall";
+        return (month >= 3 && month <= 8) ? 1 : 2;
     }
 
     public static int getCurrentYear() {

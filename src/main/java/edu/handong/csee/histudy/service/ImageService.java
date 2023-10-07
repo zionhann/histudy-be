@@ -7,6 +7,8 @@ import edu.handong.csee.histudy.repository.GroupReportRepository;
 import edu.handong.csee.histudy.util.Utils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,6 +20,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -47,16 +50,15 @@ public class ImageService {
             }
         }
         int year = Utils.getCurrentYear();
-        String semester = Utils.getCurrentSemester();
+        int semester = Utils.getCurrentSemester();
         String formattedDateTime = Utils.getCurrentFormattedDateTime("yyyyMMdd_HHmmss");
 
         String originalName = Objects.requireNonNullElse(imageAsFormData.getOriginalFilename(), ".jpg");
         String extension = originalName.substring(originalName.lastIndexOf("."));
 
-        // {연도 (yyyy)}/{학기 (spring | fall)}/group{StudyGroup#tag}/
-        // report_{날짜 (yyyyMMdd)}_{시간 (HHmmss)}.{확장자}
-        // e.g. 2023/fall/group1/report_20230923_123456.jpg
-        String pathname = String.format("%d/%s/group%d/report_%s%s",
+        // yyyy-{1|2}-group{%02d}-report_{yyyyMMdd}_{HHmmss}.{extension}
+        // e.g. 2023-2-group1-report_20230923_123456.jpg
+        String pathname = String.format("%d-%d-group%d-report_%s%s",
                 year,
                 semester,
                 tag,
