@@ -58,7 +58,7 @@ public class ImageService {
 
         // yyyy-{1|2}-group{%02d}-report_{yyyyMMdd}_{HHmmss}.{extension}
         // e.g. 2023-2-group1-report_20230923_123456.jpg
-        String pathname = String.format("%d-%d-group%d-report_%s%s",
+        String pathname = String.format("%d-%d-group%02d-report_%s%s",
                 year,
                 semester,
                 tag,
@@ -124,5 +124,19 @@ public class ImageService {
 
     private boolean contentMatches(byte[] sourceContent, byte[] targetContent) {
         return Arrays.equals(sourceContent, targetContent);
+    }
+
+    public Resource fetchImage(String imageName) {
+        try {
+            Path path = Paths.get(imageBaseLocation + imageName);
+            Resource resource = new UrlResource(path.toUri());
+
+            if (resource.exists() && resource.isReadable()) {
+                return resource;
+            }
+            throw new RuntimeException();
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
