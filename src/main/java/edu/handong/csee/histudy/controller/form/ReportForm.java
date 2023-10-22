@@ -1,14 +1,13 @@
 package edu.handong.csee.histudy.controller.form;
 
-import edu.handong.csee.histudy.domain.GroupCourse;
-import edu.handong.csee.histudy.domain.GroupReport;
-import edu.handong.csee.histudy.domain.StudyGroup;
-import edu.handong.csee.histudy.domain.User;
+import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
@@ -32,9 +31,11 @@ public class ReportForm {
     private List<Long> participants = new ArrayList<>();
 
     /**
-     * Contains image URL
+     * 이미지 URL
+     *
+     * @see edu.handong.csee.histudy.controller.TeamController#uploadImage(Optional, MultipartFile, Claims)
      */
-    @Schema(description = "Image URLs of the report", type = "array", example = "[\"https://histudy.s3.ap-northeast-2.amazonaws.com/1.jpg\", \"https://histudy.s3.ap-northeast-2.amazonaws.com/2.jpg\"]")
+    @Schema(description = "Image URLs of the report", type = "array", example = "[\"/path/to/image1.png\", \"/path/to/image2.png\"]")
     private List<String> images;
 
     /**
@@ -42,16 +43,4 @@ public class ReportForm {
      */
     @Schema(description = "Course IDs of the report", type = "array", example = "[1, 2]")
     private List<Long> courses = new ArrayList<>();
-
-    public GroupReport toEntity(StudyGroup studyGroup, List<User> participants, List<GroupCourse> courses) {
-        return GroupReport.builder()
-                .title(title)
-                .content(content)
-                .totalMinutes(totalMinutes)
-                .studyGroup(studyGroup)
-                .participants(participants)
-                .images(images)
-                .courses(courses)
-                .build();
-    }
 }

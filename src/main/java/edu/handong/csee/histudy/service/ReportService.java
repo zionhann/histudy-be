@@ -48,9 +48,17 @@ public class ReportService {
                 .findAllByStudyGroup(user.getStudyGroup());
         groupCourses.removeIf(gc -> !courses.contains(gc.getCourse()));
 
-        GroupReport saved = groupReportRepository.save(
-                form.toEntity(user.getStudyGroup(), participants, groupCourses));
+        GroupReport report = GroupReport.builder()
+                .title(form.getTitle())
+                .content(form.getContent())
+                .totalMinutes(form.getTotalMinutes())
+                .studyGroup(user.getStudyGroup())
+                .participants(participants)
+                .images(form.getImages())
+                .courses(groupCourses)
+                .build();
 
+        GroupReport saved = groupReportRepository.save(report);
         return new ReportDto.ReportInfo(saved);
     }
 
