@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -55,9 +56,14 @@ public class AdminController {
     public ResponseEntity<TeamReportDto> getTeamReports(
             @Parameter(description = "그룹 아이디", required = true)
             @PathVariable(name = "id") long id,
-            @RequestAttribute Claims claims) {
+            @RequestAttribute Claims claims,
+            @Value("${custom.resource.path}") String imageBasePath) {
         if (Role.isAuthorized(claims, Role.ADMIN)) {
-            return ResponseEntity.ok(teamService.getTeamReports(id, claims.getSubject()));
+            TeamReportDto res = teamService.getTeamReports(id, claims.getSubject());
+            res.getReports()
+                    .forEach(report ->
+                            report.addPathToFilename(imageBasePath));
+            return ResponseEntity.ok(res);
         }
         throw new ForbiddenException();
     }

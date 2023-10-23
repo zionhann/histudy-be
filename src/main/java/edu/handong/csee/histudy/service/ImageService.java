@@ -71,7 +71,7 @@ public class ImageService {
             MultipartFile image,
             String pathname) {
         try {
-            File file = new File(imageBaseLocation + File.separator + pathname);
+            File file = new File(imageBaseLocation + pathname);
             File dir = file.getParentFile();
 
             if (!dir.exists()) {
@@ -97,7 +97,7 @@ public class ImageService {
                     try {
                         return (isUrl(path))
                                 ? contentMatches(src, new URL(path))
-                                : contentMatches(src, Path.of(path));
+                                : contentMatches(src, Path.of(imageBaseLocation + path));
                     } catch (MalformedURLException e) {
                         throw new RuntimeException(e);
                     }

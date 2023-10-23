@@ -25,6 +25,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections.map.SingletonMap;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -45,13 +46,20 @@ public class TeamController {
     private final ImageService imageService;
     private final UserRepository userRepository;
 
+    @Value("${custom.resource.path}")
+    String imageBasePath;
+
     @Operation(summary = "그룹 스터디 보고서 생성")
     @PostMapping("/reports")
     public ReportDto.ReportInfo createReport(
             @RequestBody ReportForm form,
             @RequestAttribute Claims claims) {
         if (Role.isAuthorized(claims, Role.MEMBER)) {
-            return reportService.createReport(form, claims.getSubject());
+            ReportDto.ReportInfo res = reportService.createReport(form, claims.getSubject());
+            res.getImages().forEach(image ->
+                    image.addPathToFilename(imageBasePath));
+
+            return res;
         }
         throw new ForbiddenException();
     }
@@ -62,6 +70,9 @@ public class TeamController {
             @RequestAttribute Claims claims) {
         if (Role.isAuthorized(claims, Role.MEMBER)) {
             List<ReportDto.ReportInfo> reports = reportService.getReports(claims.getSubject());
+            reports.forEach(report ->
+                    report.getImages().forEach(
+                            image -> image.addPathToFilename(imageBasePath)));
             return new ReportDto(reports);
         }
         throw new ForbiddenException();
@@ -78,6 +89,10 @@ public class TeamController {
             @RequestAttribute Claims claims) {
         if (Role.isAuthorized(claims, Role.MEMBER, Role.ADMIN)) {
             Optional<ReportDto.ReportInfo> reportsOr = reportService.getReport(reportId);
+            reportsOr.ifPresent(report ->
+                    report.getImages().forEach(image ->
+                            image.addPathToFilename(imageBasePath)));
+
             return reportsOr
                     .map(ResponseEntity::ok)
                     .orElseGet(() -> ResponseEntity.notFound().build());
@@ -153,7 +168,7 @@ public class TeamController {
             content = @Content(
                     mediaType = "application/json",
                     examples = @ExampleObject(
-                            value = "{\"imagePath\": \"path/to/image\"}"
+                            value = "{\"imagePath\": \"/path/to/image.png\"}"
                     )
             )
     )
@@ -166,8 +181,8 @@ public class TeamController {
                     .orElseThrow(UserNotFoundException::new)
                     .getStudyGroup();
 
-            String pathname = imageService.getImagePaths(image, studyGroup.getTag(), reportIdOr);
-            SingletonMap response = new SingletonMap("imagePath", pathname);
+            String filename = imageService.getImagePaths(image, studyGroup.getTag(), reportIdOr);
+            SingletonMap response = new SingletonMap("imagePath", imageBasePath + filename);
             return ResponseEntity.ok(response);
         }
         throw new ForbiddenException();

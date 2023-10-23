@@ -100,5 +100,9 @@ public class ReportDto {
 
         @Schema(description = "Thumbnail of the report", example = "https://histudy.s3.ap-northeast-2.amazonaws.com/2021-06-01-00-00-00-1")
         private String thumbnail;
+
+        public void addPathToFilename(String imageBasePath) {
+            this.thumbnail = imageBasePath + this.thumbnail;
+        }
     }
 }

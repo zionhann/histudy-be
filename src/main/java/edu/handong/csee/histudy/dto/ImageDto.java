@@ -20,6 +20,10 @@ public class ImageDto {
     @Schema(description = "Image ID", example = "1", type = "number")
     private long id;
 
-    @Schema(description = "Image URL", example = "https://histudy-bucket.s3.ap-northeast-2.amazonaws.com/1.png")
+    @Schema(description = "Image URL", example = "/path/to/image.png")
     private String url;
+
+    public void addPathToFilename(String imageBasePath) {
+        this.url = imageBasePath + this.url;
+    }
 }

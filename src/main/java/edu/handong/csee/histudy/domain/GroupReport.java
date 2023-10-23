@@ -93,9 +93,16 @@ public class GroupReport extends BaseTime {
             this.images.clear();
         }
         List<Image> paths = images.stream()
-                .map(img -> new Image(img, this))
-                .toList();
+                .map(img -> {
+                    String filename = extractFilenameFromPath(img);
+                    return new Image(filename, this);
+                }).toList();
         this.images.addAll(paths);
+    }
+
+    private String extractFilenameFromPath(String fullPath) {
+        int lastIndex = fullPath.lastIndexOf('/');
+        return (lastIndex >= 0) ? fullPath.substring(lastIndex + 1) : fullPath;
     }
 
     public boolean update(ReportForm form, List<User> participants, List<GroupCourse> courses) {

@@ -25,8 +25,8 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${custom.path-patterns.include}")
     private String[] includePathPatterns;
 
-    @Value("${custom.resource.path}")
-    private String imageBasePath;
+    @Value("${custom.resource.path-pattern}")
+    private String imageBasePathPattern;
 
     @Value("${custom.resource.location}")
     private String imageBaseLocation;
@@ -48,7 +48,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler(imageBasePath)
+        registry.addResourceHandler(imageBasePathPattern)
                 .addResourceLocations("file://" + imageBaseLocation);
     }
 }
