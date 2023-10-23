@@ -56,5 +56,9 @@ public class TeamRankDto {
                             .map(Image::getPath)))
                     .orElse(null);
         }
+
+        public void addPathToFilename(String imageBasePath) {
+            this.thumbnail = imageBasePath + this.thumbnail;
+        }
     }
 }
