@@ -208,11 +208,15 @@ public class UserDto {
         @Schema(description = "User email", example = "user@test.com")
         private String email;
 
+        @Schema(description = "Group tag", example = "112")
+        private Integer tag;
+
         public UserMeWithMasking(User user) {
             this.id = user.getId();
             this.sid = user.getSidWithMasking();
             this.name = user.getName();
             this.email = user.getEmail();
+            this.tag = user.getStudyGroup().getTag();
         }
     }
 
