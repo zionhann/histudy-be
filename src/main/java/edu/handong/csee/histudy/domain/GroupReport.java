@@ -89,15 +89,16 @@ public class GroupReport extends BaseTime {
     private void insert(List<String> images) {
         if (images == null) {
             return;
-        } else if (!images.isEmpty()) {
+        } else if (images.isEmpty()) {
             this.images.clear();
+            return;
         }
-        List<Image> paths = images.stream()
+        this.images.clear();
+        this.images.addAll(images.stream()
                 .map(img -> {
                     String filename = extractFilenameFromPath(img);
                     return new Image(filename, this);
-                }).toList();
-        this.images.addAll(paths);
+                }).toList());
     }
 
     private String extractFilenameFromPath(String fullPath) {
