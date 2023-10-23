@@ -95,6 +95,9 @@ public class UserDto {
         @Schema(description = "Group tag", example = "112")
         private int group;
 
+        @Schema(description = "User email", example = "abc@example.ac.kr")
+        private String email;
+
         @Schema(description = "list of friend added", type = "array")
         private List<UserBasic> friends;
 
@@ -109,6 +112,7 @@ public class UserDto {
             this.name = user.getName();
             this.sid = user.getSid();
             this.group = (user.getStudyGroup() == null) ? 0 : user.getStudyGroup().getTag();
+            this.email = user.getEmail();
             this.friends = user.getSentRequests().stream()
                     .filter(Friendship::isAccepted)
                     .map(Friendship::getReceived)
