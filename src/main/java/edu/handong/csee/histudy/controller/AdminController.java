@@ -57,12 +57,13 @@ public class AdminController {
             @Parameter(description = "그룹 아이디", required = true)
             @PathVariable(name = "id") long id,
             @RequestAttribute Claims claims,
-            @Value("${custom.resource.path}") String imageBasePath) {
+            @Value("${custom.resource.path}") String imageBasePath,
+            @Value("${custom.jwt.issuer}") String baseUri) {
         if (Role.isAuthorized(claims, Role.ADMIN)) {
             TeamReportDto res = teamService.getTeamReports(id, claims.getSubject());
             res.getReports()
                     .forEach(report ->
-                            report.addPathToFilename(imageBasePath));
+                            report.addPathToFilename(baseUri + imageBasePath));
             return ResponseEntity.ok(res);
         }
         throw new ForbiddenException();

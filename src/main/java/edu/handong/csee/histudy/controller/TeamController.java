@@ -49,6 +49,9 @@ public class TeamController {
     @Value("${custom.resource.path}")
     String imageBasePath;
 
+    @Value("${custom.jwt.issuer}")
+    String baseUri;
+
     @Operation(summary = "그룹 스터디 보고서 생성")
     @PostMapping("/reports")
     public ReportDto.ReportInfo createReport(
@@ -57,7 +60,7 @@ public class TeamController {
         if (Role.isAuthorized(claims, Role.MEMBER)) {
             ReportDto.ReportInfo res = reportService.createReport(form, claims.getSubject());
             res.getImages().forEach(image ->
-                    image.addPathToFilename(imageBasePath));
+                    image.addPathToFilename(baseUri + imageBasePath));
 
             return res;
         }
@@ -72,7 +75,7 @@ public class TeamController {
             List<ReportDto.ReportInfo> reports = reportService.getReports(claims.getSubject());
             reports.forEach(report ->
                     report.getImages().forEach(
-                            image -> image.addPathToFilename(imageBasePath)));
+                            image -> image.addPathToFilename(baseUri + imageBasePath)));
             return new ReportDto(reports);
         }
         throw new ForbiddenException();
@@ -91,7 +94,7 @@ public class TeamController {
             Optional<ReportDto.ReportInfo> reportsOr = reportService.getReport(reportId);
             reportsOr.ifPresent(report ->
                     report.getImages().forEach(image ->
-                            image.addPathToFilename(imageBasePath)));
+                            image.addPathToFilename(baseUri + imageBasePath)));
 
             return reportsOr
                     .map(ResponseEntity::ok)
@@ -182,7 +185,7 @@ public class TeamController {
                     .getStudyGroup();
 
             String filename = imageService.getImagePaths(image, studyGroup.getTag(), reportIdOr);
-            SingletonMap response = new SingletonMap("imagePath", imageBasePath + filename);
+            SingletonMap response = new SingletonMap("imagePath", baseUri + imageBasePath + filename);
             return ResponseEntity.ok(response);
         }
         throw new ForbiddenException();
