@@ -95,24 +95,17 @@ public class GroupReport extends BaseTime {
         }
         this.images.clear();
         this.images.addAll(images.stream()
-                .map(img -> {
-                    String filename = extractFilenameFromPath(img);
-                    return new Image(filename, this);
-                }).toList());
+                .map(img -> new Image(img, this))
+                .toList());
     }
 
-    private String extractFilenameFromPath(String fullPath) {
-        int lastIndex = fullPath.lastIndexOf('/');
-        return (lastIndex >= 0) ? fullPath.substring(lastIndex + 1) : fullPath;
-    }
-
-    public boolean update(ReportForm form, List<User> participants, List<GroupCourse> courses) {
+    public boolean update(ReportForm form, List<String> images, List<User> participants, List<GroupCourse> courses) {
         this.title = requireNonNullElse(form.getTitle(), this.title);
         this.content = requireNonNullElse(form.getContent(), this.content);
         this.totalMinutes = requireNonNullElse(form.getTotalMinutes(), this.totalMinutes);
 
         this.add(participants);
-        this.insert(form.getImages());
+        this.insert(images);
         this.study(courses);
         studyGroup.updateTotalMinutes();
 

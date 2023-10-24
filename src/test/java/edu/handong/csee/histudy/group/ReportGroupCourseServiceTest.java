@@ -1,5 +1,9 @@
 package edu.handong.csee.histudy.group;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 import edu.handong.csee.histudy.controller.form.ReportForm;
 import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.TeamDto;
@@ -10,6 +14,9 @@ import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
 import edu.handong.csee.histudy.repository.*;
 import edu.handong.csee.histudy.service.ReportService;
 import edu.handong.csee.histudy.service.TeamService;
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,14 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @Transactional
@@ -244,8 +243,8 @@ public class ReportGroupCourseServiceTest {
         assertThat(res.getTeams().get(0).getTotalMinutes()).isEqualTo(210);
         assertThat(res.getTeams().get(1).getTotalMinutes()).isEqualTo(180);
 
-        assertThat(res.getTeams().get(0).getThumbnail()).isEqualTo("img3.jpg"); // team 2
-        assertThat(res.getTeams().get(1).getThumbnail()).isEqualTo("img2.jpg"); // team 1
+        assertThat(res.getTeams().get(0).getThumbnail()).contains("img3.jpg"); // team 2
+        assertThat(res.getTeams().get(1).getThumbnail()).contains("img2.jpg"); // team 1
 
     }
 }
