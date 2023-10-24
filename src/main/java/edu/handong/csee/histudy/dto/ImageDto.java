@@ -9,21 +9,17 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class ImageDto {
 
-    public ImageDto(Image entity) {
-        this.id = entity.getId();
-        this.url = entity.getPath();
-    }
+  public ImageDto(Image entity) {
+    this.id = entity.getId();
+    this.url = entity.getPath();
+  }
 
-    @Schema(description = "Image ID", example = "1", type = "number")
-    private long id;
+  @Schema(description = "Image ID", example = "1", type = "number")
+  private long id;
 
-    @Schema(description = "Image URL", example = "/path/to/image.png")
-    private String url;
-
-    public void addPathToFilename(String imageBasePath) {
-        this.url = imageBasePath + this.url;
-    }
+  @Schema(description = "Image URL", example = "/path/to/image.png")
+  private String url;
 }
