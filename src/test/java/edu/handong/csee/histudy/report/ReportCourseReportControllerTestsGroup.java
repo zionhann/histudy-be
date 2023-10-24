@@ -17,7 +17,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -258,7 +257,7 @@ public class ReportCourseReportControllerTestsGroup {
         //then
         assertThat(report).isPresent();
         assertThat(report.get().getImages()).hasSize(1);
-        assertThat(report.get().getImages().get(0).getPath()).isEqualTo("path/to/image/modified");
+        assertThat(report.get().getImages().get(0).getPath()).isEqualTo("modified");
     }
 
     @DisplayName("보고서 시간을 변경한 경우 전체 그룹의 시간에도 반영되어야 한다")
