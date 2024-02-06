@@ -24,9 +24,10 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.collections.map.SingletonMap;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,12 +45,21 @@ public class TeamController {
   private final ImageService imageService;
   private final UserRepository userRepository;
 
+  @Value("${custom.resource.path}")
+  String imageBasePath;
+
+  @Value("${custom.jwt.issuer}")
+  String baseUri;
+
   @Operation(summary = "그룹 스터디 보고서 생성")
   @PostMapping("/reports")
   public ReportDto.ReportInfo createReport(
       @RequestBody ReportForm form, @RequestAttribute Claims claims) {
     if (Role.isAuthorized(claims, Role.MEMBER)) {
-      return reportService.createReport(form, claims.getSubject());
+      ReportDto.ReportInfo res = reportService.createReport(form, claims.getSubject());
+      res.getImages().forEach(image -> image.addPathToFilename(baseUri + imageBasePath));
+
+      return res;
     }
     throw new ForbiddenException();
   }
@@ -59,6 +69,11 @@ public class TeamController {
   public ReportDto getMyGroupReports(@RequestAttribute Claims claims) {
     if (Role.isAuthorized(claims, Role.MEMBER)) {
       List<ReportDto.ReportInfo> reports = reportService.getReports(claims.getSubject());
+      reports.forEach(
+          report ->
+              report
+                  .getImages()
+                  .forEach(image -> image.addPathToFilename(baseUri + imageBasePath)));
       return new ReportDto(reports);
     }
     throw new ForbiddenException();
@@ -74,6 +89,11 @@ public class TeamController {
       @PathVariable Long reportId, @RequestAttribute Claims claims) {
     if (Role.isAuthorized(claims, Role.MEMBER, Role.ADMIN)) {
       Optional<ReportDto.ReportInfo> reportsOr = reportService.getReport(reportId);
+      reportsOr.ifPresent(
+          report ->
+              report
+                  .getImages()
+                  .forEach(image -> image.addPathToFilename(baseUri + imageBasePath)));
 
       return reportsOr.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -145,7 +165,7 @@ public class TeamController {
           @Content(
               mediaType = "application/json",
               examples = @ExampleObject(value = "{\"imagePath\": \"/path/to/image.png\"}")))
-  public ResponseEntity<SingletonMap> uploadImage(
+  public ResponseEntity<Map<String, String>> uploadImage(
       @PathVariable(required = false) Optional<Long> reportIdOr,
       @RequestParam MultipartFile image,
       @RequestAttribute Claims claims) {
@@ -157,8 +177,7 @@ public class TeamController {
               .getStudyGroup();
 
       String filename = imageService.getImagePaths(image, studyGroup.getTag(), reportIdOr);
-      SingletonMap response = new SingletonMap("imagePath", filename);
-
+      Map<String, String> response = Map.of("imagePath", baseUri + imageBasePath + filename);
       return ResponseEntity.ok(response);
     }
     throw new ForbiddenException();
