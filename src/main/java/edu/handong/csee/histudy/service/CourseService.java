@@ -1,11 +1,13 @@
 package edu.handong.csee.histudy.service;
 
+import edu.handong.csee.histudy.domain.AcademicTerm;
 import edu.handong.csee.histudy.domain.Course;
 import edu.handong.csee.histudy.domain.GroupCourse;
 import edu.handong.csee.histudy.dto.CourseDto;
 import edu.handong.csee.histudy.dto.CourseIdDto;
 import edu.handong.csee.histudy.exception.UserNotFoundException;
 import edu.handong.csee.histudy.repository.CourseRepository;
+import edu.handong.csee.histudy.repository.SemesterRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import edu.handong.csee.histudy.util.CSVResolver;
 import edu.handong.csee.histudy.util.CourseCSV;
@@ -20,16 +22,36 @@ import org.springframework.web.multipart.MultipartFile;
 public class CourseService {
   private final CourseRepository courseRepository;
   private final UserRepository userRepository;
+  private final SemesterRepository semesterRepository;
 
   public void readCourseCSV(MultipartFile file) throws IOException {
     CSVResolver resolver = CSVResolver.of(file.getInputStream());
     List<CourseCSV> courseData = resolver.createCourseCSV();
-    List<Course> courses = courseData.stream().map(CourseCSV::toEntity).toList();
+
+    List<Course> courses = handleCourseCSV(courseData);
     courseRepository.saveAll(courses);
   }
 
-  public List<CourseDto.CourseInfo> getCourses() {
-    return courseRepository.findAll().stream().map(CourseDto.CourseInfo::new).toList();
+  private List<Course> handleCourseCSV(List<CourseCSV> courseData) {
+    return courseData.stream()
+        .map(
+            csv -> {
+              AcademicTerm academicTerm = getOrCreateSemester(csv.toAcademicTerm());
+              return csv.toCourse(academicTerm);
+            })
+        .toList();
+  }
+
+  private AcademicTerm getOrCreateSemester(AcademicTerm academicTerm) {
+    return semesterRepository
+        .findByYearAndTerm(academicTerm.getYear(), academicTerm.getSemester())
+        .orElseGet(() -> semesterRepository.save(academicTerm));
+  }
+
+  public List<CourseDto.CourseInfo> getCurrentCourses() {
+    return courseRepository.findAllByAcademicTermIsCurrentTrue().stream()
+        .map(CourseDto.CourseInfo::new)
+        .toList();
   }
 
   public List<CourseDto.CourseInfo> search(String keyword) {

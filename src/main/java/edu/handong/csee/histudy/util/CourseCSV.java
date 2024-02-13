@@ -1,6 +1,8 @@
 package edu.handong.csee.histudy.util;
 
+import edu.handong.csee.histudy.domain.AcademicTerm;
 import edu.handong.csee.histudy.domain.Course;
+import edu.handong.csee.histudy.domain.Season;
 import lombok.Builder;
 import org.apache.commons.csv.CSVRecord;
 
@@ -22,13 +24,16 @@ public class CourseCSV {
         .build();
   }
 
-  public Course toEntity() {
+  public Course toCourse(AcademicTerm academicTerm) {
     return Course.builder()
         .name(clazz)
         .code(code)
         .professor(professor)
-        .courseYear(year)
-        .semester(semester)
+        .academicTerm(academicTerm)
         .build();
+  }
+
+  public AcademicTerm toAcademicTerm() {
+    return AcademicTerm.builder().year(year).semester(Season.parse(semester)).build();
   }
 }
