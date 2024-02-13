@@ -60,7 +60,7 @@ public class CourseController {
       @RequestAttribute Claims claims) {
     if (Role.isAuthorized(claims, Role.ADMIN, Role.USER)) {
       List<CourseDto.CourseInfo> courses =
-          (keyword == null) ? courseService.getCourses() : courseService.search(keyword);
+          (keyword == null) ? courseService.getCurrentCourses() : courseService.search(keyword);
 
       return ResponseEntity.ok(new CourseDto(courses));
     }

@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -45,21 +44,12 @@ public class TeamController {
   private final ImageService imageService;
   private final UserRepository userRepository;
 
-  @Value("${custom.resource.path}")
-  String imageBasePath;
-
-  @Value("${custom.jwt.issuer}")
-  String baseUri;
-
   @Operation(summary = "그룹 스터디 보고서 생성")
   @PostMapping("/reports")
   public ReportDto.ReportInfo createReport(
       @RequestBody ReportForm form, @RequestAttribute Claims claims) {
     if (Role.isAuthorized(claims, Role.MEMBER)) {
-      ReportDto.ReportInfo res = reportService.createReport(form, claims.getSubject());
-      res.getImages().forEach(image -> image.addPathToFilename(baseUri + imageBasePath));
-
-      return res;
+      return reportService.createReport(form, claims.getSubject());
     }
     throw new ForbiddenException();
   }
@@ -69,11 +59,6 @@ public class TeamController {
   public ReportDto getMyGroupReports(@RequestAttribute Claims claims) {
     if (Role.isAuthorized(claims, Role.MEMBER)) {
       List<ReportDto.ReportInfo> reports = reportService.getReports(claims.getSubject());
-      reports.forEach(
-          report ->
-              report
-                  .getImages()
-                  .forEach(image -> image.addPathToFilename(baseUri + imageBasePath)));
       return new ReportDto(reports);
     }
     throw new ForbiddenException();
@@ -89,12 +74,6 @@ public class TeamController {
       @PathVariable Long reportId, @RequestAttribute Claims claims) {
     if (Role.isAuthorized(claims, Role.MEMBER, Role.ADMIN)) {
       Optional<ReportDto.ReportInfo> reportsOr = reportService.getReport(reportId);
-      reportsOr.ifPresent(
-          report ->
-              report
-                  .getImages()
-                  .forEach(image -> image.addPathToFilename(baseUri + imageBasePath)));
-
       return reportsOr.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
     throw new ForbiddenException();
@@ -177,7 +156,7 @@ public class TeamController {
               .getStudyGroup();
 
       String filename = imageService.getImagePaths(image, studyGroup.getTag(), reportIdOr);
-      Map<String, String> response = Map.of("imagePath", baseUri + imageBasePath + filename);
+      Map<String, String> response = Map.of("imagePath", filename);
       return ResponseEntity.ok(response);
     }
     throw new ForbiddenException();

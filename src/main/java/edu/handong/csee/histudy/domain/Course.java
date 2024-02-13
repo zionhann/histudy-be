@@ -18,16 +18,14 @@ public class Course extends BaseTime {
 
   private String professor;
 
-  private int courseYear;
-
-  private int semester;
+  @ManyToOne(fetch = FetchType.LAZY)
+  private AcademicTerm academicTerm;
 
   @Builder
-  public Course(String name, String code, String professor, int courseYear, int semester) {
+  public Course(String name, String code, String professor, AcademicTerm academicTerm) {
     this.name = name;
     this.code = code;
     this.professor = professor;
-    this.courseYear = courseYear;
-    this.semester = semester;
+    this.academicTerm = academicTerm;
   }
 }
