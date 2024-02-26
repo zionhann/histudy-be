@@ -2,7 +2,9 @@ package edu.handong.csee.histudy.service;
 
 import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.*;
+import edu.handong.csee.histudy.exception.NoCurrentTermFoundException;
 import edu.handong.csee.histudy.exception.UserNotFoundException;
+import edu.handong.csee.histudy.repository.AcademicTermRepository;
 import edu.handong.csee.histudy.repository.StudyGroupRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import edu.handong.csee.histudy.util.ImagePathMapper;
@@ -23,6 +25,7 @@ public class TeamService {
   private final UserRepository userRepository;
   private final UserService userService;
   private final ImagePathMapper imagePathMapper;
+  private final AcademicTermRepository academicTermRepository;
 
   public List<TeamDto> getTeams(String email) {
     return studyGroupRepository.findAll(Sort.by(Sort.DEFAULT_DIRECTION, "tag")).stream()
@@ -63,8 +66,10 @@ public class TeamService {
   }
 
   public TeamRankDto getAllTeams() {
+    AcademicTerm currentTerm =
+        academicTermRepository.findCurrentSemester().orElseThrow(NoCurrentTermFoundException::new);
     List<TeamRankDto.TeamInfo> teams =
-        studyGroupRepository.findAll(Sort.by(Sort.Direction.DESC, "totalMinutes")).stream()
+        studyGroupRepository.findAllByAcademicTermOrderByDesc(currentTerm).stream()
             .map(
                 group -> {
                   String path =
@@ -84,18 +89,21 @@ public class TeamService {
   public TeamDto.MatchResults matchTeam() {
     // Get users who are not in a team
     List<User> users = userRepository.findUnassignedApplicants();
-    int latestGroupTag = studyGroupRepository.countMaxTag().orElse(0);
+    AcademicTerm current =
+        academicTermRepository.findCurrentSemester().orElseThrow(NoCurrentTermFoundException::new);
+
+    int latestGroupTag = studyGroupRepository.countMaxTag(current).orElse(0);
     AtomicInteger tag = new AtomicInteger(latestGroupTag + 1);
 
     // First matching
-    List<StudyGroup> teamsWithFriends = matchFriendFirst(users, tag);
+    List<StudyGroup> teamsWithFriends = matchFriendFirst(users, tag, current);
 
     // Remove users who have already been matched
     users.removeAll(
         teamsWithFriends.stream().map(StudyGroup::getMembers).flatMap(Collection::stream).toList());
 
     // Second matching
-    List<StudyGroup> teamsWithoutFriends = matchCourseFirst(users, tag);
+    List<StudyGroup> teamsWithoutFriends = matchCourseFirst(users, tag, current);
 
     // Remove users who have already been matched
     users.removeAll(
@@ -105,7 +113,7 @@ public class TeamService {
             .toList());
 
     // Third matching
-    List<StudyGroup> matchedCourseSecond = matchCourseSecond(users, tag);
+    List<StudyGroup> matchedCourseSecond = matchCourseSecond(users, tag, current);
 
     // Results
     List<StudyGroup> matchedStudyGroups = new ArrayList<>(teamsWithFriends);
@@ -122,19 +130,21 @@ public class TeamService {
     return new TeamDto.MatchResults(matchedStudyGroups, userService.getInfoFromUser(users));
   }
 
-  public List<StudyGroup> matchFriendFirst(List<User> users, AtomicInteger tag) {
+  public List<StudyGroup> matchFriendFirst(
+      List<User> users, AtomicInteger tag, AcademicTerm current) {
     // First matching
     // Make teams with friends
     return users.stream()
         .map(User::getSentRequests)
         .flatMap(Collection::stream)
         .filter(Friendship::isAccepted)
-        .map(f -> f.makeTeam(tag))
+        .map(f -> f.makeTeam(tag, current))
         .distinct()
         .toList();
   }
 
-  public List<StudyGroup> matchCourseFirst(List<User> users, AtomicInteger tag) {
+  public List<StudyGroup> matchCourseFirst(
+      List<User> users, AtomicInteger tag, AcademicTerm current) {
     List<StudyGroup> results = new ArrayList<>();
     Set<User> targetUsers = new HashSet<>(users);
 
@@ -164,14 +174,14 @@ public class TeamService {
 
           courseToUserMap.forEach(
               (course, _users) -> {
-                List<StudyGroup> matchedGroupList = createGroup(_users, tag);
+                List<StudyGroup> matchedGroupList = createGroup(_users, tag, current);
                 results.addAll(matchedGroupList);
               });
         });
     return results;
   }
 
-  private List<StudyGroup> createGroup(List<User> group, AtomicInteger tag) {
+  private List<StudyGroup> createGroup(List<User> group, AtomicInteger tag, AcademicTerm current) {
     List<StudyGroup> matchedGroupList = new ArrayList<>();
 
     while (group.size() >= 5) {
@@ -181,7 +191,7 @@ public class TeamService {
       List<User> subGroup = new ArrayList<>(group.subList(0, 5));
 
       // Create a team with only 5 elements
-      StudyGroup studyGroup = new StudyGroup(tag.getAndIncrement(), subGroup);
+      StudyGroup studyGroup = new StudyGroup(tag.getAndIncrement(), subGroup, current);
       matchedGroupList.add(studyGroup);
 
       // Remove the elements that have already been added to the team
@@ -190,13 +200,14 @@ public class TeamService {
     if (group.size() >= 3) {
       // If the remaining elements are 3 ~ 4
       // Create a team with 3 ~ 4 elements
-      StudyGroup studyGroup = new StudyGroup(tag.getAndIncrement(), group);
+      StudyGroup studyGroup = new StudyGroup(tag.getAndIncrement(), group, current);
       matchedGroupList.add(studyGroup);
     }
     return matchedGroupList;
   }
 
-  private List<StudyGroup> matchCourseSecond(List<User> users, AtomicInteger tag) {
+  private List<StudyGroup> matchCourseSecond(
+      List<User> users, AtomicInteger tag, AcademicTerm current) {
     List<StudyGroup> results = new ArrayList<>();
     Set<User> targetUsers = new HashSet<>(users);
 
@@ -212,7 +223,7 @@ public class TeamService {
                   .sorted(queue.comparator())
                   .collect(Collectors.toList());
 
-          List<StudyGroup> matchedGroupList = createGroup(group, tag);
+          List<StudyGroup> matchedGroupList = createGroup(group, tag, current);
           results.addAll(matchedGroupList);
         });
     return results;

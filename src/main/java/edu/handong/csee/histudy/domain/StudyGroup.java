@@ -23,6 +23,9 @@ public class StudyGroup extends BaseTime {
     private Integer tag;
     private long totalMinutes;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private AcademicTerm academicTerm;
+
     @OneToMany(mappedBy = "studyGroup")
     private List<GroupReport> reports = new ArrayList<>();
 
@@ -32,8 +35,9 @@ public class StudyGroup extends BaseTime {
     @OneToMany(mappedBy = "studyGroup", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GroupCourse> groupCourses = new ArrayList<>();
 
-    public StudyGroup(Integer tag, List<User> members) {
+    public StudyGroup(Integer tag, List<User> members, AcademicTerm academicTerm) {
         this.tag = tag;
+        this.academicTerm = academicTerm;
         join(members);
     }
 

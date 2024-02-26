@@ -52,7 +52,7 @@ public class Friendship extends BaseTime {
         return status.equals(FriendshipStatus.PENDING);
     }
 
-    public StudyGroup makeTeam(AtomicInteger tag) {
+    public StudyGroup makeTeam(AtomicInteger tag, AcademicTerm current) {
         if (sent.getStudyGroup() != null && received.getStudyGroup() != null) {
             assert sent.getStudyGroup().equals(received.getStudyGroup());
             return sent.getStudyGroup();
@@ -65,7 +65,7 @@ public class Friendship extends BaseTime {
             return received.getStudyGroup()
                     .join(List.of(sent));
         }
-        return new StudyGroup(tag.getAndIncrement(), List.of(sent, received));
+        return new StudyGroup(tag.getAndIncrement(), List.of(sent, received), current);
     }
 
     public boolean isSentFrom(User u) {
