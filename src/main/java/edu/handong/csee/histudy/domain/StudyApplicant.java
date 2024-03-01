@@ -16,7 +16,7 @@ public class StudyApplicant extends BaseTime {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private String id;
+  private Long id;
 
   @ManyToOne(fetch = FetchType.LAZY)
   private AcademicTerm academicTerm;
