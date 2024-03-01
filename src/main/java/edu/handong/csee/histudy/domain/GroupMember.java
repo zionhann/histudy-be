@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class GroupMember {
+public class GroupMember extends BaseTime {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
