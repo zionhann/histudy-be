@@ -1,29 +1,29 @@
 package edu.handong.csee.histudy.domain;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class GroupCourse extends BaseTime {
-
+@AllArgsConstructor
+public class StudyCourse extends BaseTime {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  private StudyGroup studyGroup;
+  private StudyReport studyReport;
 
   @ManyToOne(fetch = FetchType.LAZY)
   private Course course;
 
-  public GroupCourse(StudyGroup studyGroup, Course course) {
-    this.studyGroup = studyGroup;
+  @Builder
+  public StudyCourse(StudyReport studyReport, Course course) {
+    this.studyReport = studyReport;
     this.course = course;
 
-    studyGroup.getCourses().add(this);
+    studyReport.getCourses().add(this);
   }
 }

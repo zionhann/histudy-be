@@ -1,6 +1,6 @@
 package edu.handong.csee.histudy.dto;
 
-import edu.handong.csee.histudy.domain.Image;
+import edu.handong.csee.histudy.domain.ReportImage;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class ImageDto {
 
-  public ImageDto(Image entity) {
+  public ImageDto(ReportImage entity) {
     this.id = entity.getId();
     this.url = entity.getPath();
   }

@@ -1,6 +1,6 @@
 package edu.handong.csee.histudy.util;
 
-import edu.handong.csee.histudy.domain.Image;
+import edu.handong.csee.histudy.domain.ReportImage;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,9 +18,9 @@ public class ImagePathMapper {
 
   private final String firebaseStoragePrefix = "https://firebasestorage.googleapis.com";
 
-  public Map<Long, String> parseImageToMapWithFullPath(List<Image> images) {
-    return images.stream()
-        .collect(Collectors.toUnmodifiableMap(Image::getId, img -> getFullPath(img.getPath())));
+  public Map<Long, String> parseImageToMapWithFullPath(List<ReportImage> reportImages) {
+    return reportImages.stream()
+        .collect(Collectors.toUnmodifiableMap(ReportImage::getId, img -> getFullPath(img.getPath())));
   }
 
   public List<String> extractFilename(List<String> pathname) {

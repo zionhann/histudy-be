@@ -38,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @SpringBootTest
 @Transactional
-public class ReportCourseReportControllerTestsGroup {
+public class ReportCourseStudyControllerTestsGroup {
 
     MockMvc mvc;
 
@@ -53,7 +53,7 @@ public class ReportCourseReportControllerTestsGroup {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private GroupReportRepository groupReportRepository;
+    private StudyReportRepository studyReportRepository;
     @Autowired
     private CourseRepository courseRepository;
     @Autowired
@@ -89,15 +89,15 @@ public class ReportCourseReportControllerTestsGroup {
 
         StudyGroup studyGroup = studyGroupRepository.save(new StudyGroup(1, List.of(user)));
 
-        GroupReport groupReport = GroupReport.builder()
+        StudyReport studyReport = StudyReport.builder()
                 .title("reportTitle")
                 .content("reportContent")
                 .studyGroup(user.getStudyGroup())
                 .totalMinutes(60L)
                 .participants(List.of(user))
-                .courses(studyGroup.getGroupCourses())
+                .courses(studyGroup.getCourses())
                 .build();
-        groupReportRepository.save(groupReport);
+        studyReportRepository.save(studyReport);
 
         Claims claims = Jwts.claims();
         claims.put("sub", user.getEmail());
@@ -137,7 +137,7 @@ public class ReportCourseReportControllerTestsGroup {
 
         GroupCourse groupCourse = new GroupCourse(user.getStudyGroup(), course);
 
-        GroupReport groupReport = GroupReport.builder()
+        StudyReport studyReport = StudyReport.builder()
                 .title("reportTitle")
                 .content("reportContent")
                 .studyGroup(user.getStudyGroup())
@@ -145,7 +145,7 @@ public class ReportCourseReportControllerTestsGroup {
                 .participants(List.of(user))
                 .courses(List.of(groupCourse))
                 .build();
-        groupReportRepository.save(groupReport);
+        studyReportRepository.save(studyReport);
 
         Claims claims = Jwts.claims();
         claims.put("sub", user.getEmail());
@@ -153,7 +153,7 @@ public class ReportCourseReportControllerTestsGroup {
 
         // when
         MvcResult mvcResult = mvc
-                .perform(get("/api/team/reports/{id}", groupReport.getId())
+                .perform(get("/api/team/reports/{id}", studyReport.getId())
                         .requestAttr("claims", claims))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -164,7 +164,7 @@ public class ReportCourseReportControllerTestsGroup {
                 ReportDto.ReportInfo.class);
 
         // then
-        assertEquals(groupReport.getId(), res.getId());
+        assertEquals(studyReport.getId(), res.getId());
     }
 
     @DisplayName("그룹의 보고서를 수정할 수 있다: 요청폼 없음")
@@ -184,7 +184,7 @@ public class ReportCourseReportControllerTestsGroup {
 
         GroupCourse groupCourse = new GroupCourse(user.getStudyGroup(), course);
 
-        GroupReport groupReport = GroupReport.builder()
+        StudyReport studyReport = StudyReport.builder()
                 .title("reportTitle")
                 .content("reportContent")
                 .studyGroup(user.getStudyGroup())
@@ -192,14 +192,14 @@ public class ReportCourseReportControllerTestsGroup {
                 .participants(List.of(user))
                 .courses(List.of(groupCourse))
                 .build();
-        groupReportRepository.save(groupReport);
+        studyReportRepository.save(studyReport);
 
         Claims claims = Jwts.claims(
                 Collections.singletonMap(Claims.SUBJECT, user.getEmail()));
 
         // when
         mvc
-                .perform(patch("/api/team/reports/{reportId}", groupReport.getId())
+                .perform(patch("/api/team/reports/{reportId}", studyReport.getId())
                         .requestAttr("claims", claims))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
@@ -224,7 +224,7 @@ public class ReportCourseReportControllerTestsGroup {
                 .build());
 
         GroupCourse groupCourse = groupCourseRepository.save(new GroupCourse(user.getStudyGroup(), course));
-        GroupReport groupReport = GroupReport.builder()
+        StudyReport studyReport = StudyReport.builder()
                 .title("reportTitle")
                 .content("reportContent")
                 .studyGroup(user.getStudyGroup())
@@ -232,7 +232,7 @@ public class ReportCourseReportControllerTestsGroup {
                 .participants(List.of(user))
                 .courses(List.of(groupCourse))
                 .build();
-        GroupReport savedReport = groupReportRepository.save(groupReport);
+        StudyReport savedReport = studyReportRepository.save(studyReport);
 
         String form = mapper.writeValueAsString(ReportForm.builder()
                 .title("modified title")
@@ -245,14 +245,14 @@ public class ReportCourseReportControllerTestsGroup {
 
         // when
         mvc
-                .perform(patch("/api/team/reports/{reportId}", groupReport.getId())
+                .perform(patch("/api/team/reports/{reportId}", studyReport.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .requestAttr("claims", claims)
                         .content(form))
                 .andDo(print())
                 .andExpect(status().isOk());
 
-        Optional<GroupReport> report = groupReportRepository.findById(savedReport.getId());
+        Optional<StudyReport> report = studyReportRepository.findById(savedReport.getId());
 
         //then
         assertThat(report).isPresent();
@@ -278,7 +278,7 @@ public class ReportCourseReportControllerTestsGroup {
                 .build());
 
         GroupCourse groupCourse = groupCourseRepository.save(new GroupCourse(user.getStudyGroup(), course));
-        GroupReport groupReport = GroupReport.builder()
+        StudyReport studyReport = StudyReport.builder()
                 .title("reportTitle")
                 .content("reportContent")
                 .studyGroup(user.getStudyGroup())
@@ -286,7 +286,7 @@ public class ReportCourseReportControllerTestsGroup {
                 .participants(List.of(user))
                 .courses(List.of(groupCourse))
                 .build();
-        groupReportRepository.save(groupReport);
+        studyReportRepository.save(studyReport);
 
         String form = mapper.writeValueAsString(ReportForm.builder()
                 .totalMinutes(30L)
@@ -298,7 +298,7 @@ public class ReportCourseReportControllerTestsGroup {
 
         // when
         mvc
-                .perform(patch("/api/team/reports/{reportId}", groupReport.getId())
+                .perform(patch("/api/team/reports/{reportId}", studyReport.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .requestAttr("claims", claims)
                         .content(form))
@@ -327,7 +327,7 @@ public class ReportCourseReportControllerTestsGroup {
 
         GroupCourse groupCourse = new GroupCourse(user.getStudyGroup(), course);
 
-        GroupReport groupReport = GroupReport.builder()
+        StudyReport studyReport = StudyReport.builder()
                 .title("reportTitle")
                 .content("reportContent")
                 .studyGroup(user.getStudyGroup())
@@ -335,7 +335,7 @@ public class ReportCourseReportControllerTestsGroup {
                 .participants(List.of(user))
                 .courses(List.of(groupCourse))
                 .build();
-        groupReportRepository.save(groupReport);
+        studyReportRepository.save(studyReport);
 
         Claims claims = Jwts.claims();
         claims.put("sub", user.getEmail());
@@ -343,7 +343,7 @@ public class ReportCourseReportControllerTestsGroup {
 
         // when
         mvc
-                .perform(delete("/api/team/reports/{reportId}", groupReport.getId())
+                .perform(delete("/api/team/reports/{reportId}", studyReport.getId())
                         .requestAttr("claims", claims))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -368,7 +368,7 @@ public class ReportCourseReportControllerTestsGroup {
 
         GroupCourse groupCourse = new GroupCourse(user.getStudyGroup(), course);
 
-        GroupReport groupReport = GroupReport.builder()
+        StudyReport studyReport = StudyReport.builder()
                 .title("reportTitle")
                 .content("reportContent")
                 .studyGroup(user.getStudyGroup())
@@ -376,7 +376,7 @@ public class ReportCourseReportControllerTestsGroup {
                 .participants(List.of(user))
                 .courses(List.of(groupCourse))
                 .build();
-        groupReportRepository.save(groupReport);
+        studyReportRepository.save(studyReport);
 
         Claims claims = Jwts.claims();
         claims.put("sub", user.getEmail());

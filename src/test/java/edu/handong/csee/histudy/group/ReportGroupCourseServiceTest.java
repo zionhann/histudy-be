@@ -45,7 +45,7 @@ public class ReportGroupCourseServiceTest {
     @Autowired
     ReportService reportService;
     @Autowired
-    private GroupReportRepository groupReportRepository;
+    private StudyReportRepository studyReportRepository;
 
     @BeforeEach
     void setup() throws IOException {
@@ -98,14 +98,14 @@ public class ReportGroupCourseServiceTest {
         User savedA = userRepository.save(userA);
         User savedB = userRepository.save(userB);
         savedA.addUser(List.of(savedB));
-        savedB.getReceivedRequests().stream().findAny().ifPresent(Friendship::accept);
+        savedB.getReceivedRequests().stream().findAny().ifPresent(StudyPartnerRequest::accept);
         List<Long> courseIdxList = List.of(1L, 2L);
         List<Course> courses = courseIdxList.stream()
                 .map(courseRepository::findById)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
-        List<UserCourse> preferredCourse = courses.stream().map(c -> userCourseRepository.save(UserCourse.builder()
+        List<PreferredCourse> preferredCourse = courses.stream().map(c -> userCourseRepository.save(PreferredCourse.builder()
                 .user(savedA)
                 .course(c)
                 .priority(0)
@@ -117,7 +117,7 @@ public class ReportGroupCourseServiceTest {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
-        List<UserCourse> choices2 = courses2.stream().map(c -> userCourseRepository.save(UserCourse.builder()
+        List<PreferredCourse> choices2 = courses2.stream().map(c -> userCourseRepository.save(PreferredCourse.builder()
                 .user(savedB)
                 .course(c)
                 .priority(0)
@@ -201,7 +201,7 @@ public class ReportGroupCourseServiceTest {
         StudyGroup studyGroup = new StudyGroup(1, List.of(savedUser));
         StudyGroup studyGroup2 = new StudyGroup(2, List.of(savedUser2));
 
-        GroupReport groupReport = GroupReport.builder()
+        StudyReport studyReport = StudyReport.builder()
                 .title("title")
                 .content("content")
                 .totalMinutes(60L)
@@ -211,7 +211,7 @@ public class ReportGroupCourseServiceTest {
                 .images(List.of("img.jpg"))
                 .build();
 
-        GroupReport groupReport2 = GroupReport.builder()
+        StudyReport studyReport2 = StudyReport.builder()
                 .title("title")
                 .content("content")
                 .totalMinutes(120L)
@@ -221,7 +221,7 @@ public class ReportGroupCourseServiceTest {
                 .images(List.of("img2.jpg"))
                 .build();
 
-        GroupReport groupReport3 = GroupReport.builder()
+        StudyReport studyReport3 = StudyReport.builder()
                 .title("title")
                 .content("content")
                 .totalMinutes(210L)
@@ -231,9 +231,9 @@ public class ReportGroupCourseServiceTest {
                 .images(List.of("img3.jpg"))
                 .build();
 
-        groupReportRepository.save(groupReport);
-        groupReportRepository.save(groupReport2); // the latest report of team 1
-        groupReportRepository.save(groupReport3); // the latest report of team 2
+        studyReportRepository.save(studyReport);
+        studyReportRepository.save(studyReport2); // the latest report of team 1
+        studyReportRepository.save(studyReport3); // the latest report of team 2
 
         // when
         TeamRankDto res = teamService.getAllTeams();

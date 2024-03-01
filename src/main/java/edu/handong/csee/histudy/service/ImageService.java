@@ -2,10 +2,10 @@ package edu.handong.csee.histudy.service;
 
 import static org.springframework.util.ResourceUtils.isUrl;
 
-import edu.handong.csee.histudy.domain.Image;
+import edu.handong.csee.histudy.domain.ReportImage;
 import edu.handong.csee.histudy.exception.FileTransferException;
 import edu.handong.csee.histudy.exception.ReportNotFoundException;
-import edu.handong.csee.histudy.repository.GroupReportRepository;
+import edu.handong.csee.histudy.repository.StudyReportRepository;
 import edu.handong.csee.histudy.util.ImagePathMapper;
 import edu.handong.csee.histudy.util.Utils;
 import java.io.File;
@@ -34,8 +34,7 @@ public class ImageService {
   @Value("${custom.resource.location}")
   private String imageBaseLocation;
 
-  private final GroupReportRepository groupReportRepository;
-
+  private final StudyReportRepository studyReportRepository;
   private final ImagePathMapper imagePathMapper;
 
   public String getImagePaths(
@@ -82,12 +81,12 @@ public class ImageService {
 
   private Optional<String> getSameContent(MultipartFile src, Long reportId) {
     List<String> targetPaths =
-        groupReportRepository
+        studyReportRepository
             .findById(reportId)
             .orElseThrow(ReportNotFoundException::new)
             .getImages()
             .stream()
-            .map(Image::getPath)
+            .map(ReportImage::getPath)
             .toList();
 
     return targetPaths.stream()

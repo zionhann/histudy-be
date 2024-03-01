@@ -5,7 +5,6 @@ import edu.handong.csee.histudy.dto.CourseDto;
 import edu.handong.csee.histudy.dto.CourseIdDto;
 import edu.handong.csee.histudy.repository.CourseRepository;
 import edu.handong.csee.histudy.repository.StudyGroupRepository;
-import edu.handong.csee.histudy.repository.UserCourseRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import edu.handong.csee.histudy.service.CourseService;
 import org.junit.jupiter.api.BeforeEach;
@@ -75,7 +74,7 @@ public class CourseServiceTest {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
-        List<UserCourse> preferredCours = courses.stream().map(c -> userCourseRepository.save(new UserCourse(saved, c, 0))).toList();
+        List<PreferredCourse> preferredCours = courses.stream().map(c -> userCourseRepository.save(new PreferredCourse(c, 0))).toList();
         saved.getCourseSelections().addAll(preferredCours);
         User userB = User.builder()
                 .sid("22000329")
@@ -90,7 +89,7 @@ public class CourseServiceTest {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
-        List<UserCourse> choicesB = coursesB.stream().map(c -> userCourseRepository.save(new UserCourse(savedB, c, 0))).toList();
+        List<PreferredCourse> choicesB = coursesB.stream().map(c -> userCourseRepository.save(new PreferredCourse(c, 0))).toList();
         savedB.getCourseSelections().addAll(choicesB);
         List<CourseDto.CourseInfo> result = courseService.getTeamCourses("a@a.com");
 //        assertThat(result.size()).isEqualTo(2);

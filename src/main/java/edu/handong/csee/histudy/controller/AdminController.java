@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -80,9 +81,10 @@ public class AdminController {
 
   @Operation(summary = "그룹 매칭")
   @PostMapping("/team-match")
-  public ResponseEntity<TeamDto.MatchResults> matchTeam(@RequestAttribute Claims claims) {
+  public ResponseEntity<Void> matchTeam(@RequestAttribute Claims claims) {
     if (Role.isAuthorized(claims, Role.ADMIN)) {
-      return ResponseEntity.ok(teamService.matchTeam());
+      teamService.matchTeam();
+      return ResponseEntity.status(HttpStatus.CREATED).build();
     }
     throw new ForbiddenException();
   }
@@ -106,19 +108,18 @@ public class AdminController {
 
   @Operation(summary = "특정 유저 지원폼 삭제")
   @DeleteMapping("/form")
-  public UserDto.UserInfo deleteForm(@RequestParam String sid, @RequestAttribute Claims claims) {
+  public void deleteForm(@RequestParam String sid, @RequestAttribute Claims claims) {
     if (Role.isAuthorized(claims, Role.ADMIN)) {
-      return userService.deleteUserForm(sid);
+      userService.deleteUserForm(sid);
     }
     throw new ForbiddenException();
   }
 
   @Operation(summary = "유저 정보 수정")
   @PostMapping("/edit-user")
-  public UserDto.UserInfo editUser(
-      @RequestBody UserDto.UserEdit form, @RequestAttribute Claims claims) {
+  public void editUser(@RequestBody UserDto.UserEdit form, @RequestAttribute Claims claims) {
     if (Role.isAuthorized(claims, Role.ADMIN)) {
-      return userService.editUser(form);
+      userService.editUser(form);
     }
     throw new ForbiddenException();
   }

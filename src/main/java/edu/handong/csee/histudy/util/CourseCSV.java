@@ -2,7 +2,7 @@ package edu.handong.csee.histudy.util;
 
 import edu.handong.csee.histudy.domain.AcademicTerm;
 import edu.handong.csee.histudy.domain.Course;
-import edu.handong.csee.histudy.domain.Season;
+import edu.handong.csee.histudy.domain.TermType;
 import lombok.Builder;
 import org.apache.commons.csv.CSVRecord;
 
@@ -34,6 +34,6 @@ public class CourseCSV {
   }
 
   public AcademicTerm toAcademicTerm() {
-    return AcademicTerm.builder().year(year).semester(Season.parse(semester)).build();
+    return AcademicTerm.builder().year(year).semester(TermType.parse(semester)).build();
   }
 }

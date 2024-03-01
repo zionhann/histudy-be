@@ -3,17 +3,16 @@ package edu.handong.csee.histudy.service;
 import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.*;
 import edu.handong.csee.histudy.exception.NoCurrentTermFoundException;
+import edu.handong.csee.histudy.exception.NoStudyApplicationFound;
 import edu.handong.csee.histudy.exception.UserNotFoundException;
-import edu.handong.csee.histudy.repository.AcademicTermRepository;
-import edu.handong.csee.histudy.repository.StudyGroupRepository;
-import edu.handong.csee.histudy.repository.UserRepository;
+import edu.handong.csee.histudy.repository.*;
+import edu.handong.csee.histudy.repository.StudyApplicantRepository;
 import edu.handong.csee.histudy.util.ImagePathMapper;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,14 +22,36 @@ import org.springframework.transaction.annotation.Transactional;
 public class TeamService {
   private final StudyGroupRepository studyGroupRepository;
   private final UserRepository userRepository;
-  private final UserService userService;
-  private final ImagePathMapper imagePathMapper;
   private final AcademicTermRepository academicTermRepository;
+  private final StudyApplicantRepository studyApplicantRepository;
+  private final StudyReportRepository studyReportRepository;
+
+  private final ImagePathMapper imagePathMapper;
 
   public List<TeamDto> getTeams(String email) {
-    return studyGroupRepository.findAll(Sort.by(Sort.DEFAULT_DIRECTION, "tag")).stream()
-        .map(TeamDto::new)
+    AcademicTerm currentTerm =
+        academicTermRepository.findCurrentSemester().orElseThrow(NoCurrentTermFoundException::new);
+    List<StudyGroup> groups = studyGroupRepository.findAllByAcademicTerm(currentTerm);
+
+    return groups.stream()
+        .map(
+            group -> {
+              List<StudyReport> reports =
+                  studyReportRepository.findAllByStudyGroupOrderByCreatedDateDesc(group);
+              List<StudyApplicant> applicants = studyApplicantRepository.findAllByStudyGroup(group);
+
+              Map<User, StudyApplicant> formMap =
+                  applicants.stream()
+                      .filter(form -> isFormRelevantToGroup(form, group))
+                      .collect(Collectors.toMap(StudyApplicant::getUser, Function.identity()));
+
+              return new TeamDto(group, reports, formMap);
+            })
         .toList();
+  }
+
+  private boolean isFormRelevantToGroup(StudyApplicant form, StudyGroup group) {
+    return form.getStudyGroup().equals(group);
   }
 
   public int deleteTeam(TeamIdDto dto, String email) {
@@ -44,9 +65,15 @@ public class TeamService {
   public TeamReportDto getTeamReports(long id, String email) {
     StudyGroup studyGroup = studyGroupRepository.findById(id).orElseThrow();
     List<UserDto.UserBasic> users =
-        studyGroup.getMembers().stream().map(UserDto.UserBasic::new).toList();
+        studyGroup.getMembers().stream()
+            .map(GroupMember::getUser)
+            .map(UserDto.UserBasic::new)
+            .toList();
+
+    List<StudyReport> studyReports =
+        studyReportRepository.findAllByStudyGroupOrderByCreatedDateDesc(studyGroup);
     List<ReportDto.ReportBasic> reports =
-        studyGroup.getReports().stream()
+        studyReports.stream()
             .map(
                 report -> {
                   Map<Long, String> imgFullPaths =
@@ -56,107 +83,117 @@ public class TeamService {
             .toList();
 
     return new TeamReportDto(
-        studyGroup.getId(), studyGroup.getTag(), users, studyGroup.getTotalMinutes(), reports);
+        studyGroup.getId(),
+        studyGroup.getTag(),
+        users,
+        calculateTotalMinutes(studyReports),
+        reports);
+  }
+
+  private long calculateTotalMinutes(List<StudyReport> reports) {
+    return reports.stream().mapToLong(StudyReport::getTotalMinutes).sum();
   }
 
   public List<UserDto.UserMeWithMasking> getTeamUsers(String email) {
     User user = userRepository.findUserByEmail(email).orElseThrow(UserNotFoundException::new);
+    AcademicTerm currentTerm =
+        academicTermRepository.findCurrentSemester().orElseThrow(NoCurrentTermFoundException::new);
+    StudyGroup studyGroup = studyGroupRepository.findByUserAndTerm(user, currentTerm).orElseThrow();
 
-    return user.getStudyGroup().getMembers().stream().map(UserDto.UserMeWithMasking::new).toList();
+    return studyGroup.getMembers().stream()
+        .map(GroupMember::getUser)
+        .map(_user -> new UserDto.UserMeWithMasking(_user, studyGroup.getTag()))
+        .toList();
   }
 
   public TeamRankDto getAllTeams() {
     AcademicTerm currentTerm =
         academicTermRepository.findCurrentSemester().orElseThrow(NoCurrentTermFoundException::new);
+    List<StudyGroup> currentStudyGroups = studyGroupRepository.findAllByAcademicTerm(currentTerm);
+
     List<TeamRankDto.TeamInfo> teams =
-        studyGroupRepository.findAllByAcademicTermOrderByDesc(currentTerm).stream()
+        currentStudyGroups.stream()
             .map(
                 group -> {
+                  List<StudyReport> reports =
+                      studyReportRepository.findAllByStudyGroupOrderByCreatedDateDesc(group);
+
                   String path =
-                      group.getReports().stream()
-                          .reduce((first, second) -> second)
+                      reports.stream()
+                          .findFirst()
                           .flatMap(
-                              (report ->
-                                  report.getImages().stream().findFirst().map(Image::getPath)))
+                              report ->
+                                  report.getImages().stream()
+                                      .max(Comparator.comparing(ReportImage::getCreatedDate))
+                                      .map(ReportImage::getPath))
                           .orElse(null);
                   String fullPath = imagePathMapper.getFullPath(path);
-                  return new TeamRankDto.TeamInfo(group, fullPath);
+
+                  return new TeamRankDto.TeamInfo(group, reports, fullPath);
                 })
+            .sorted(Comparator.comparing(TeamRankDto.TeamInfo::getTotalMinutes).reversed())
             .toList();
     return new TeamRankDto(teams);
   }
 
-  public TeamDto.MatchResults matchTeam() {
+  public void matchTeam() {
     // Get users who are not in a team
-    List<User> users = userRepository.findUnassignedApplicants();
     AcademicTerm current =
         academicTermRepository.findCurrentSemester().orElseThrow(NoCurrentTermFoundException::new);
+    List<StudyApplicant> applicants = studyApplicantRepository.findUnassignedApplicants(current);
 
     int latestGroupTag = studyGroupRepository.countMaxTag(current).orElse(0);
     AtomicInteger tag = new AtomicInteger(latestGroupTag + 1);
 
     // First matching
-    List<StudyGroup> teamsWithFriends = matchFriendFirst(users, tag, current);
+    matchFriendFirst(applicants, tag, current);
 
     // Remove users who have already been matched
-    users.removeAll(
-        teamsWithFriends.stream().map(StudyGroup::getMembers).flatMap(Collection::stream).toList());
+    applicants.removeIf(StudyApplicant::isMarkedAsGrouped);
 
     // Second matching
-    List<StudyGroup> teamsWithoutFriends = matchCourseFirst(users, tag, current);
+    matchCourseFirst(applicants, tag, current);
 
     // Remove users who have already been matched
-    users.removeAll(
-        teamsWithoutFriends.stream()
-            .map(StudyGroup::getMembers)
-            .flatMap(Collection::stream)
-            .toList());
+    applicants.removeIf(StudyApplicant::isMarkedAsGrouped);
 
     // Third matching
-    List<StudyGroup> matchedCourseSecond = matchCourseSecond(users, tag, current);
-
-    // Results
-    List<StudyGroup> matchedStudyGroups = new ArrayList<>(teamsWithFriends);
-    matchedStudyGroups.addAll(teamsWithoutFriends);
-    matchedStudyGroups.addAll(matchedCourseSecond);
-
-    // Remove users who have already been matched
-    users.removeAll(
-        matchedCourseSecond.stream()
-            .map(StudyGroup::getMembers)
-            .flatMap(Collection::stream)
-            .toList());
-
-    return new TeamDto.MatchResults(matchedStudyGroups, userService.getInfoFromUser(users));
+    matchCourseSecond(applicants, tag, current);
   }
 
   public List<StudyGroup> matchFriendFirst(
-      List<User> users, AtomicInteger tag, AcademicTerm current) {
+      List<StudyApplicant> applicants, AtomicInteger tag, AcademicTerm current) {
     // First matching
     // Make teams with friends
-    return users.stream()
-        .map(User::getSentRequests)
+    return applicants.stream()
+        .map(StudyApplicant::getPartnerRequests)
         .flatMap(Collection::stream)
-        .filter(Friendship::isAccepted)
-        .map(f -> f.makeTeam(tag, current))
+        .filter(StudyPartnerRequest::isAccepted)
+        .map(
+            partnerRequest -> {
+              StudyApplicant receiver =
+                  studyApplicantRepository
+                      .findByUserAndTerm(partnerRequest.getReceiver(), current)
+                      .orElseThrow(NoStudyApplicationFound::new);
+              return StudyGroup.of(tag, current, partnerRequest.getSender(), receiver);
+            })
         .distinct()
         .toList();
   }
 
   public List<StudyGroup> matchCourseFirst(
-      List<User> users, AtomicInteger tag, AcademicTerm current) {
+      List<StudyApplicant> applicants, AtomicInteger tag, AcademicTerm current) {
     List<StudyGroup> results = new ArrayList<>();
-    Set<User> targetUsers = new HashSet<>(users);
 
-    List<UserCourse> userCourses =
-        targetUsers.stream()
-            .flatMap(u -> u.getCourseSelections().stream())
-            .sorted(Comparator.comparingInt(UserCourse::getPriority))
+    List<PreferredCourse> preferredCourses =
+        applicants.stream()
+            .flatMap(applicant -> applicant.getPreferredCourses().stream())
+            .sorted(Comparator.comparingInt(PreferredCourse::getPriority))
             .toList();
 
     List<Integer> sortedKeys =
-        userCourses.stream()
-            .collect(Collectors.groupingBy(UserCourse::getPriority))
+        preferredCourses.stream()
+            .collect(Collectors.groupingBy(PreferredCourse::getPriority))
             .keySet()
             .stream()
             .sorted()
@@ -164,93 +201,93 @@ public class TeamService {
 
     sortedKeys.forEach(
         priority -> {
-          Map<Course, List<User>> courseToUserMap =
-              userCourses.stream()
-                  .filter(uc -> uc.getPriority().equals(priority) && uc.getUser().isNotInAnyGroup())
+          Map<Course, List<StudyApplicant>> courseToUserMap =
+              preferredCourses.stream()
+                  .filter(
+                      uc ->
+                          uc.getPriority().equals(priority)
+                              && uc.getApplicant().isNotMarkedAsGrouped())
                   .collect(
                       Collectors.groupingBy(
-                          UserCourse::getCourse,
-                          Collectors.mapping(UserCourse::getUser, Collectors.toList())));
+                          PreferredCourse::getCourse,
+                          Collectors.mapping(PreferredCourse::getApplicant, Collectors.toList())));
 
           courseToUserMap.forEach(
-              (course, _users) -> {
-                List<StudyGroup> matchedGroupList = createGroup(_users, tag, current);
+              (course, applicant) -> {
+                List<StudyGroup> matchedGroupList = createGroup(applicant, tag, current);
                 results.addAll(matchedGroupList);
               });
         });
     return results;
   }
 
-  private List<StudyGroup> createGroup(List<User> group, AtomicInteger tag, AcademicTerm current) {
+  private List<StudyGroup> createGroup(
+      List<StudyApplicant> applicants, AtomicInteger tag, AcademicTerm current) {
     List<StudyGroup> matchedGroupList = new ArrayList<>();
 
-    while (group.size() >= 5) {
+    while (applicants.size() >= 5) {
       // If the group has more than 5 elements, split the group
       // Split the group into 5 elements
       // [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] -> [1, 2, 3, 4, 5], [6, 7, 8, 9, 10], [11]
-      List<User> subGroup = new ArrayList<>(group.subList(0, 5));
+      List<StudyApplicant> subGroup = List.copyOf(applicants.subList(0, 5));
 
-      // Create a team with only 5 elements
-      StudyGroup studyGroup = new StudyGroup(tag.getAndIncrement(), subGroup, current);
+      // Create a group with only 5 elements
+      StudyGroup studyGroup = StudyGroup.of(tag.getAndIncrement(), current, subGroup);
       matchedGroupList.add(studyGroup);
 
-      // Remove the elements that have already been added to the team
-      group.removeAll(subGroup);
+      // Remove the elements that have already been added to the group
+      applicants.removeAll(subGroup);
     }
-    if (group.size() >= 3) {
+    if (applicants.size() >= 3) {
       // If the remaining elements are 3 ~ 4
-      // Create a team with 3 ~ 4 elements
-      StudyGroup studyGroup = new StudyGroup(tag.getAndIncrement(), group, current);
+      // Create a group with 3 ~ 4 elements
+      StudyGroup studyGroup = StudyGroup.of(tag.getAndIncrement(), current, applicants);
       matchedGroupList.add(studyGroup);
     }
     return matchedGroupList;
   }
 
-  private List<StudyGroup> matchCourseSecond(
-      List<User> users, AtomicInteger tag, AcademicTerm current) {
-    List<StudyGroup> results = new ArrayList<>();
-    Set<User> targetUsers = new HashSet<>(users);
+  private void matchCourseSecond(
+      List<StudyApplicant> applicants, AtomicInteger tag, AcademicTerm current) {
 
-    Map<Course, PriorityQueue<User>> courseToUserByPriority =
-        preparePriorityQueueOfUsers(targetUsers);
+    Map<Course, PriorityQueue<StudyApplicant>> courseToUserByPriority =
+        preparePriorityQueueOfUsers(applicants);
 
-    // Make teams with 3 ~ 5 elements
+    // Make groups with 3 ~ 5 elements
     courseToUserByPriority.forEach(
         (course, queue) -> {
-          List<User> group =
+          List<StudyApplicant> group =
               queue.stream()
-                  .filter(User::isNotInAnyGroup)
+                  .filter(StudyApplicant::isNotMarkedAsGrouped)
                   .sorted(queue.comparator())
                   .collect(Collectors.toList());
-
-          List<StudyGroup> matchedGroupList = createGroup(group, tag, current);
-          results.addAll(matchedGroupList);
+          createGroup(group, tag, current);
         });
-    return results;
   }
 
-  private Map<Course, PriorityQueue<User>> preparePriorityQueueOfUsers(Set<User> targetUsers) {
+  private Map<Course, PriorityQueue<StudyApplicant>> preparePriorityQueueOfUsers(
+      List<StudyApplicant> applicants) {
     // Group users by course
-    Map<Course, List<UserCourse>> courseToUserCourses =
-        targetUsers.stream()
-            .flatMap(u -> u.getCourseSelections().stream())
+    Map<Course, List<PreferredCourse>> courseToUserCourses =
+        applicants.stream()
+            .flatMap(applicant -> applicant.getPreferredCourses().stream())
             .collect(
                 Collectors.groupingBy(
-                    UserCourse::getCourse,
+                    PreferredCourse::getCourse,
                     Collectors.mapping(Function.identity(), Collectors.toList())));
 
-    Map<Course, PriorityQueue<User>> courseToUsersByPriority = new HashMap<>();
+    Map<Course, PriorityQueue<StudyApplicant>> courseToUsersByPriority = new HashMap<>();
     courseToUserCourses.forEach(
         (_course, _userCourses) -> {
-          _userCourses.sort(Comparator.comparingInt(UserCourse::getPriority));
+          _userCourses.sort(Comparator.comparingInt(PreferredCourse::getPriority));
+          List<StudyApplicant> sortedForms =
+              _userCourses.stream().map(PreferredCourse::getApplicant).toList();
 
-          List<User> sortedUsers = _userCourses.stream().map(UserCourse::getUser).toList();
-
-          PriorityQueue<User> userPriorityQueue =
+          PriorityQueue<StudyApplicant> userPriorityQueue =
               new PriorityQueue<>(
-                  sortedUsers.size(), Comparator.comparingInt(sortedUsers::indexOf));
+                  sortedForms.size(), Comparator.comparingInt(sortedForms::indexOf));
 
-          userPriorityQueue.addAll(sortedUsers);
+          userPriorityQueue.addAll(sortedForms);
           courseToUsersByPriority.put(_course, userPriorityQueue);
         });
     return courseToUsersByPriority;

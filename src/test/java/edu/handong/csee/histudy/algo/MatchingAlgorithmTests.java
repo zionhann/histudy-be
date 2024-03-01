@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.TeamDto;
 import edu.handong.csee.histudy.repository.CourseRepository;
-import edu.handong.csee.histudy.repository.SemesterRepository;
 import edu.handong.csee.histudy.repository.StudyGroupRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import edu.handong.csee.histudy.service.TeamService;
@@ -64,7 +63,7 @@ public class MatchingAlgorithmTests {
     }
     List<User> users = userRepository.findAll();
     AcademicTerm academicTerm =
-        semesterRepository.save(AcademicTerm.builder().year(2023).semester(Season.FALL).build());
+        semesterRepository.save(AcademicTerm.builder().year(2023).semester(TermType.FALL).build());
     List<Course> courses = courseRepository.saveAll(getCourses(academicTerm));
 
     for (int i = 0; i < users.size(); i++) {
@@ -234,7 +233,7 @@ public class MatchingAlgorithmTests {
                   .forEach(
                       user -> {
                         user.getCourseSelections()
-                            .sort(Comparator.comparingInt(UserCourse::getPriority));
+                            .sort(Comparator.comparingInt(PreferredCourse::getPriority));
                         System.out.println(
                             user.getName()
                                 + "("
@@ -250,7 +249,7 @@ public class MatchingAlgorithmTests {
                   .forEach(
                       u ->
                           u.getSentRequests().stream()
-                              .filter(Friendship::isAccepted)
+                              .filter(StudyPartnerRequest::isAccepted)
                               .forEach(
                                   friendship ->
                                       System.out.println(
@@ -258,7 +257,7 @@ public class MatchingAlgorithmTests {
                                               + " -> "
                                               + friendship.getReceived().getName())));
               System.out.println("Common courses:");
-              team.getGroupCourses()
+              team.getCourses()
                   .forEach(enroll -> System.out.println(enroll.getCourse().getName()));
               System.out.println("========================================");
             });

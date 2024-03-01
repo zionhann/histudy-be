@@ -1,16 +1,13 @@
 package edu.handong.csee.histudy.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AcademicTerm extends BaseTime {
 
   @Id
@@ -21,7 +18,7 @@ public class AcademicTerm extends BaseTime {
   private Integer year;
 
   @Enumerated(EnumType.STRING)
-  private Season semester = Season.NONE;
+  private TermType semester = TermType.NONE;
 
   @Builder.Default private Boolean isCurrent = false;
 }

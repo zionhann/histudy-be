@@ -1,6 +1,6 @@
 package edu.handong.csee.histudy.dto;
 
-import edu.handong.csee.histudy.domain.FriendshipStatus;
+import edu.handong.csee.histudy.domain.RequestStatus;
 import edu.handong.csee.histudy.domain.User;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -24,7 +24,7 @@ public class FriendshipDto {
     public static class Buddy {
         private String sid;
         private String name;
-        private FriendshipStatus status;
+        private RequestStatus status;
 
         public Buddy(FriendshipRequest request) {
             User user = request.getUser();

@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Transactional
-public class ReportCourseReportServiceTestGroup {
+public class ReportCourseStudyServiceTestGroup {
     @Autowired
     ReportService reportService;
     @Autowired

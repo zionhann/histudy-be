@@ -1,7 +1,8 @@
 package edu.handong.csee.histudy.dto;
 
-import edu.handong.csee.histudy.domain.GroupReport;
-import edu.handong.csee.histudy.domain.ReportUser;
+import edu.handong.csee.histudy.domain.StudyCourse;
+import edu.handong.csee.histudy.domain.StudyParticipant;
+import edu.handong.csee.histudy.domain.StudyReport;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import java.util.Map;
@@ -22,19 +23,19 @@ public class ReportDto {
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class ReportInfo {
 
-    public ReportInfo(GroupReport entity, Map<Long, String> imageFullPaths) {
+    public ReportInfo(StudyReport entity, Map<Long, String> imageFullPaths) {
       this.id = entity.getId();
       this.title = entity.getTitle();
       this.content = entity.getContent();
       this.totalMinutes = entity.getTotalMinutes();
       this.participants =
           entity.getParticipants().stream()
-              .map(ReportUser::getUser)
+              .map(StudyParticipant::getParticipant)
               .map(UserDto.UserBasic::new)
               .toList();
       this.courses =
           entity.getCourses().stream()
-              .map(rc -> rc.getGroupCourse().getCourse())
+              .map(StudyCourse::getCourse)
               .map(CourseDto.BasicCourseInfo::new)
               .toList();
       this.images =
@@ -76,13 +77,13 @@ public class ReportDto {
   @Getter
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class ReportBasic {
-    public ReportBasic(GroupReport groupReport, Map<Long, String> imageMap) {
-      this.id = groupReport.getId();
-      this.title = groupReport.getTitle();
-      this.regDate = groupReport.getLastModifiedDate().toString();
-      this.totalMinutes = groupReport.getTotalMinutes();
+    public ReportBasic(StudyReport studyReport, Map<Long, String> imageMap) {
+      this.id = studyReport.getId();
+      this.title = studyReport.getTitle();
+      this.regDate = studyReport.getLastModifiedDate().toString();
+      this.totalMinutes = studyReport.getTotalMinutes();
       this.thumbnail =
-          groupReport.getImages().stream()
+          studyReport.getImages().stream()
               .findFirst()
               .map(image -> imageMap.get(image.getId()))
               .orElse(null);
