@@ -83,7 +83,7 @@ public class TeamService {
             .toList();
 
     return new TeamReportDto(
-        studyGroup.getId(),
+        studyGroup.getStudyGroupId(),
         studyGroup.getTag(),
         users,
         calculateTotalMinutes(studyReports),

@@ -16,7 +16,7 @@ public class User extends BaseTime {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  private Long userId;
 
   @Column(unique = true)
   private String sub;

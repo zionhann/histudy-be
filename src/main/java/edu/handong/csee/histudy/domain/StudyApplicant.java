@@ -16,15 +16,18 @@ public class StudyApplicant extends BaseTime {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  private Long studyApplicantId;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "academic_term_id")
   private AcademicTerm academicTerm;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id")
   private User user;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "study_group_id")
   private StudyGroup studyGroup;
 
   @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)

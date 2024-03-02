@@ -12,12 +12,14 @@ public class GroupCourse extends BaseTime {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  private Long groupCourseId;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "study_group_id")
   private StudyGroup studyGroup;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "course_id")
   private Course course;
 
   public GroupCourse(StudyGroup studyGroup, Course course) {

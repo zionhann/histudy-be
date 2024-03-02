@@ -10,7 +10,7 @@ import lombok.*;
 public class Course extends BaseTime {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  private Long courseId;
 
   private String code;
 
@@ -19,6 +19,7 @@ public class Course extends BaseTime {
   private String professor;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "academic_term_id")
   private AcademicTerm academicTerm;
 
   @Builder

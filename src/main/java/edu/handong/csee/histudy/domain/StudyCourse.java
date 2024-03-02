@@ -11,12 +11,14 @@ import lombok.*;
 public class StudyCourse extends BaseTime {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  private Long studyCourseId;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "study_report_id")
   private StudyReport studyReport;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "course_id")
   private Course course;
 
   @Builder

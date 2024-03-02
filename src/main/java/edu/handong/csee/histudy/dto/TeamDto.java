@@ -29,7 +29,7 @@ public class TeamDto {
 
   public TeamDto(
       StudyGroup group, List<StudyReport> reports, Map<User, StudyApplicant> applicantMap) {
-    this.group = group.getId();
+    this.group = group.getStudyGroupId();
     this.tag = group.getTag();
     this.members =
         group.getMembers().stream()
@@ -78,7 +78,7 @@ public class TeamDto {
     private List<CourseDto.CourseInfo> courses;
 
     public TeamMatching(StudyGroup studyGroup) {
-      this.id = studyGroup.getId();
+      this.id = studyGroup.getStudyGroupId();
       this.tag = studyGroup.getTag();
       this.users =
           studyGroup.getMembers().stream()

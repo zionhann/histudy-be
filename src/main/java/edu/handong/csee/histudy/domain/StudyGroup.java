@@ -16,11 +16,12 @@ public class StudyGroup extends BaseTime {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  private Long studyGroupId;
 
   private Integer tag;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "academic_term_id")
   private AcademicTerm academicTerm;
 
   @OneToMany(mappedBy = "studyGroup", cascade = CascadeType.ALL, orphanRemoval = true)

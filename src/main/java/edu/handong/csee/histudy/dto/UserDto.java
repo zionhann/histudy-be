@@ -54,7 +54,7 @@ public class UserDto {
     private String sid;
 
     public UserMatchingWithMasking(User user) {
-      this.id = user.getId();
+      this.id = user.getUserId();
       this.name = user.getName();
       this.sid = user.getSidWithMasking();
     }
@@ -106,7 +106,7 @@ public class UserDto {
     private List<CourseDto.BasicCourseInfo> courses;
 
     public UserInfo(User user, StudyApplicant applicant) {
-      this.id = user.getId();
+      this.id = user.getUserId();
       this.name = user.getName();
       this.sid = user.getSid();
       this.email = user.getEmail();
@@ -125,7 +125,7 @@ public class UserDto {
     }
 
     public UserInfo(User user) {
-      this.id = user.getId();
+      this.id = user.getUserId();
       this.name = user.getName();
       this.sid = user.getSid();
       this.email = user.getEmail();
@@ -151,7 +151,7 @@ public class UserDto {
     private String sid;
 
     public UserBasic(User user) {
-      this.id = user.getId();
+      this.id = user.getUserId();
       this.sid = user.getSid();
       this.name = user.getName();
     }
@@ -171,7 +171,7 @@ public class UserDto {
     private String sid;
 
     public UserBasicWithMasking(User user) {
-      this.id = user.getId();
+      this.id = user.getUserId();
       this.sid = user.getSidWithMasking();
       this.name = user.getName();
     }
@@ -193,7 +193,7 @@ public class UserDto {
     private String email;
 
     public UserMe(User user) {
-      this.id = user.getId();
+      this.id = user.getUserId();
       this.sid = user.getSid();
       this.name = user.getName();
       this.email = user.getEmail();
@@ -219,7 +219,7 @@ public class UserDto {
     private Integer tag;
 
     public UserMeWithMasking(User user, int tag) {
-      this.id = user.getId();
+      this.id = user.getUserId();
       this.sid = user.getSidWithMasking();
       this.name = user.getName();
       this.email = user.getEmail();

@@ -63,7 +63,7 @@ public class MatchingAlgorithmTests {
     }
     List<User> users = userRepository.findAll();
     AcademicTerm academicTerm =
-        semesterRepository.save(AcademicTerm.builder().year(2023).semester(TermType.FALL).build());
+        semesterRepository.save(AcademicTerm.builder().academicYear(2023).semester(TermType.FALL).build());
     List<Course> courses = courseRepository.saveAll(getCourses(academicTerm));
 
     for (int i = 0; i < users.size(); i++) {

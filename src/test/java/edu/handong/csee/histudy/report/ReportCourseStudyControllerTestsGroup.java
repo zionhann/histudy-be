@@ -153,7 +153,7 @@ public class ReportCourseStudyControllerTestsGroup {
 
         // when
         MvcResult mvcResult = mvc
-                .perform(get("/api/team/reports/{id}", studyReport.getId())
+                .perform(get("/api/team/reports/{id}", studyReport.getStudyReportId())
                         .requestAttr("claims", claims))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -164,7 +164,7 @@ public class ReportCourseStudyControllerTestsGroup {
                 ReportDto.ReportInfo.class);
 
         // then
-        assertEquals(studyReport.getId(), res.getId());
+        assertEquals(studyReport.getStudyReportId(), res.getId());
     }
 
     @DisplayName("그룹의 보고서를 수정할 수 있다: 요청폼 없음")
@@ -199,7 +199,7 @@ public class ReportCourseStudyControllerTestsGroup {
 
         // when
         mvc
-                .perform(patch("/api/team/reports/{reportId}", studyReport.getId())
+                .perform(patch("/api/team/reports/{reportId}", studyReport.getStudyReportId())
                         .requestAttr("claims", claims))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
@@ -245,14 +245,14 @@ public class ReportCourseStudyControllerTestsGroup {
 
         // when
         mvc
-                .perform(patch("/api/team/reports/{reportId}", studyReport.getId())
+                .perform(patch("/api/team/reports/{reportId}", studyReport.getStudyReportId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .requestAttr("claims", claims)
                         .content(form))
                 .andDo(print())
                 .andExpect(status().isOk());
 
-        Optional<StudyReport> report = studyReportRepository.findById(savedReport.getId());
+        Optional<StudyReport> report = studyReportRepository.findById(savedReport.getStudyReportId());
 
         //then
         assertThat(report).isPresent();
@@ -298,7 +298,7 @@ public class ReportCourseStudyControllerTestsGroup {
 
         // when
         mvc
-                .perform(patch("/api/team/reports/{reportId}", studyReport.getId())
+                .perform(patch("/api/team/reports/{reportId}", studyReport.getStudyReportId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .requestAttr("claims", claims)
                         .content(form))
@@ -343,7 +343,7 @@ public class ReportCourseStudyControllerTestsGroup {
 
         // when
         mvc
-                .perform(delete("/api/team/reports/{reportId}", studyReport.getId())
+                .perform(delete("/api/team/reports/{reportId}", studyReport.getStudyReportId())
                         .requestAttr("claims", claims))
                 .andDo(print())
                 .andExpect(status().isOk())

@@ -204,7 +204,7 @@ public class AdminControllerTests {
         claimAdmin.put("rol", Role.ADMIN.name());
 
         UserDto.UserEdit editForm = UserDto.UserEdit.builder()
-                .id(save2.getId())
+                .userId(save2.getUserId())
                 .team(2)
                 .build();
 

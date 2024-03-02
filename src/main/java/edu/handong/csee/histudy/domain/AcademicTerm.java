@@ -12,10 +12,9 @@ public class AcademicTerm extends BaseTime {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  private Long academicTermId;
 
-  @Column(name = "academic_year")
-  private Integer year;
+  private Integer academicYear;
 
   @Enumerated(EnumType.STRING)
   private TermType semester = TermType.NONE;

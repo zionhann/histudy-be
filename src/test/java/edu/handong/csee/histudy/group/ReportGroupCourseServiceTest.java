@@ -172,11 +172,11 @@ public class ReportGroupCourseServiceTest {
                 .title("title")
                 .content("content")
                 .totalMinutes(60L)
-                .participants(List.of(savedB.getId()))
+                .participants(List.of(savedB.getUserId()))
                 .courses(List.of(1L, 2L, 3L))
                 .build();
         reportService.createReport(form, "a@b.com");
-        TeamReportDto dto = teamService.getTeamReports(studyGroup.getId(), "");
+        TeamReportDto dto = teamService.getTeamReports(studyGroup.getStudyGroupId(), "");
         assertThat(dto.getMembers().size()).isEqualTo(2);
         assertThat(dto.getReports().size()).isEqualTo(1);
         assertThat(dto.getTotalTime()).isEqualTo(60L);

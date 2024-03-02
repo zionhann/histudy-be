@@ -18,7 +18,7 @@ public class StudyReport extends BaseTime {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  private Long studyReportId;
 
   private String title;
 
@@ -28,6 +28,7 @@ public class StudyReport extends BaseTime {
   private long totalMinutes;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "study_group_id")
   private StudyGroup studyGroup;
 
   @OneToMany(mappedBy = "studyReport", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -14,7 +14,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -84,8 +83,8 @@ public class ReportCourseStudyServiceTestGroup {
                 .title("title")
                 .content("content")
                 .totalMinutes(60L)
-                .participants(List.of(userA.getId()))
-                .courses(List.of(course.getId(), courseB.getId(), courseC.getId()))
+                .participants(List.of(userA.getUserId()))
+                .courses(List.of(course.getCourseId(), courseB.getCourseId(), courseC.getCourseId()))
                 .build();
 
         ReportDto.ReportInfo response = reportService.createReport(form, "a@a.com");
@@ -129,7 +128,7 @@ public class ReportCourseStudyServiceTestGroup {
                 .title("title")
                 .content("content")
                 .totalMinutes(60L)
-                .participants(List.of(saved.getId()))
+                .participants(List.of(saved.getUserId()))
                 .courses(List.of(1L, 2L, 3L))
                 .build();
 

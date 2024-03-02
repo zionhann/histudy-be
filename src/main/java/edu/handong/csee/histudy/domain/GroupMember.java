@@ -12,12 +12,14 @@ public class GroupMember extends BaseTime {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  private Long groupMemberId;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "study_group_id")
   private StudyGroup studyGroup;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id")
   private User user;
 
   public GroupMember(StudyGroup studyGroup, User user) {

@@ -40,11 +40,11 @@ public class CourseDto {
     private int semester;
 
     public CourseInfo(Course course) {
-      this.id = course.getId();
+      this.id = course.getCourseId();
       this.name = course.getName();
       this.prof = course.getProfessor();
       this.code = course.getCode();
-      this.year = course.getAcademicTerm().getYear();
+      this.year = course.getAcademicTerm().getAcademicYear();
       this.semester = course.getAcademicTerm().getSemester().getNumber();
     }
   }
@@ -63,7 +63,7 @@ public class CourseDto {
     private String prof;
 
     public BasicCourseInfo(Course course) {
-      this.id = course.getId();
+      this.id = course.getCourseId();
       this.name = course.getName();
       this.prof = course.getProfessor();
     }

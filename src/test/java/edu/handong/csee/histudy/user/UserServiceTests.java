@@ -112,7 +112,7 @@ public class UserServiceTests {
             .title("title")
             .content("content")
             .totalMinutes(60L)
-            .participants(List.of(savedA.getId()))
+            .participants(List.of(savedA.getUserId()))
             .courses(List.of(1L, 2L, 3L))
             .build();
     ReportDto.ReportInfo report = reportService.createReport(form, "a@a.com");
@@ -140,7 +140,7 @@ public class UserServiceTests {
     User savedC = userRepository.save(userC);
     savedA.addUser(List.of(savedB));
     savedB.getReceivedRequests().stream().findAny().ifPresent(StudyPartnerRequest::accept);
-    List<Long> courseIdxList = courseRepository.findAll().stream().map(Course::getId).toList();
+    List<Long> courseIdxList = courseRepository.findAll().stream().map(Course::getCourseId).toList();
     List<Course> courses =
         courseIdxList.stream()
             .map(courseRepository::findById)
@@ -155,7 +155,7 @@ public class UserServiceTests {
                         PreferredCourse.builder().user(savedA).course(c).priority(0).build()))
             .toList();
     savedA.getCourseSelections().addAll(preferredCourse);
-    List<Long> courseIdxList2 = courseRepository.findAll().stream().map(Course::getId).toList();
+    List<Long> courseIdxList2 = courseRepository.findAll().stream().map(Course::getCourseId).toList();
     List<Course> courses2 =
         courseIdxList2.stream()
             .map(courseRepository::findById)
@@ -194,13 +194,13 @@ public class UserServiceTests {
     ApplyForm form =
         ApplyForm.builder()
             .friendIds(List.of(savedB.getSid(), savedC.getSid()))
-            .courseIds(List.of(savedCourse.getId()))
+            .courseIds(List.of(savedCourse.getCourseId()))
             .build();
 
     ApplyForm form2 =
         ApplyForm.builder()
             .friendIds(List.of(savedA.getSid()))
-            .courseIds(List.of(savedCourse.getId()))
+            .courseIds(List.of(savedCourse.getCourseId()))
             .build();
 
     userService.apply(form, savedA.getEmail());
@@ -238,7 +238,7 @@ public class UserServiceTests {
 
     UserDto.UserEdit dto =
         UserDto.UserEdit.builder()
-            .id(saved.getId())
+            .userId(saved.getUserId())
             .sid("12345678")
             .name("조용히해라")
             .team(222)

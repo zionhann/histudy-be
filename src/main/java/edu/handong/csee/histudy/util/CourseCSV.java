@@ -34,6 +34,6 @@ public class CourseCSV {
   }
 
   public AcademicTerm toAcademicTerm() {
-    return AcademicTerm.builder().year(year).semester(TermType.parse(semester)).build();
+    return AcademicTerm.builder().academicYear(year).semester(TermType.parse(semester)).build();
   }
 }

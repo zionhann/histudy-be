@@ -24,7 +24,7 @@ public class ReportDto {
   public static class ReportInfo {
 
     public ReportInfo(StudyReport entity, Map<Long, String> imageFullPaths) {
-      this.id = entity.getId();
+      this.id = entity.getStudyReportId();
       this.title = entity.getTitle();
       this.content = entity.getContent();
       this.totalMinutes = entity.getTotalMinutes();
@@ -78,7 +78,7 @@ public class ReportDto {
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class ReportBasic {
     public ReportBasic(StudyReport studyReport, Map<Long, String> imageMap) {
-      this.id = studyReport.getId();
+      this.id = studyReport.getStudyReportId();
       this.title = studyReport.getTitle();
       this.regDate = studyReport.getLastModifiedDate().toString();
       this.totalMinutes = studyReport.getTotalMinutes();

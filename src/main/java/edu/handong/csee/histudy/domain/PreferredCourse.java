@@ -12,12 +12,14 @@ import lombok.NoArgsConstructor;
 public class PreferredCourse extends BaseTime {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  private Long preferredCourseId;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "study_applicant_id")
   private StudyApplicant applicant;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "course_id")
   private Course course;
 
   private Integer priority;

@@ -45,7 +45,7 @@ public class CourseService {
 
   private AcademicTerm getOrCreateSemester(AcademicTerm academicTerm) {
     return academicTermRepository
-        .findByYearAndTerm(academicTerm.getYear(), academicTerm.getSemester())
+        .findByYearAndTerm(academicTerm.getAcademicYear(), academicTerm.getSemester())
         .orElseGet(() -> academicTermRepository.save(academicTerm));
   }
 

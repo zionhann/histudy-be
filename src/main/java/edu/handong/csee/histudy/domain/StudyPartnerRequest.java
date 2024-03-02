@@ -12,12 +12,14 @@ public class StudyPartnerRequest extends BaseTime {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  private Long studyPartnerRequestId;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "study_applicant_id")
   private StudyApplicant sender;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id")
   private User receiver;
 
   @Enumerated(EnumType.STRING)

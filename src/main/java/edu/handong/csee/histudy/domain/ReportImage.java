@@ -18,6 +18,7 @@ public class ReportImage extends BaseTime {
   private String path;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "study_report_id")
   private StudyReport studyReport;
 
   @Builder

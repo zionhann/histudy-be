@@ -12,12 +12,14 @@ public class StudyParticipant extends BaseTime {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  private Long studyParticipantId;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id")
   User participant;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "study_report_id")
   StudyReport studyReport;
 
   public StudyParticipant(User participant, StudyReport studyReport) {
