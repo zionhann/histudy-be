@@ -40,7 +40,10 @@ public class ReportDto {
               .toList();
       this.images =
           entity.getImages().stream()
-              .map(img -> new ImageDto(img.getId(), imageFullPaths.get(img.getId())))
+              .map(
+                  img ->
+                      new ImageDto(
+                          img.getReportImageId(), imageFullPaths.get(img.getReportImageId())))
               .toList();
       this.regDate = entity.getLastModifiedDate().toString();
     }
@@ -85,7 +88,7 @@ public class ReportDto {
       this.thumbnail =
           studyReport.getImages().stream()
               .findFirst()
-              .map(image -> imageMap.get(image.getId()))
+              .map(image -> imageMap.get(image.getReportImageId()))
               .orElse(null);
     }
 

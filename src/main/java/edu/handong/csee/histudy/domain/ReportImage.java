@@ -13,7 +13,7 @@ public class ReportImage extends BaseTime {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  private Long reportImageId;
 
   private String path;
 

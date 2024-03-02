@@ -13,6 +13,6 @@ public interface AcademicTermRepository extends JpaRepository<AcademicTerm, Long
   @Query("select a from AcademicTerm a where a.isCurrent = true")
   Optional<AcademicTerm> findCurrentSemester();
 
-  @Query("SELECT at FROM AcademicTerm at WHERE at.year = :year AND at.semester = :sem")
+  @Query("SELECT at FROM AcademicTerm at WHERE at.academicYear = :year AND at.semester = :sem")
   Optional<AcademicTerm> findByYearAndTerm(@Param("year") int year, @Param("sem") TermType sem);
 }

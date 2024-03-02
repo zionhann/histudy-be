@@ -195,7 +195,7 @@ public class UserService {
   }
 
   public void editUser(UserDto.UserEdit form) {
-    User user = userRepository.findById(form.getUserId()).orElseThrow(UserNotFoundException::new);
+    User user = userRepository.findById(form.getId()).orElseThrow(UserNotFoundException::new);
     AcademicTerm currentTerm =
         academicTermRepository.findCurrentSemester().orElseThrow(NoCurrentTermFoundException::new);
     Optional<StudyApplicant> applicantOr =

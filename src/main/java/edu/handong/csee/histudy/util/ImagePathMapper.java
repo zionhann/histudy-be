@@ -20,7 +20,7 @@ public class ImagePathMapper {
 
   public Map<Long, String> parseImageToMapWithFullPath(List<ReportImage> reportImages) {
     return reportImages.stream()
-        .collect(Collectors.toUnmodifiableMap(ReportImage::getId, img -> getFullPath(img.getPath())));
+        .collect(Collectors.toUnmodifiableMap(ReportImage::getReportImageId, img -> getFullPath(img.getPath())));
   }
 
   public List<String> extractFilename(List<String> pathname) {

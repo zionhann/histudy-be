@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class ImageDto {
 
   public ImageDto(ReportImage entity) {
-    this.id = entity.getId();
+    this.id = entity.getReportImageId();
     this.url = entity.getPath();
   }
 
