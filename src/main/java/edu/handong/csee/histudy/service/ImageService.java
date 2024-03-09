@@ -2,10 +2,12 @@ package edu.handong.csee.histudy.service;
 
 import static org.springframework.util.ResourceUtils.isUrl;
 
-import edu.handong.csee.histudy.domain.Image;
-import edu.handong.csee.histudy.exception.FileTransferException;
-import edu.handong.csee.histudy.exception.ReportNotFoundException;
-import edu.handong.csee.histudy.repository.GroupReportRepository;
+import edu.handong.csee.histudy.domain.AcademicTerm;
+import edu.handong.csee.histudy.domain.ReportImage;
+import edu.handong.csee.histudy.domain.StudyGroup;
+import edu.handong.csee.histudy.domain.User;
+import edu.handong.csee.histudy.exception.*;
+import edu.handong.csee.histudy.repository.*;
 import edu.handong.csee.histudy.util.ImagePathMapper;
 import edu.handong.csee.histudy.util.Utils;
 import java.io.File;
@@ -34,12 +36,24 @@ public class ImageService {
   @Value("${custom.resource.location}")
   private String imageBaseLocation;
 
-  private final GroupReportRepository groupReportRepository;
+  private final AcademicTermRepository academicTermRepository;
+  private final UserRepository userRepository;
+  private final StudyReportRepository studyReportRepository;
+  private final StudyApplicantRepository studyApplicantRepository;
 
   private final ImagePathMapper imagePathMapper;
+  private final StudyGroupRepository studyGroupRepository;
 
   public String getImagePaths(
-      MultipartFile imageAsFormData, Integer tag, Optional<Long> reportIdOr) {
+      String email, MultipartFile imageAsFormData, Optional<Long> reportIdOr) {
+    AcademicTerm currentTerm =
+        academicTermRepository.findCurrentSemester().orElseThrow(NoCurrentTermFoundException::new);
+    User user = userRepository.findUserByEmail(email).orElseThrow(UserNotFoundException::new);
+    StudyGroup studyGroup =
+        studyGroupRepository
+            .findByUserAndTerm(user, currentTerm)
+            .orElseThrow(StudyGroupNotFoundException::new);
+
     if (reportIdOr.isPresent()) {
       Long id = reportIdOr.get();
       Optional<String> sameResource = getSameContent(imageAsFormData, id);
@@ -59,7 +73,8 @@ public class ImageService {
     // e.g. 2023-2-group1-report_20230923_123456.jpg
     String pathname =
         String.format(
-            "%d-%d-group%02d-report_%s%s", year, semester, tag, formattedDateTime, extension);
+            "%d-%d-group%02d-report_%s%s",
+            year, semester, studyGroup.getTag(), formattedDateTime, extension);
     String savedImagePath = saveImage(imageAsFormData, pathname);
 
     return imagePathMapper.getFullPath(savedImagePath);
@@ -82,12 +97,12 @@ public class ImageService {
 
   private Optional<String> getSameContent(MultipartFile src, Long reportId) {
     List<String> targetPaths =
-        groupReportRepository
+        studyReportRepository
             .findById(reportId)
             .orElseThrow(ReportNotFoundException::new)
             .getImages()
             .stream()
-            .map(Image::getPath)
+            .map(ReportImage::getPath)
             .toList();
 
     return targetPaths.stream()

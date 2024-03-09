@@ -90,7 +90,7 @@ public class UserControllerTests {
         userService.apply(
                 ApplyForm.builder()
                         .friendIds(List.of(friend.getSid()))
-                        .courseIds(List.of(course.getId()))
+                        .courseIds(List.of(course.getCourseId()))
                         .build(),
                 saved.getEmail());
 
@@ -145,14 +145,14 @@ public class UserControllerTests {
         userService.apply(
                 ApplyForm.builder()
                         .friendIds(List.of(friend.getSid()))
-                        .courseIds(List.of(course.getId()))
+                        .courseIds(List.of(course.getCourseId()))
                         .build(),
                 saved.getEmail());
 
         userService.apply(
                 ApplyForm.builder()
                         .friendIds(List.of(friend2.getSid()))
-                        .courseIds(List.of(course2.getId()))
+                        .courseIds(List.of(course2.getCourseId()))
                         .build(),
                 saved.getEmail());
 

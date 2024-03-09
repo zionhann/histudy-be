@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Getter
-public enum Season {
+public enum TermType {
   NONE(0),
   SPRING(1),
   FALL(2),
@@ -15,8 +15,8 @@ public enum Season {
 
   private final int number;
 
-  public static Season parse(int number) {
-    return Arrays.stream(Season.values())
+  public static TermType parse(int number) {
+    return Arrays.stream(TermType.values())
         .filter(season -> season.number == number)
         .findFirst()
         .orElseThrow();

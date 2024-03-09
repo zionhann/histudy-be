@@ -7,7 +7,7 @@ import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.domain.StudyGroup;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.ReportDto;
-import edu.handong.csee.histudy.repository.GroupReportRepository;
+import edu.handong.csee.histudy.repository.StudyReportRepository;
 import edu.handong.csee.histudy.repository.StudyGroupRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import edu.handong.csee.histudy.service.ReportService;
@@ -40,7 +40,7 @@ public class ReportTests {
     ObjectMapper mapper;
 
     @Autowired
-    private GroupReportRepository groupReportRepository;
+    private StudyReportRepository studyReportRepository;
 
     @Autowired
     ReportService reportService;
@@ -69,7 +69,7 @@ public class ReportTests {
                 .title("title")
                 .content("content")
                 .totalMinutes(10L)
-                .participants(List.of(writer.getId()))
+                .participants(List.of(writer.getUserId()))
                 .courses(List.of())
                 .build();
 

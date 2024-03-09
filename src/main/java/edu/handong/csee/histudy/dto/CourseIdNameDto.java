@@ -17,7 +17,7 @@ public class CourseIdNameDto {
     private String name;
 
     public CourseIdNameDto(Course course) {
-        this.id = course.getId();
+        this.id = course.getCourseId();
         this.name = course.getName();
     }
 }

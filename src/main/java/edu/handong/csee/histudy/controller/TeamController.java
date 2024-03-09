@@ -2,12 +2,12 @@ package edu.handong.csee.histudy.controller;
 
 import edu.handong.csee.histudy.controller.form.ReportForm;
 import edu.handong.csee.histudy.domain.Role;
-import edu.handong.csee.histudy.domain.StudyGroup;
 import edu.handong.csee.histudy.dto.CourseDto;
 import edu.handong.csee.histudy.dto.ReportDto;
 import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.exception.ForbiddenException;
-import edu.handong.csee.histudy.exception.UserNotFoundException;
+import edu.handong.csee.histudy.repository.AcademicTermRepository;
+import edu.handong.csee.histudy.repository.StudyGroupRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import edu.handong.csee.histudy.service.CourseService;
 import edu.handong.csee.histudy.service.ImageService;
@@ -43,6 +43,8 @@ public class TeamController {
   private final TeamService teamService;
   private final ImageService imageService;
   private final UserRepository userRepository;
+  private final AcademicTermRepository academicTermRepository;
+  private final StudyGroupRepository studyGroupRepository;
 
   @Operation(summary = "그룹 스터디 보고서 생성")
   @PostMapping("/reports")
@@ -149,13 +151,7 @@ public class TeamController {
       @RequestParam MultipartFile image,
       @RequestAttribute Claims claims) {
     if (Role.isAuthorized(claims, Role.MEMBER)) {
-      StudyGroup studyGroup =
-          userRepository
-              .findUserByEmail(claims.getSubject())
-              .orElseThrow(UserNotFoundException::new)
-              .getStudyGroup();
-
-      String filename = imageService.getImagePaths(image, studyGroup.getTag(), reportIdOr);
+      String filename = imageService.getImagePaths(claims.getSubject(), image, reportIdOr);
       Map<String, String> response = Map.of("imagePath", filename);
       return ResponseEntity.ok(response);
     }
