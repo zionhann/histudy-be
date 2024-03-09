@@ -50,19 +50,10 @@ public class StudyGroup extends BaseTime {
     return new StudyGroup(tag, current, applicants.toArray(StudyApplicant[]::new));
   }
 
-  public static StudyGroup of(Integer tag, AcademicTerm current) {
-    return new StudyGroup(tag, current);
-  }
-
   protected StudyGroup(Integer tag, AcademicTerm academicTerm, StudyApplicant... applicants) {
     this.tag = tag;
     this.academicTerm = academicTerm;
     assignMembers(applicants);
-  }
-
-  protected StudyGroup(Integer tag, AcademicTerm academicTerm) {
-    this.tag = tag;
-    this.academicTerm = academicTerm;
   }
 
   private List<Course> findCommonCourses(StudyApplicant... applicants) {
@@ -94,13 +85,13 @@ public class StudyGroup extends BaseTime {
   public StudyGroup assignMembers(StudyApplicant... applicants) {
     Arrays.stream(applicants)
         .forEach(
-            form -> {
-              if (isInSameGroup(form)) {
+            applicant -> {
+              if (isInSameGroup(applicant)) {
                 return;
-              } else if (isAlreadyInOtherGroup(form)) {
-                form.leaveGroup();
+              } else if (isAlreadyInOtherGroup(applicant)) {
+                applicant.leaveGroup();
               }
-              GroupMember.of(this, form);
+              GroupMember.of(this, applicant);
             });
     assignCommonCourses(applicants);
     return this;
@@ -114,14 +105,15 @@ public class StudyGroup extends BaseTime {
   }
 
   private boolean isAlreadyInOtherGroup(StudyApplicant applicant) {
-    return applicant != null && !applicant.getStudyGroup().equals(this);
+    return applicant.getStudyGroup() != null && !applicant.getStudyGroup().equals(this);
   }
 
   public boolean isInSameGroup(StudyApplicant applicant) {
-    return applicant != null && applicant.getStudyGroup().equals(this);
+    return applicant.getStudyGroup() != null && applicant.getStudyGroup().equals(this);
   }
 
   protected void assignCommonCourses(StudyApplicant... applicants) {
+    if (isSameMemberExact(applicants)) return;
     if (this.members.isEmpty()) {
       this.courses.clear();
       this.tag = -1;
@@ -130,6 +122,16 @@ public class StudyGroup extends BaseTime {
     findCommonCourses(applicants).stream()
         .filter(this::isNotInGroupCourse)
         .forEach(course -> new GroupCourse(this, course));
+  }
+
+  private boolean isSameMemberExact(StudyApplicant... applicants) {
+    if (this.courses.isEmpty()) {
+      return false;
+    }
+    Set<User> users =
+        Arrays.stream(applicants).map(StudyApplicant::getUser).collect(Collectors.toSet());
+    Set<User> members = this.members.stream().map(GroupMember::getUser).collect(Collectors.toSet());
+    return members.containsAll(users);
   }
 
   private boolean isNotInGroupCourse(Course course) {

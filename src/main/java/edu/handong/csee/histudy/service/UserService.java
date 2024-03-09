@@ -206,11 +206,17 @@ public class UserService {
         .ifPresentOrElse(
             tag -> {
               StudyApplicant applicant =
-                  applicantOr.orElse(StudyApplicant.of(currentTerm, user, List.of(), List.of()));
+                  applicantOr.orElseGet(
+                      () -> {
+                        StudyApplicant _applicant =
+                            StudyApplicant.of(currentTerm, user, List.of(), List.of());
+                        return studyApplicantRepository.save(_applicant);
+                      });
               studyGroupRepository
                   .findByTagAndAcademicTerm(tag, currentTerm)
-                  .orElse(StudyGroup.of(tag, currentTerm))
-                  .assignMembers(applicant);
+                  .ifPresentOrElse(
+                      group -> group.assignMembers(applicant),
+                      () -> StudyGroup.of(tag, currentTerm, List.of(applicant)));
             },
             () ->
                 applicantOr.ifPresent(

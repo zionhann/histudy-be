@@ -40,18 +40,13 @@ public class TeamService {
                   studyReportRepository.findAllByStudyGroupOrderByCreatedDateDesc(group);
               List<StudyApplicant> applicants = studyApplicantRepository.findAllByStudyGroup(group);
 
-              Map<User, StudyApplicant> formMap =
+              Map<User, StudyApplicant> applicantMap =
                   applicants.stream()
-                      .filter(form -> isFormRelevantToGroup(form, group))
                       .collect(Collectors.toMap(StudyApplicant::getUser, Function.identity()));
 
-              return new TeamDto(group, reports, formMap);
+              return new TeamDto(group, reports, applicantMap);
             })
         .toList();
-  }
-
-  private boolean isFormRelevantToGroup(StudyApplicant form, StudyGroup group) {
-    return form.getStudyGroup().equals(group);
   }
 
   public int deleteTeam(TeamIdDto dto, String email) {
@@ -161,7 +156,7 @@ public class TeamService {
     matchCourseSecond(applicants, tag, current);
   }
 
-  public List<StudyGroup> matchFriendFirst(
+  public Set<StudyGroup> matchFriendFirst(
       List<StudyApplicant> applicants, AtomicInteger tag, AcademicTerm current) {
     // First matching
     // Make teams with friends
@@ -177,13 +172,12 @@ public class TeamService {
                       .orElseThrow(NoStudyApplicationFound::new);
               return StudyGroup.of(tag, current, partnerRequest.getSender(), receiver);
             })
-        .distinct()
-        .toList();
+        .collect(Collectors.toSet());
   }
 
-  public List<StudyGroup> matchCourseFirst(
+  public Set<StudyGroup> matchCourseFirst(
       List<StudyApplicant> applicants, AtomicInteger tag, AcademicTerm current) {
-    List<StudyGroup> results = new ArrayList<>();
+    Set<StudyGroup> results = new HashSet<>();
 
     List<PreferredCourse> preferredCourses =
         applicants.stream()
@@ -213,17 +207,17 @@ public class TeamService {
                           Collectors.mapping(PreferredCourse::getApplicant, Collectors.toList())));
 
           courseToUserMap.forEach(
-              (course, applicant) -> {
-                List<StudyGroup> matchedGroupList = createGroup(applicant, tag, current);
-                results.addAll(matchedGroupList);
+              (course, _applicants) -> {
+                Set<StudyGroup> matchedGroups = createGroup(_applicants, tag, current);
+                results.addAll(matchedGroups);
               });
         });
     return results;
   }
 
-  private List<StudyGroup> createGroup(
+  private Set<StudyGroup> createGroup(
       List<StudyApplicant> applicants, AtomicInteger tag, AcademicTerm current) {
-    List<StudyGroup> matchedGroupList = new ArrayList<>();
+    Set<StudyGroup> matchedGroups = new HashSet<>();
 
     while (applicants.size() >= 5) {
       // If the group has more than 5 elements, split the group
@@ -233,7 +227,7 @@ public class TeamService {
 
       // Create a group with only 5 elements
       StudyGroup studyGroup = StudyGroup.of(tag.getAndIncrement(), current, subGroup);
-      matchedGroupList.add(studyGroup);
+      matchedGroups.add(studyGroup);
 
       // Remove the elements that have already been added to the group
       applicants.removeAll(subGroup);
@@ -242,13 +236,14 @@ public class TeamService {
       // If the remaining elements are 3 ~ 4
       // Create a group with 3 ~ 4 elements
       StudyGroup studyGroup = StudyGroup.of(tag.getAndIncrement(), current, applicants);
-      matchedGroupList.add(studyGroup);
+      matchedGroups.add(studyGroup);
     }
-    return matchedGroupList;
+    return matchedGroups;
   }
 
-  private void matchCourseSecond(
+  private Set<StudyGroup> matchCourseSecond(
       List<StudyApplicant> applicants, AtomicInteger tag, AcademicTerm current) {
+    Set<StudyGroup> matchedGroups = new HashSet<>();
 
     Map<Course, PriorityQueue<StudyApplicant>> courseToUserByPriority =
         preparePriorityQueueOfUsers(applicants);
@@ -261,8 +256,10 @@ public class TeamService {
                   .filter(StudyApplicant::isNotMarkedAsGrouped)
                   .sorted(queue.comparator())
                   .collect(Collectors.toList());
-          createGroup(group, tag, current);
+          Set<StudyGroup> groups = createGroup(group, tag, current);
+          matchedGroups.addAll(groups);
         });
+    return matchedGroups;
   }
 
   private Map<Course, PriorityQueue<StudyApplicant>> preparePriorityQueueOfUsers(

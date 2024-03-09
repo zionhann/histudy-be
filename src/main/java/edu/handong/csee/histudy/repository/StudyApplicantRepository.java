@@ -15,27 +15,27 @@ import org.springframework.stereotype.Repository;
 public interface StudyApplicantRepository extends JpaRepository<StudyApplicant, Long> {
 
   @Query(
-      "select s from StudyApplicant s join fetch s.partnerRequests "
-              + "where s.user = :applicant and s.academicTerm = :currentTerm")
+      "select s from StudyApplicant s left join fetch s.preferredCourses "
+          + "where s.user = :applicant and s.academicTerm = :currentTerm")
   Optional<StudyApplicant> findByUserAndTerm(User applicant, AcademicTerm currentTerm);
 
   @Query(
-      "select s from StudyApplicant s join fetch s.partnerRequests "
+      "select s from StudyApplicant s left join fetch s.preferredCourses "
           + "where s.academicTerm = :currentTerm and s.studyGroup is null")
   List<StudyApplicant> findUnassignedApplicants(AcademicTerm currentTerm);
 
   @Query(
-      "select s from StudyApplicant s join fetch s.partnerRequests "
+      "select s from StudyApplicant s join fetch s.user "
           + "where s.academicTerm = :currentTerm and s.studyGroup is not null")
   List<StudyApplicant> findAssignedApplicants(AcademicTerm currentTerm);
 
   @Query(
-      "select s from StudyApplicant s join fetch s.partnerRequests "
+      "select s from StudyApplicant s left join fetch s.preferredCourses "
           + "where s.academicTerm = :currentTerm")
   List<StudyApplicant> findAllByTerm(AcademicTerm currentTerm);
 
   @Query(
-      "select s from StudyApplicant s join fetch s.partnerRequests "
+      "select s from StudyApplicant s left join fetch s.preferredCourses "
           + "where s.studyGroup = :studyGroup")
-  List<edu.handong.csee.histudy.domain.StudyApplicant> findAllByStudyGroup(@Param("studyGroup") StudyGroup group);
+  List<StudyApplicant> findAllByStudyGroup(@Param("studyGroup") StudyGroup group);
 }

@@ -1,7 +1,7 @@
 package edu.handong.csee.histudy.dto;
 
-import edu.handong.csee.histudy.domain.StudyApplicant;
 import edu.handong.csee.histudy.domain.PreferredCourse;
+import edu.handong.csee.histudy.domain.StudyApplicant;
 import edu.handong.csee.histudy.domain.StudyPartnerRequest;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.jwt.JwtPair;
@@ -112,16 +112,20 @@ public class UserDto {
       this.email = user.getEmail();
       this.group = (applicant.getStudyGroup() == null) ? null : applicant.getStudyGroup().getTag();
       this.friends =
-          applicant.getPartnerRequests().stream()
-              .filter(StudyPartnerRequest::isAccepted)
-              .map(StudyPartnerRequest::getReceiver)
-              .map(UserBasic::new)
-              .toList();
+          (applicant.getPartnerRequests() == null)
+              ? Collections.emptyList()
+              : applicant.getPartnerRequests().stream()
+                  .filter(StudyPartnerRequest::isAccepted)
+                  .map(StudyPartnerRequest::getReceiver)
+                  .map(UserBasic::new)
+                  .toList();
       this.courses =
-          applicant.getPreferredCourses().stream()
-              .sorted(Comparator.comparing(PreferredCourse::getPriority))
-              .map(c -> new CourseDto.BasicCourseInfo(c.getCourse()))
-              .toList();
+          (applicant.getPreferredCourses() == null)
+              ? Collections.emptyList()
+              : applicant.getPreferredCourses().stream()
+                  .sorted(Comparator.comparing(PreferredCourse::getPriority))
+                  .map(c -> new CourseDto.BasicCourseInfo(c.getCourse()))
+                  .toList();
     }
 
     public UserInfo(User user) {

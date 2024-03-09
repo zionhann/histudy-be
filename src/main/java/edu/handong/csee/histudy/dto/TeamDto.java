@@ -37,7 +37,9 @@ public class TeamDto {
             .map(
                 user -> {
                   StudyApplicant applicant = applicantMap.get(user);
-                  return new UserDto.UserInfo(user, applicant);
+                  return (applicant == null)
+                      ? new UserDto.UserInfo(user)
+                      : new UserDto.UserInfo(user, applicant);
                 })
             .toList();
     this.reports = reports.size();

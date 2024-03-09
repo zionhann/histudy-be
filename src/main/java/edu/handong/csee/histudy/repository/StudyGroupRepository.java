@@ -26,7 +26,9 @@ public interface StudyGroupRepository extends JpaRepository<StudyGroup, Long> {
   List<StudyGroup> findAllByAcademicTerm(@Param("academicTerm") AcademicTerm academicTerm);
 
   @Query(
-      "select s from StudyGroup s where :user member of s.members and s.academicTerm = :currentTerm")
+      "select s from StudyGroup s "
+          + "join s.members m "
+          + "where m.user = :user and s.academicTerm = :currentTerm")
   Optional<StudyGroup> findByUserAndTerm(
       @Param("user") User user, @Param("currentTerm") AcademicTerm currentTerm);
 }

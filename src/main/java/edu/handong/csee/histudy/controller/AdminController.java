@@ -56,7 +56,6 @@ public class AdminController {
       @RequestAttribute Claims claims) {
     if (Role.isAuthorized(claims, Role.ADMIN)) {
       TeamReportDto res = teamService.getTeamReports(id, claims.getSubject());
-
       return ResponseEntity.ok(res);
     }
     throw new ForbiddenException();
@@ -111,6 +110,7 @@ public class AdminController {
   public void deleteForm(@RequestParam String sid, @RequestAttribute Claims claims) {
     if (Role.isAuthorized(claims, Role.ADMIN)) {
       userService.deleteUserForm(sid);
+      return;
     }
     throw new ForbiddenException();
   }
@@ -120,6 +120,7 @@ public class AdminController {
   public void editUser(@RequestBody UserDto.UserEdit form, @RequestAttribute Claims claims) {
     if (Role.isAuthorized(claims, Role.ADMIN)) {
       userService.editUser(form);
+      return;
     }
     throw new ForbiddenException();
   }
