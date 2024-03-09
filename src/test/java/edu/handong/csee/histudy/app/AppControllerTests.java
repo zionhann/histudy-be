@@ -202,7 +202,7 @@ public class AppControllerTests {
 
         ApplyForm applyForm = ApplyForm.builder()
                 .friendIds(List.of("sidB", "sidC"))
-                .courseIds(List.of(course1.getId(), course2.getId()))
+                .courseIds(List.of(course1.getCourseId(), course2.getCourseId()))
                 .build();
         String form = mapper.writeValueAsString(applyForm);
 
@@ -221,7 +221,7 @@ public class AppControllerTests {
 
         ApplyForm applyForm2 = ApplyForm.builder()
                 .friendIds(List.of("sidB"))
-                .courseIds(List.of(course1.getId()))
+                .courseIds(List.of(course1.getCourseId()))
                 .build();
         String updatedForm = mapper.writeValueAsString(applyForm2);
 

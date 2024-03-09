@@ -3,7 +3,6 @@ package edu.handong.csee.histudy.choice;
 import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.repository.CourseRepository;
 import edu.handong.csee.histudy.repository.StudyGroupRepository;
-import edu.handong.csee.histudy.repository.UserCourseRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -69,10 +68,10 @@ public class UserCourseTest {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
-        List<UserCourse> preferredCours = courses.stream().map(c -> userCourseRepository.save(new UserCourse(user, c, 0))).toList();
+        List<PreferredCourse> preferredCours = courses.stream().map(c -> userCourseRepository.save(new PreferredCourse(c, 0))).toList();
         user.getCourseSelections().addAll(preferredCours);
 
-        assertThat(user.getCourseSelections().stream().map(UserCourse::getCourse).toList()).isNotNull();
+        assertThat(user.getCourseSelections().stream().map(PreferredCourse::getCourse).toList()).isNotNull();
 //        assertThat(user.getChoices().size()).isEqualTo(2);
     }
 }

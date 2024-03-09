@@ -17,7 +17,7 @@ public class WebConfig implements WebMvcConfigurer {
     private final JwtService jwtService;
 
     @Value("${custom.origin.allowed}")
-    private String client;
+    private String[] clients;
 
     @Value("${custom.path-patterns.exclude}")
     private String[] excludePathPatterns;
@@ -41,7 +41,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOriginPatterns(client)
+                .allowedOriginPatterns(clients)
                 .allowedMethods("GET", "POST", "DELETE", "PATCH")
                 .allowCredentials(true);
     }

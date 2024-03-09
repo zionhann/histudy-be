@@ -21,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -91,7 +90,7 @@ public class UserControllerTests {
         userService.apply(
                 ApplyForm.builder()
                         .friendIds(List.of(friend.getSid()))
-                        .courseIds(List.of(course.getId()))
+                        .courseIds(List.of(course.getCourseId()))
                         .build(),
                 saved.getEmail());
 
@@ -146,14 +145,14 @@ public class UserControllerTests {
         userService.apply(
                 ApplyForm.builder()
                         .friendIds(List.of(friend.getSid()))
-                        .courseIds(List.of(course.getId()))
+                        .courseIds(List.of(course.getCourseId()))
                         .build(),
                 saved.getEmail());
 
         userService.apply(
                 ApplyForm.builder()
                         .friendIds(List.of(friend2.getSid()))
-                        .courseIds(List.of(course2.getId()))
+                        .courseIds(List.of(course2.getCourseId()))
                         .build(),
                 saved.getEmail());
 

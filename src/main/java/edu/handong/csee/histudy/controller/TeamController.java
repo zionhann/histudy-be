@@ -2,12 +2,12 @@ package edu.handong.csee.histudy.controller;
 
 import edu.handong.csee.histudy.controller.form.ReportForm;
 import edu.handong.csee.histudy.domain.Role;
-import edu.handong.csee.histudy.domain.StudyGroup;
 import edu.handong.csee.histudy.dto.CourseDto;
 import edu.handong.csee.histudy.dto.ReportDto;
 import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.exception.ForbiddenException;
-import edu.handong.csee.histudy.exception.UserNotFoundException;
+import edu.handong.csee.histudy.repository.AcademicTermRepository;
+import edu.handong.csee.histudy.repository.StudyGroupRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import edu.handong.csee.histudy.service.CourseService;
 import edu.handong.csee.histudy.service.ImageService;
@@ -24,9 +24,9 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.collections.map.SingletonMap;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,6 +43,8 @@ public class TeamController {
   private final TeamService teamService;
   private final ImageService imageService;
   private final UserRepository userRepository;
+  private final AcademicTermRepository academicTermRepository;
+  private final StudyGroupRepository studyGroupRepository;
 
   @Operation(summary = "그룹 스터디 보고서 생성")
   @PostMapping("/reports")
@@ -74,7 +76,6 @@ public class TeamController {
       @PathVariable Long reportId, @RequestAttribute Claims claims) {
     if (Role.isAuthorized(claims, Role.MEMBER, Role.ADMIN)) {
       Optional<ReportDto.ReportInfo> reportsOr = reportService.getReport(reportId);
-
       return reportsOr.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
     throw new ForbiddenException();
@@ -145,20 +146,13 @@ public class TeamController {
           @Content(
               mediaType = "application/json",
               examples = @ExampleObject(value = "{\"imagePath\": \"/path/to/image.png\"}")))
-  public ResponseEntity<SingletonMap> uploadImage(
+  public ResponseEntity<Map<String, String>> uploadImage(
       @PathVariable(required = false) Optional<Long> reportIdOr,
       @RequestParam MultipartFile image,
       @RequestAttribute Claims claims) {
     if (Role.isAuthorized(claims, Role.MEMBER)) {
-      StudyGroup studyGroup =
-          userRepository
-              .findUserByEmail(claims.getSubject())
-              .orElseThrow(UserNotFoundException::new)
-              .getStudyGroup();
-
-      String filename = imageService.getImagePaths(image, studyGroup.getTag(), reportIdOr);
-      SingletonMap response = new SingletonMap("imagePath", filename);
-
+      String filename = imageService.getImagePaths(claims.getSubject(), image, reportIdOr);
+      Map<String, String> response = Map.of("imagePath", filename);
       return ResponseEntity.ok(response);
     }
     throw new ForbiddenException();

@@ -1,5 +1,7 @@
 package edu.handong.csee.histudy.dto;
 
+import edu.handong.csee.histudy.domain.GroupMember;
+import edu.handong.csee.histudy.domain.StudyReport;
 import edu.handong.csee.histudy.domain.StudyGroup;
 import edu.handong.csee.histudy.domain.User;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -40,11 +42,12 @@ public class TeamRankDto {
         example = "https://i.imgur.com/3QXm2oF.png")
     private String thumbnail;
 
-    public TeamInfo(StudyGroup studyGroup, String imgPath) {
+    public TeamInfo(StudyGroup studyGroup, List<StudyReport> reports, String imgPath) {
       this.id = studyGroup.getTag();
-      this.members = studyGroup.getMembers().stream().map(User::getName).toList();
-      this.reports = studyGroup.getReports().size();
-      this.totalMinutes = studyGroup.getTotalMinutes();
+      this.members =
+          studyGroup.getMembers().stream().map(GroupMember::getUser).map(User::getName).toList();
+      this.reports = reports.size();
+      this.totalMinutes = reports.stream().mapToLong(StudyReport::getTotalMinutes).sum();
       this.thumbnail = imgPath;
     }
   }

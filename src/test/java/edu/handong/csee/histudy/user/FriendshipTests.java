@@ -1,7 +1,7 @@
 package edu.handong.csee.histudy.user;
 
-import edu.handong.csee.histudy.domain.Friendship;
-import edu.handong.csee.histudy.domain.FriendshipStatus;
+import edu.handong.csee.histudy.domain.StudyPartnerRequest;
+import edu.handong.csee.histudy.domain.RequestStatus;
 import edu.handong.csee.histudy.domain.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,15 +30,15 @@ public class FriendshipTests {
 
         // when
         userA.addUser(List.of(userB));
-        Friendship friendship = userA.getSentRequests()
+        StudyPartnerRequest studyPartnerRequest = userA.getSentRequests()
                 .stream()
                 .findAny()
                 .orElseThrow();
 
         // then
-        assertThat(friendship.getSent()).isEqualTo(userA);
-        assertThat(friendship.getReceived()).isEqualTo(userB);
-        assertThat(friendship.getStatus()).isEqualTo(FriendshipStatus.PENDING);
+        assertThat(studyPartnerRequest.getSent()).isEqualTo(userA);
+        assertThat(studyPartnerRequest.getReceiver()).isEqualTo(userB);
+        assertThat(studyPartnerRequest.getRequestStatus()).isEqualTo(RequestStatus.PENDING);
     }
 
     @DisplayName("나를 친구로 등록(요청)한 상대를 알 수 있다.")
@@ -54,15 +54,15 @@ public class FriendshipTests {
 
         // when
         userA.addUser(List.of(userB));
-        Friendship friendship = userB.getReceivedRequests()
+        StudyPartnerRequest studyPartnerRequest = userB.getReceivedRequests()
                 .stream()
                 .findAny()
                 .orElseThrow();
 
         // then
-        assertThat(friendship.getSent()).isEqualTo(userA);
-        assertThat(friendship.getReceived()).isEqualTo(userB);
-        assertThat(friendship.getStatus()).isEqualTo(FriendshipStatus.PENDING);
+        assertThat(studyPartnerRequest.getSent()).isEqualTo(userA);
+        assertThat(studyPartnerRequest.getReceiver()).isEqualTo(userB);
+        assertThat(studyPartnerRequest.getRequestStatus()).isEqualTo(RequestStatus.PENDING);
     }
 
     @DisplayName("등록(요청)한 상대에 대해 요청상태(대기, 수락, 거절) 등을 알 수 있다: 수락")
@@ -82,17 +82,17 @@ public class FriendshipTests {
                 .stream()
                 .filter(friendship -> friendship.getSent().equals(userA))
                 .findAny()
-                .ifPresent((Friendship::accept));
+                .ifPresent((StudyPartnerRequest::accept));
 
-        Friendship friendship = userB.getReceivedRequests()
+        StudyPartnerRequest studyPartnerRequest = userB.getReceivedRequests()
                 .stream()
                 .findAny()
                 .orElseThrow();
 
         // then
-        assertThat(friendship.getSent()).isEqualTo(userA);
-        assertThat(friendship.getReceived()).isEqualTo(userB);
-        assertThat(friendship.getStatus()).isEqualTo(FriendshipStatus.ACCEPTED);
+        assertThat(studyPartnerRequest.getSent()).isEqualTo(userA);
+        assertThat(studyPartnerRequest.getReceiver()).isEqualTo(userB);
+        assertThat(studyPartnerRequest.getRequestStatus()).isEqualTo(RequestStatus.ACCEPTED);
     }
 
     @DisplayName("기존에 등록한 강의 정보나 친구가 있는 경우 지우고 업데이트한다")
