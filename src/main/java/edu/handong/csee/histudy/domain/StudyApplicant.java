@@ -48,7 +48,7 @@ public class StudyApplicant extends BaseTime {
     return applicant;
   }
 
-  public void changeStatusIfPartnerRequested(
+  public void changeStatusIfReceivedBy(
       User user, Function<StudyPartnerRequest, RequestStatus> changeStatus) {
     this.partnerRequests.stream()
         .filter(request -> request.isReceivedBy(user))

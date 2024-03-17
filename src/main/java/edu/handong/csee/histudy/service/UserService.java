@@ -57,9 +57,12 @@ public class UserService {
             studyApplicantRepository
                 .findByUserAndTerm(partner, currentTerm)
                 .ifPresent(
-                    partnerApplication ->
-                        partnerApplication.changeStatusIfPartnerRequested(
-                            user, StudyPartnerRequest::accept)));
+                    partnerApplication -> {
+                      partnerApplication.changeStatusIfReceivedBy(
+                          user, StudyPartnerRequest::accept);
+
+                      applicant.changeStatusIfReceivedBy(partner, StudyPartnerRequest::accept);
+                    }));
     studyApplicantRepository.save(applicant);
     return new ApplyFormDto(applicant);
   }
@@ -88,9 +91,12 @@ public class UserService {
             studyApplicantRepository
                 .findByUserAndTerm(partner, currentTerm)
                 .ifPresent(
-                    partnerApplication ->
-                        partnerApplication.changeStatusIfPartnerRequested(
-                            user, StudyPartnerRequest::accept)));
+                    partnerApplication -> {
+                      partnerApplication.changeStatusIfReceivedBy(
+                          user, StudyPartnerRequest::accept);
+
+                      applicant.changeStatusIfReceivedBy(partner, StudyPartnerRequest::accept);
+                    }));
     return studyApplicantRepository.save(applicant);
   }
 
@@ -109,7 +115,7 @@ public class UserService {
                     .findByUserAndTerm(receiver, currentTerm)
                     .ifPresent(
                         partnerApplication ->
-                            partnerApplication.changeStatusIfPartnerRequested(
+                            partnerApplication.changeStatusIfReceivedBy(
                                 user, StudyPartnerRequest::unfriend));
               }
               studyApplicantRepository.delete(applicant);
@@ -222,7 +228,7 @@ public class UserService {
                 applicantOr.ifPresent(
                     applicant -> {
                       applicant.leaveGroup();
-                      studyGroupRepository.deleteEmptyGroup();
+                      studyGroupRepository.deleteEmptyGroup(currentTerm);
                     }));
   }
 
