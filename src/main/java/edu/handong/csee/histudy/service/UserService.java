@@ -228,7 +228,7 @@ public class UserService {
                 applicantOr.ifPresent(
                     applicant -> {
                       applicant.leaveGroup();
-                      studyGroupRepository.deleteEmptyGroup();
+                      studyGroupRepository.deleteEmptyGroup(currentTerm);
                     }));
   }
 

@@ -16,8 +16,8 @@ public interface StudyGroupRepository extends JpaRepository<StudyGroup, Long> {
   Optional<StudyGroup> findByTagAndAcademicTerm(int tag, AcademicTerm academicTerm);
 
   @Modifying
-  @Query("delete from StudyGroup s where s.tag = -1")
-  void deleteEmptyGroup();
+  @Query("delete from StudyGroup s where s.members is empty and s.academicTerm = :academicTerm")
+  void deleteEmptyGroup(@Param("academicTerm") AcademicTerm academicTerm);
 
   @Query("select max(s.tag) from StudyGroup s where s.academicTerm = :academicTerm")
   Optional<Integer> countMaxTag(@Param("academicTerm") AcademicTerm academicTerm);

@@ -113,10 +113,7 @@ public class StudyGroup extends BaseTime {
   }
 
   protected void assignCommonCourses(StudyApplicant... applicants) {
-    if (isSameMemberExact(applicants)) return;
-    if (this.members.isEmpty()) {
-      this.courses.clear();
-      this.tag = -1;
+    if (isSameMemberExact(applicants)) {
       return;
     }
     findCommonCourses(applicants).stream()
