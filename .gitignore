@@ -37,9 +37,8 @@ out/
 .vscode/
 
 ### Custom
-/src/main/resources/application.yml
-/src/main/resources/application.properties
 /**/resources/static/
 htmlReport/
 *.db
-*.yml
+application-*.yml
+application-*.properties

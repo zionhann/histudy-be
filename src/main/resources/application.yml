@@ -1,0 +1,62 @@
+spring:
+  profiles:
+    include:
+  jpa:
+    hibernate:
+      ddl-auto: update
+  datasource:
+    # Define database connection properties.
+    ## - driver-class-name: The driver class name for the database connection.
+    ### Use "com.mysql.cj.jdbc.Driver" for MySQL.
+    ### Use "org.mariadb.jdbc.Driver" for MariaDB.
+    ## - username: The username for the database connection.
+    ## - password: The password for the database connection.
+    ## - url: The URL for the database connection.
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+    url: jdbc:h2:mem:testdb;NON_KEYWORDS=USER
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+server:
+  servlet:
+    encoding:
+      charset: utf-8
+      force: true
+
+springdoc:
+  api-docs:
+    enabled: true
+
+custom:
+  jwt:
+    # Define JWT related properties.
+    ## - issuer: The issuer of the token. Same as the base URL of the application.
+    ## - secret: The secret key used to sign the JWT token. Base64 encoded key computed using the HMAC SHA-256 algorithm.
+    ## - access-token-expiry: The expiry time of the access token in seconds.
+    ## - refresh-token-expiry: The expiry time of the refresh token in seconds.
+    issuer: http://localhost:8080
+    secret: DVIk84hQV4n+qutUpU+pBoHz6oZQPuStYHoZFfxj9wE= # Development use only
+    access-token-expiry: 10800    # 3 hours
+    refresh-token-expiry: 2592000 # 1 month
+  path-patterns:
+    # Define path patterns to include or exclude from the authentication.
+    ## - exclude: The path patterns to exclude from the authentication.
+    ## - include: The path patterns to include for the authentication.
+    exclude: /api/public/**, /api/auth/**, /api/users
+    include: /api/**
+  resource:
+    # Define the location of the resource files. Commonly used for storing study report images.
+    ## - location: The location of the resource files to be stored.
+    ## - path-pattern: The path pattern to access the resource files.
+    ## - path: The base path for the resource files.
+    location: classpath:path/to/images/
+    path-pattern: /reports/images/**
+    path: /reports/images/
+  origin:
+    # Define the allowed origins for CORS.
+    ## - allowed: The comma-separated list of allowed origins.
+    allowed: http://localhost:3000
