@@ -19,7 +19,7 @@ public class StudyReportRepositoryImpl implements StudyReportRepository {
 
   @Override
   public Optional<StudyReport> findById(Long id) {
-    return Optional.empty();
+    return repository.findById(id);
   }
 
   @Override
