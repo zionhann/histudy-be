@@ -1,0 +1,28 @@
+package edu.handong.csee.histudy.repository.impl;
+
+import edu.handong.csee.histudy.domain.AcademicTerm;
+import edu.handong.csee.histudy.domain.TermType;
+import edu.handong.csee.histudy.repository.AcademicTermRepository;
+import edu.handong.csee.histudy.repository.jpa.JpaAcademicTermRepository;
+import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+public class AcademicTermRepositoryImpl implements AcademicTermRepository {
+  private final JpaAcademicTermRepository repository;
+
+  @Override
+  public Optional<AcademicTerm> findCurrentSemester() {
+    return repository.findCurrentSemester();
+  }
+
+  @Override
+  public Optional<AcademicTerm> findByYearAndTerm(int year, TermType sem) {
+    return repository.findByYearAndTerm(year, sem);
+  }
+
+  @Override
+  public AcademicTerm save(AcademicTerm academicTerm) {
+    return repository.save(academicTerm);
+  }
+}
