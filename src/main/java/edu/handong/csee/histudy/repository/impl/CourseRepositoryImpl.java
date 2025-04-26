@@ -6,7 +6,9 @@ import edu.handong.csee.histudy.repository.jpa.JpaCourseRepository;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
+@Repository
 @RequiredArgsConstructor
 public class CourseRepositoryImpl implements CourseRepository {
   private final JpaCourseRepository repository;

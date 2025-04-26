@@ -8,7 +8,9 @@ import edu.handong.csee.histudy.repository.jpa.JpaStudyGroupRepository;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
+@Repository
 @RequiredArgsConstructor
 public class StudyGroupRepositoryImpl implements StudyGroupRepository {
   private final JpaStudyGroupRepository repository;

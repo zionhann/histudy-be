@@ -7,7 +7,9 @@ import edu.handong.csee.histudy.repository.jpa.JpaStudyReportRepository;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
+@Repository
 @RequiredArgsConstructor
 public class StudyReportRepositoryImpl implements StudyReportRepository {
   private final JpaStudyReportRepository repository;

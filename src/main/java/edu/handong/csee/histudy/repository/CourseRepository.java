@@ -3,9 +3,7 @@ package edu.handong.csee.histudy.repository;
 import edu.handong.csee.histudy.domain.Course;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.stereotype.Repository;
 
-@Repository
 public interface CourseRepository {
   List<Course> findAllByNameContainingIgnoreCase(String keyword);
 
