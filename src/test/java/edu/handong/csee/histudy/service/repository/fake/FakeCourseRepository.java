@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.test.util.ReflectionTestUtils;
 
 public class FakeCourseRepository implements CourseRepository {
 
@@ -26,16 +27,7 @@ public class FakeCourseRepository implements CourseRepository {
 
   @Override
   public List<Course> saveAll(List<Course> entities) {
-    entities.forEach(
-        course -> {
-          try {
-            var field = Course.class.getDeclaredField("courseId");
-            field.setAccessible(true);
-            field.set(course, sequence++);
-          } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-          }
-        });
+    entities.forEach(course -> ReflectionTestUtils.setField(course, "courseId", sequence++));
     store.addAll(entities);
     return entities;
   }

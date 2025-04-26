@@ -6,10 +6,12 @@ import edu.handong.csee.histudy.repository.AcademicTermRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.test.util.ReflectionTestUtils;
 
 public class FakeAcademicTermRepository implements AcademicTermRepository {
 
   private final List<AcademicTerm> store = new ArrayList<>();
+  private Long sequence = 1L;
 
   @Override
   public Optional<AcademicTerm> findCurrentSemester() {
@@ -25,6 +27,7 @@ public class FakeAcademicTermRepository implements AcademicTermRepository {
 
   @Override
   public AcademicTerm save(AcademicTerm entity) {
+    ReflectionTestUtils.setField(entity, "academicTermId", sequence++);
     store.add(entity);
     return entity;
   }
