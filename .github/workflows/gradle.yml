@@ -18,23 +18,13 @@ permissions:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Apply configuration
-        run: |
-          if [ ! -d "./src/test/resources" ]; then
-            mkdir -p ./src/test/resources
-          fi
-        
-          echo "${{ secrets.APP_CONFIG }}" > ./src/test/resources/application.yml
+        uses: actions/checkout@v4
 
       - name: Set JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
