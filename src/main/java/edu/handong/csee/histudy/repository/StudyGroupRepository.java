@@ -5,9 +5,7 @@ import edu.handong.csee.histudy.domain.StudyGroup;
 import edu.handong.csee.histudy.domain.User;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.stereotype.Repository;
 
-@Repository
 public interface StudyGroupRepository {
   Optional<StudyGroup> findByTagAndAcademicTerm(int tag, AcademicTerm academicTerm);
 

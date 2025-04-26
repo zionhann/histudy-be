@@ -8,10 +8,12 @@ import edu.handong.csee.histudy.repository.StudyApplicantRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.test.util.ReflectionTestUtils;
 
 public class FakeStudyApplicationRepository implements StudyApplicantRepository {
 
   private final List<StudyApplicant> store = new ArrayList<>();
+  private Long sequence = 1L;
 
   @Override
   public Optional<StudyApplicant> findByUserAndTerm(User applicant, AcademicTerm currentTerm) {
@@ -46,6 +48,7 @@ public class FakeStudyApplicationRepository implements StudyApplicantRepository 
 
   @Override
   public StudyApplicant save(StudyApplicant entity) {
+    ReflectionTestUtils.setField(entity, "studyApplicantId", sequence++);
     store.add(entity);
     return entity;
   }

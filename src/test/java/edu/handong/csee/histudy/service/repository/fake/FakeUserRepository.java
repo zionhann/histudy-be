@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Sort;
+import org.springframework.test.util.ReflectionTestUtils;
 
 public class FakeUserRepository implements UserRepository {
 
@@ -73,13 +74,7 @@ public class FakeUserRepository implements UserRepository {
 
   @Override
   public User save(User user) {
-    try {
-      var field = User.class.getDeclaredField("userId");
-      field.setAccessible(true);
-      field.set(user, sequence++);
-    } catch (NoSuchFieldException | IllegalAccessException e) {
-      throw new RuntimeException("Failed to set userId via reflection", e);
-    }
+    ReflectionTestUtils.setField(user, "userId", sequence++);
     store.add(user);
     return user;
   }

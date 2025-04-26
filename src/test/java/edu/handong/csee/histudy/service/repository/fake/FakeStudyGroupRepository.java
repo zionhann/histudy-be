@@ -5,10 +5,12 @@ import edu.handong.csee.histudy.repository.StudyGroupRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.test.util.ReflectionTestUtils;
 
 public class FakeStudyGroupRepository implements StudyGroupRepository {
 
   private final List<StudyGroup> store = new ArrayList<>();
+  private Long sequence = 1L;
 
   @Override
   public Optional<StudyGroup> findByTagAndAcademicTerm(int tag, AcademicTerm academicTerm) {
@@ -63,6 +65,7 @@ public class FakeStudyGroupRepository implements StudyGroupRepository {
 
   @Override
   public StudyGroup save(StudyGroup entity) {
+    ReflectionTestUtils.setField(entity, "studyGroupId", sequence++);
     store.add(entity);
     return entity;
   }

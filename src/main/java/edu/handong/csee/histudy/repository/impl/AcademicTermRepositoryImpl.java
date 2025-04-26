@@ -6,7 +6,9 @@ import edu.handong.csee.histudy.repository.AcademicTermRepository;
 import edu.handong.csee.histudy.repository.jpa.JpaAcademicTermRepository;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
+@Repository
 @RequiredArgsConstructor
 public class AcademicTermRepositoryImpl implements AcademicTermRepository {
   private final JpaAcademicTermRepository repository;
