@@ -31,4 +31,8 @@ public class FakeAcademicTermRepository implements AcademicTermRepository {
     store.add(entity);
     return entity;
   }
+
+  public List<AcademicTerm> findAll() {
+    return new ArrayList<>(store);
+  }
 }
