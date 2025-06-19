@@ -46,4 +46,8 @@ public class FakeCourseRepository implements CourseRepository {
   public Optional<Course> findById(Long id) {
     return store.stream().filter(c -> c.getCourseId().equals(id)).findFirst();
   }
+
+  public List<Course> findAll() {
+    return new ArrayList<>(store);
+  }
 }

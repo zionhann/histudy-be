@@ -6,9 +6,13 @@ import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.CourseDto;
 import edu.handong.csee.histudy.repository.*;
 import edu.handong.csee.histudy.service.repository.fake.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockMultipartFile;
 
 public class CourseServiceTest {
 
@@ -97,5 +101,93 @@ public class CourseServiceTest {
 
     // Then
     assertThat(res.size()).isEqualTo(2);
+  }
+
+  @Test
+  void 강의목록_업로드() throws IOException {
+    // Given
+    String content =
+        """
+    class,code,professor,year,semester
+    Introduction to Test,ECE00103,John,2025,1
+    """;
+    InputStream stream = new ByteArrayInputStream(content.getBytes());
+    MockMultipartFile file = new MockMultipartFile("file", stream);
+
+    // When
+    courseService.readCourseCSV(file);
+
+    // Then
+    List<Course> list = courseRepository.findAllByAcademicTermIsCurrentTrue();
+    assertThat(list.size()).isEqualTo(3);
+  }
+
+  @Test
+  void CSV파일로_강의목록_읽기_성공() throws IOException {
+    // Given
+    String csvContent =
+        """
+    class,code,professor,year,semester
+    Advanced Programming,CSE30201,Dr. Kim,2025,1
+    Database Systems,CSE30301,Prof. Lee,2025,1
+    Operating Systems,CSE30401,Dr. Park,2025,2
+    """;
+    InputStream stream = new ByteArrayInputStream(csvContent.getBytes());
+    MockMultipartFile file =
+        new MockMultipartFile("courses.csv", "courses.csv", "text/csv", stream);
+
+    // When
+    courseService.readCourseCSV(file);
+
+    // Then
+    List<Course> savedCourses = ((FakeCourseRepository) courseRepository).findAll();
+    assertThat(savedCourses).hasSize(5); // 2 existing + 3 new
+
+    Course newCourse1 =
+        savedCourses.stream().filter(c -> c.getCode().equals("CSE30201")).findFirst().orElseThrow();
+    assertThat(newCourse1.getName()).isEqualTo("Advanced Programming");
+    assertThat(newCourse1.getProfessor()).isEqualTo("Dr. Kim");
+    assertThat(newCourse1.getAcademicTerm().getAcademicYear()).isEqualTo(2025);
+  }
+
+  @Test
+  void CSV파일로_새로운_학기_생성() throws IOException {
+    // Given
+    String csvContent =
+        """
+    class,code,professor,year,semester
+    New Course,NEW001,New Prof,2026,1
+    """;
+    InputStream stream = new ByteArrayInputStream(csvContent.getBytes());
+    MockMultipartFile file =
+        new MockMultipartFile("courses.csv", "courses.csv", "text/csv", stream);
+
+    // When
+    courseService.readCourseCSV(file);
+
+    // Then
+    List<AcademicTerm> terms = ((FakeAcademicTermRepository) academicTermRepository).findAll();
+    assertThat(terms).hasSize(2); // 1 existing + 1 new
+
+    AcademicTerm newTerm =
+        terms.stream().filter(t -> t.getAcademicYear() == 2026).findFirst().orElseThrow();
+    assertThat(newTerm.getSemester()).isEqualTo(TermType.SPRING);
+  }
+
+  @Test
+  void CSV파일_읽기_중_IOException_발생() {
+    // Given
+    MockMultipartFile file =
+        new MockMultipartFile("invalid.csv", "invalid.csv", "text/csv", (byte[]) null) {
+          @Override
+          public InputStream getInputStream() throws IOException {
+            throw new IOException("File read error");
+          }
+        };
+
+    // When & Then
+    assertThatThrownBy(() -> courseService.readCourseCSV(file))
+        .isInstanceOf(IOException.class)
+        .hasMessage("File read error");
   }
 }

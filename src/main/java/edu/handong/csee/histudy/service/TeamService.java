@@ -144,13 +144,13 @@ public class TeamService {
     matchFriendFirst(applicants, tag, current);
 
     // Remove users who have already been matched
-    applicants.removeIf(StudyApplicant::isMarkedAsGrouped);
+    //    applicants.removeIf(StudyApplicant::isMarkedAsGrouped);
 
     // Second matching
     matchCourseFirst(applicants, tag, current);
 
     // Remove users who have already been matched
-    applicants.removeIf(StudyApplicant::isMarkedAsGrouped);
+    //    applicants.removeIf(StudyApplicant::isMarkedAsGrouped);
 
     // Third matching
     matchCourseSecond(applicants, tag, current);

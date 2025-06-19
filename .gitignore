@@ -42,3 +42,4 @@ htmlReport/
 *.db
 application-*.yml
 application-*.properties
+.claude/
