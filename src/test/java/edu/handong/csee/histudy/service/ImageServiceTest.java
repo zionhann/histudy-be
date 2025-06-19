@@ -1,10 +1,12 @@
 package edu.handong.csee.histudy.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import edu.handong.csee.histudy.domain.*;
+import edu.handong.csee.histudy.exception.*;
 import edu.handong.csee.histudy.repository.*;
 import edu.handong.csee.histudy.service.repository.fake.*;
 import edu.handong.csee.histudy.util.ImagePathMapper;
@@ -133,5 +135,113 @@ public class ImageServiceTest {
 
       assertThat(imagePath).contains(origin, imageBasePath);
     }
+  }
+
+  @Test
+  void 스터디보고서_이미지_업로드_파일명이null인경우() throws IOException {
+    // Given
+    MultipartFile data = mock(MultipartFile.class);
+    when(data.getOriginalFilename()).thenReturn(null);
+    doNothing().when(data).transferTo(any(File.class));
+
+    // When
+    String imagePath = imageService.getImagePaths("user1@test.com", data, Optional.empty());
+
+    // Then
+    assertThat(imagePath).contains(origin, imageBasePath);
+    assertThat(imagePath).contains(".jpg");
+  }
+
+  @Test
+  void 스터디보고서_이미지_업로드_파일전송실패() throws IOException {
+    // Given
+    MultipartFile data = mock(MultipartFile.class);
+    when(data.getOriginalFilename()).thenReturn("test.png");
+    doThrow(new IOException("Transfer failed")).when(data).transferTo(any(File.class));
+
+    // When & Then
+    assertThatThrownBy(() -> imageService.getImagePaths("user1@test.com", data, Optional.empty()))
+        .isInstanceOf(FileTransferException.class);
+  }
+
+  @Test
+  void 스터디보고서_이미지_업로드_존재하지않는사용자() {
+    // Given
+    MultipartFile data = mock(MultipartFile.class);
+
+    // When & Then
+    assertThatThrownBy(() -> imageService.getImagePaths("nonexistent@test.com", data, Optional.empty()))
+        .isInstanceOf(UserNotFoundException.class);
+  }
+
+  @Test
+  void 스터디보고서_이미지_업로드_현재학기없음() {
+    // Given
+    MultipartFile data = mock(MultipartFile.class);
+    
+    // Setup - remove current term
+    AcademicTermRepository academicTermRepository = new FakeAcademicTermRepository();
+    UserRepository userRepository = new FakeUserRepository();
+    StudyReportRepository studyReportRepository = new FakeStudyReportRepository();
+    StudyApplicantRepository studyApplicantRepository = new FakeStudyApplicationRepository();
+    StudyGroupRepository studyGroupRepository = new FakeStudyGroupRepository();
+    ImagePathMapper imagePathMapper = new ImagePathMapper();
+
+    ImageService testImageService = new ImageService(
+        academicTermRepository,
+        userRepository,
+        studyReportRepository,
+        studyApplicantRepository,
+        imagePathMapper,
+        studyGroupRepository);
+
+    User student = User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
+    userRepository.save(student);
+
+    // When & Then
+    assertThatThrownBy(() -> testImageService.getImagePaths("user1@test.com", data, Optional.empty()))
+        .isInstanceOf(NoCurrentTermFoundException.class);
+  }
+
+  @Test
+  void 스터디보고서_이미지_업로드_스터디그룹없음() {
+    // Given
+    MultipartFile data = mock(MultipartFile.class);
+    
+    // Setup - term exists but no study group
+    AcademicTermRepository academicTermRepository = new FakeAcademicTermRepository();
+    UserRepository userRepository = new FakeUserRepository();
+    StudyReportRepository studyReportRepository = new FakeStudyReportRepository();
+    StudyApplicantRepository studyApplicantRepository = new FakeStudyApplicationRepository();
+    StudyGroupRepository studyGroupRepository = new FakeStudyGroupRepository();
+    ImagePathMapper imagePathMapper = new ImagePathMapper();
+
+    ImageService testImageService = new ImageService(
+        academicTermRepository,
+        userRepository,
+        studyReportRepository,
+        studyApplicantRepository,
+        imagePathMapper,
+        studyGroupRepository);
+
+    AcademicTerm term = AcademicTerm.builder().academicYear(2025).semester(TermType.SPRING).isCurrent(true).build();
+    academicTermRepository.save(term);
+
+    User student = User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
+    userRepository.save(student);
+
+    // When & Then
+    assertThatThrownBy(() -> testImageService.getImagePaths("user1@test.com", data, Optional.empty()))
+        .isInstanceOf(StudyGroupNotFoundException.class);
+  }
+
+  @Test
+  void 스터디보고서_이미지_업로드_존재하지않는리포트() {
+    // Given
+    MultipartFile data = mock(MultipartFile.class);
+
+    // When & Then
+    assertThatThrownBy(() -> imageService.getImagePaths("user1@test.com", data, Optional.of(999L)))
+        .isInstanceOf(ReportNotFoundException.class);
   }
 }
