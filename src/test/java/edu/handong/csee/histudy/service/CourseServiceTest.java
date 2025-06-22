@@ -6,6 +6,7 @@ import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.CourseDto;
 import edu.handong.csee.histudy.repository.*;
 import edu.handong.csee.histudy.service.repository.fake.*;
+import edu.handong.csee.histudy.support.TestDataFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,29 +41,27 @@ public class CourseServiceTest {
             studyGroupRepository,
             studyApplicantRepository);
 
-    AcademicTerm term =
-        AcademicTerm.builder().academicYear(2025).semester(TermType.SPRING).isCurrent(true).build();
+    AcademicTerm term = TestDataFactory.createCurrentTerm();
     academicTermRepository.save(term);
 
-    User student1 =
-        User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
-
-    User student2 =
-        User.builder().sub("2").sid("22500102").email("user2@test.com").name("Bar").build();
+    User student1 = TestDataFactory.createUser("1", "22500101", "user1@test.com", "Foo", Role.USER);
+    User student2 = TestDataFactory.createUser("2", "22500102", "user2@test.com", "Bar", Role.USER);
 
     userRepository.save(student1);
     userRepository.save(student2);
 
-    Course course1 = new Course("Introduction to Algorithms", "ECE00101", "John Doe", term);
-    Course course2 = new Course("Introduction to Data Structures", "ECE00102", "John Doe", term);
+    Course course1 =
+        TestDataFactory.createCourse("Introduction to Algorithms", "ECE00101", "John Doe", term);
+    Course course2 =
+        TestDataFactory.createCourse(
+            "Introduction to Data Structures", "ECE00102", "John Doe", term);
 
     courseRepository.saveAll(List.of(course1, course2));
 
     StudyApplicant studyApplicant1 =
-        StudyApplicant.of(term, student1, List.of(student2), List.of(course1));
-
+        TestDataFactory.createStudyApplicant(term, student1, List.of(student2), List.of(course1));
     StudyApplicant studyApplicant2 =
-        StudyApplicant.of(term, student2, List.of(student1), List.of(course2));
+        TestDataFactory.createStudyApplicant(term, student2, List.of(student1), List.of(course2));
 
     studyApplicantRepository.save(studyApplicant1);
     studyApplicantRepository.save(studyApplicant2);
@@ -72,7 +71,7 @@ public class CourseServiceTest {
   }
 
   @Test
-  void 강의목록_검색_전체() {
+  void 호출시_전체강의목록반환() {
     // When
     List<CourseDto.CourseInfo> courses = courseService.getCurrentCourses();
 
@@ -81,7 +80,7 @@ public class CourseServiceTest {
   }
 
   @Test
-  void 강의목록_검색_키워드() {
+  void 키워드제공시_일치하는강의반환() {
     // When
     String keyword1 = "algo";
     String keyword2 = "intro";
@@ -95,7 +94,7 @@ public class CourseServiceTest {
   }
 
   @Test
-  void 스터디그룹_선택과목_목록_조회() {
+  void 사용자이메일시_팀강의목록반환() {
     // When
     List<CourseDto.CourseInfo> res = courseService.getTeamCourses("user1@test.com");
 
@@ -104,7 +103,7 @@ public class CourseServiceTest {
   }
 
   @Test
-  void 강의목록_업로드() throws IOException {
+  void CSV파일제공시_강의저장() throws IOException {
     // Given
     String content =
         """
@@ -123,7 +122,7 @@ public class CourseServiceTest {
   }
 
   @Test
-  void CSV파일로_강의목록_읽기_성공() throws IOException {
+  void 유효한CSV파일시_강의저장성공() throws IOException {
     // Given
     String csvContent =
         """
@@ -151,7 +150,7 @@ public class CourseServiceTest {
   }
 
   @Test
-  void CSV파일로_새로운_학기_생성() throws IOException {
+  void 새학기데이터시_학기생성() throws IOException {
     // Given
     String csvContent =
         """
@@ -175,7 +174,7 @@ public class CourseServiceTest {
   }
 
   @Test
-  void CSV파일_읽기_중_IOException_발생() {
+  void IO예외발생시_예외전파() {
     // Given
     MockMultipartFile file =
         new MockMultipartFile("invalid.csv", "invalid.csv", "text/csv", (byte[]) null) {
