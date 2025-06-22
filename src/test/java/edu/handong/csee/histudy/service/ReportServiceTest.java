@@ -11,6 +11,7 @@ import edu.handong.csee.histudy.dto.ReportDto;
 import edu.handong.csee.histudy.exception.*;
 import edu.handong.csee.histudy.repository.*;
 import edu.handong.csee.histudy.service.repository.fake.*;
+import edu.handong.csee.histudy.support.TestDataFactory;
 import edu.handong.csee.histudy.util.ImagePathMapper;
 import java.util.List;
 import java.util.Optional;
@@ -46,27 +47,22 @@ public class ReportServiceTest {
             imagePathMapper);
 
     // Setup
-    AcademicTerm term =
-        AcademicTerm.builder().academicYear(2025).semester(TermType.SPRING).isCurrent(true).build();
+    AcademicTerm term = TestDataFactory.createCurrentTerm();
     academicTermRepository.save(term);
 
-    User student1 =
-        User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
-
-    User student2 =
-        User.builder().sub("2").sid("22500102").email("user2@test.com").name("Bar").build();
+    User student1 = TestDataFactory.createUser("1", "22500101", "user1@test.com", "Foo", Role.USER);
+    User student2 = TestDataFactory.createUser("2", "22500102", "user2@test.com", "Bar", Role.USER);
 
     userRepository.save(student1);
     userRepository.save(student2);
 
-    Course course = new Course("Introduction to Test", "ECE00103", "John", term);
+    Course course = TestDataFactory.createCourse("Introduction to Test", "ECE00103", "John", term);
     courseRepository.saveAll(List.of(course));
 
     StudyApplicant studyApplicant1 =
-        StudyApplicant.of(term, student1, List.of(student2), List.of(course));
-
+        TestDataFactory.createStudyApplicant(term, student1, List.of(student2), List.of(course));
     StudyApplicant studyApplicant2 =
-        StudyApplicant.of(term, student2, List.of(student1), List.of(course));
+        TestDataFactory.createStudyApplicant(term, student2, List.of(student1), List.of(course));
 
     studyApplicantRepository.save(studyApplicant1);
     studyApplicantRepository.save(studyApplicant2);
@@ -94,7 +90,7 @@ public class ReportServiceTest {
   }
 
   @Test
-  void 스터디보고서_작성() {
+  void 보고서폼제공시_보고서생성() {
     // Given
     ReportForm form =
         ReportForm.builder()
@@ -113,7 +109,7 @@ public class ReportServiceTest {
   }
 
   @Test
-  void 스터디보고서_목록_조회() {
+  void 사용자이메일시_보고서목록반환() {
     // When
     List<ReportDto.ReportInfo> reports = reportService.getReports("user1@test.com");
 
@@ -122,7 +118,7 @@ public class ReportServiceTest {
   }
 
   @Test
-  void 스터디보고서_상세_조회() {
+  void 보고서ID시_상세정보반환() {
     // When
     Optional<ReportDto.ReportInfo> reportOr1 = reportService.getReport(1L);
     Optional<ReportDto.ReportInfo> reportOr2 = reportService.getReport(2L);
@@ -133,7 +129,7 @@ public class ReportServiceTest {
   }
 
   @Test
-  void 스터디보고서_수정() {
+  void 수정폼제공시_보고서업데이트() {
     // Given
     ReportForm form =
         ReportForm.builder()
@@ -152,7 +148,7 @@ public class ReportServiceTest {
   }
 
   @Test
-  void 스터디보고서_삭제() {
+  void 보고서ID시_삭제성공() {
     // When
     Optional<ReportDto.ReportInfo> reportOrBefore = reportService.getReport(1L);
     reportService.deleteReport(1L);
@@ -164,7 +160,7 @@ public class ReportServiceTest {
   }
 
   @Test
-  void 스터디보고서_삭제_존재하지않는보고서() {
+  void 존재하지않는보고서삭제시_false반환() {
     // When
     boolean result = reportService.deleteReport(999L);
 
@@ -173,15 +169,16 @@ public class ReportServiceTest {
   }
 
   @Test
-  void 스터디보고서_작성_존재하지않는사용자() {
+  void 존재하지않는사용자시_예외발생() {
     // Given
-    ReportForm form = ReportForm.builder()
-        .title("title")
-        .content("content")
-        .totalMinutes(60L)
-        .participants(List.of())
-        .courses(List.of())
-        .build();
+    ReportForm form =
+        ReportForm.builder()
+            .title("title")
+            .content("content")
+            .totalMinutes(60L)
+            .participants(List.of())
+            .courses(List.of())
+            .build();
 
     // When & Then
     assertThatThrownBy(() -> reportService.createReport(form, "nonexistent@test.com"))
@@ -189,16 +186,17 @@ public class ReportServiceTest {
   }
 
   @Test
-  void 스터디보고서_작성_현재학기없음() {
+  void 현재학기없을시_예외발생() {
     // Given
     ReportService testReportService = createReportServiceWithoutCurrentTerm();
-    ReportForm form = ReportForm.builder()
-        .title("title")
-        .content("content")
-        .totalMinutes(60L)
-        .participants(List.of())
-        .courses(List.of())
-        .build();
+    ReportForm form =
+        ReportForm.builder()
+            .title("title")
+            .content("content")
+            .totalMinutes(60L)
+            .participants(List.of())
+            .courses(List.of())
+            .build();
 
     // When & Then
     assertThatThrownBy(() -> testReportService.createReport(form, "user1@test.com"))
@@ -206,14 +204,14 @@ public class ReportServiceTest {
   }
 
   @Test
-  void 스터디보고서_목록조회_존재하지않는사용자() {
+  void 목록조회시존재하지않는사용자_예외발생() {
     // When & Then
     assertThatThrownBy(() -> reportService.getReports("nonexistent@test.com"))
         .isInstanceOf(UserNotFoundException.class);
   }
 
   @Test
-  void 스터디보고서_목록조회_현재학기없음() {
+  void 목록조회시현재학기없음_예외발생() {
     // Given
     ReportService testReportService = createReportServiceWithoutCurrentTerm();
 
@@ -223,13 +221,14 @@ public class ReportServiceTest {
   }
 
   @Test
-  void 스터디보고서_수정_존재하지않는보고서() {
+  void 존재하지않는보고서수정시_예외발생() {
     // Given
-    ReportForm form = ReportForm.builder()
-        .title("modifiedTitle")
-        .participants(List.of())
-        .courses(List.of())
-        .build();
+    ReportForm form =
+        ReportForm.builder()
+            .title("modifiedTitle")
+            .participants(List.of())
+            .courses(List.of())
+            .build();
 
     // When & Then
     assertThatThrownBy(() -> reportService.updateReport(999L, form))
@@ -237,15 +236,16 @@ public class ReportServiceTest {
   }
 
   @Test
-  void 스터디보고서_작성_참가자와과목포함() {
+  void 참가자와과목포함시_보고서생성() {
     // Given
-    ReportForm form = ReportForm.builder()
-        .title("title with participants")
-        .content("content")
-        .totalMinutes(90L)
-        .participants(List.of(1L, 2L))
-        .courses(List.of(1L))
-        .build();
+    ReportForm form =
+        ReportForm.builder()
+            .title("title with participants")
+            .content("content")
+            .totalMinutes(90L)
+            .participants(List.of(1L, 2L))
+            .courses(List.of(1L))
+            .build();
 
     // When
     ReportDto.ReportInfo report = reportService.createReport(form, "user1@test.com");
@@ -258,15 +258,16 @@ public class ReportServiceTest {
   }
 
   @Test
-  void 스터디보고서_작성_존재하지않는참가자() {
+  void 존재하지않는참가자시_필터링() {
     // Given
-    ReportForm form = ReportForm.builder()
-        .title("title")
-        .content("content")
-        .totalMinutes(60L)
-        .participants(List.of(999L))
-        .courses(List.of())
-        .build();
+    ReportForm form =
+        ReportForm.builder()
+            .title("title")
+            .content("content")
+            .totalMinutes(60L)
+            .participants(List.of(999L))
+            .courses(List.of())
+            .build();
 
     // When
     ReportDto.ReportInfo report = reportService.createReport(form, "user1@test.com");
@@ -276,15 +277,16 @@ public class ReportServiceTest {
   }
 
   @Test
-  void 스터디보고서_작성_존재하지않는과목() {
+  void 존재하지않는과목시_필터링() {
     // Given
-    ReportForm form = ReportForm.builder()
-        .title("title")
-        .content("content")
-        .totalMinutes(60L)
-        .participants(List.of())
-        .courses(List.of(999L))
-        .build();
+    ReportForm form =
+        ReportForm.builder()
+            .title("title")
+            .content("content")
+            .totalMinutes(60L)
+            .participants(List.of())
+            .courses(List.of(999L))
+            .build();
 
     // When
     ReportDto.ReportInfo report = reportService.createReport(form, "user1@test.com");
@@ -301,7 +303,7 @@ public class ReportServiceTest {
     CourseRepository courseRepository = new FakeCourseRepository();
     ImagePathMapper imagePathMapper = new ImagePathMapper();
 
-    User student1 = User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
+    User student1 = TestDataFactory.createUser("1", "22500101", "user1@test.com", "Foo", Role.USER);
     userRepository.save(student1);
 
     return new ReportService(

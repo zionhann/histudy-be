@@ -6,6 +6,7 @@ import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.*;
 import edu.handong.csee.histudy.repository.*;
 import edu.handong.csee.histudy.service.repository.fake.*;
+import edu.handong.csee.histudy.support.TestDataFactory;
 import edu.handong.csee.histudy.util.ImagePathMapper;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,33 +52,24 @@ public class TeamServiceTest {
   }
 
   @Test
-  void 그룹원정보확인_학번은_마스킹되어있어야함() {
+  void 그룹원조회시_학번마스킹() {
     // Given
-    AcademicTerm term =
-        AcademicTerm.builder().academicYear(2025).semester(TermType.SPRING).isCurrent(true).build();
+    AcademicTerm term = TestDataFactory.createCurrentTerm();
     academicTermRepository.save(term);
 
-    User student1 =
-        User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
-
-    User student2 =
-        User.builder().sub("2").sid("22500102").email("user2@test.com").name("Bar").build();
-
-    User student3 =
-        User.builder().sub("3").sid("22500103").email("user3@test.com").name("baz").build();
+    User student1 = TestDataFactory.createUser("1", "22500101", "user1@test.com", "Foo", Role.USER);
+    User student2 = TestDataFactory.createUser("2", "22500102", "user2@test.com", "Bar", Role.USER);
+    User student3 = TestDataFactory.createUser("3", "22500103", "user3@test.com", "baz", Role.USER);
 
     userRepository.save(student1);
     userRepository.save(student2);
     userRepository.save(student3);
 
-    Course course = new Course("Introduction to Test", "ECE00103", "John", term);
+    Course course = TestDataFactory.createCourse("Introduction to Test", "ECE00103", "John", term);
     courseRepository.saveAll(List.of(course));
 
-    StudyApplicant studyApplicant1 =
-        StudyApplicant.of(term, student1, List.of(student2), List.of(course));
-
-    StudyApplicant studyApplicant2 =
-        StudyApplicant.of(term, student2, List.of(student1), List.of(course));
+    StudyApplicant studyApplicant1 = TestDataFactory.createStudyApplicant(term, student1, List.of(student2), List.of(course));
+    StudyApplicant studyApplicant2 = TestDataFactory.createStudyApplicant(term, student2, List.of(student1), List.of(course));
 
     studyApplicantRepository.save(studyApplicant1);
     studyApplicantRepository.save(studyApplicant2);
@@ -95,7 +87,7 @@ public class TeamServiceTest {
   }
 
   @Test
-  void 그룹매칭_친구들끼리() {
+  void 친구선호시_그룹매칭() {
     // Given
     AcademicTerm term =
         AcademicTerm.builder().academicYear(2025).semester(TermType.SPRING).isCurrent(true).build();
@@ -134,7 +126,7 @@ public class TeamServiceTest {
   }
 
   @Test
-  void 그룹매칭_과목우선() {
+  void 과목동일시_그룹매칭() {
     // Given
     AcademicTerm term =
         AcademicTerm.builder().academicYear(2025).semester(TermType.SPRING).isCurrent(true).build();
@@ -175,7 +167,7 @@ public class TeamServiceTest {
   }
 
   @Test
-  void 그룹매칭_친구들과_과목같이() {
+  void 친구와과목모두일치시_그룹매칭() {
     // Given
     AcademicTerm term =
         AcademicTerm.builder().academicYear(2025).semester(TermType.SPRING).isCurrent(true).build();
@@ -218,7 +210,7 @@ public class TeamServiceTest {
   }
 
   @Test
-  void 팀목록조회_관리자용() {
+  void 관리자요청시_전체팀목록반환() {
     // Given
     AcademicTerm term =
         AcademicTerm.builder().academicYear(2025).semester(TermType.SPRING).isCurrent(true).build();
@@ -254,7 +246,7 @@ public class TeamServiceTest {
   }
 
   @Test
-  void 팀삭제_성공() {
+  void 유효한팀ID시_삭제성공() {
     // Given
     AcademicTerm term =
         AcademicTerm.builder().academicYear(2025).semester(TermType.SPRING).isCurrent(true).build();
@@ -285,7 +277,7 @@ public class TeamServiceTest {
   }
 
   @Test
-  void 팀삭제_존재하지않는팀() {
+  void 존재하지않는팀ID시_0반환() {
     // Given
     TeamIdDto dto = new TeamIdDto();
     dto.setGroupId(999L);
@@ -298,7 +290,7 @@ public class TeamServiceTest {
   }
 
   @Test
-  void 팀보고서조회() {
+  void 팀존재시_보고서목록반환() {
     // Given
     AcademicTerm term =
         AcademicTerm.builder().academicYear(2025).semester(TermType.SPRING).isCurrent(true).build();
@@ -341,7 +333,7 @@ public class TeamServiceTest {
   }
 
   @Test
-  void 전체팀랭킹조회() {
+  void 전체팀조회시_랭킹순반환() {
     // Given
     AcademicTerm term =
         AcademicTerm.builder().academicYear(2025).semester(TermType.SPRING).isCurrent(true).build();
@@ -402,7 +394,7 @@ public class TeamServiceTest {
   }
 
   @Test
-  void 그룹매칭_빈목록() {
+  void 빈신청목록시_오류없이처리() {
     // Given
     AcademicTerm term =
         AcademicTerm.builder().academicYear(2025).semester(TermType.SPRING).isCurrent(true).build();
@@ -413,7 +405,7 @@ public class TeamServiceTest {
   }
 
   @Test
-  void 그룹매칭_5명이상_그룹분할() {
+  void 다섯명이상시_그룹분할() {
     // Given
     AcademicTerm term =
         AcademicTerm.builder().academicYear(2025).semester(TermType.SPRING).isCurrent(true).build();

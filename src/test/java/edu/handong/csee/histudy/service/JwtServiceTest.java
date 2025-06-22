@@ -22,13 +22,14 @@ public class JwtServiceTest {
 
   @BeforeEach
   void init() {
-    String secret = Base64.getEncoder().encodeToString("test-secret-key-for-jwt-service-test".getBytes());
+    String secret =
+        Base64.getEncoder().encodeToString("test-secret-key-for-jwt-service-test".getBytes());
     jwtProperties = new JwtProperties(secret, "HIStudy", "3600", "86400");
     jwtService = new JwtService(jwtProperties);
   }
 
   @Test
-  void JWT토큰_발급_성공() {
+  void 유저정보제공시_토큰쌍발급() {
     // Given
     String email = "test@example.com";
     String name = "Test User";
@@ -44,7 +45,7 @@ public class JwtServiceTest {
   }
 
   @Test
-  void JWT토큰_검증_성공() {
+  void 유효토큰시_클레임반환() {
     // Given
     String email = "test@example.com";
     String name = "Test User";
@@ -62,17 +63,16 @@ public class JwtServiceTest {
   }
 
   @Test
-  void 잘못된JWT토큰_검증_실패() {
+  void 잘못된토큰시_예외발생() {
     // Given
     String invalidToken = "invalid.jwt.token";
 
     // When & Then
-    assertThatThrownBy(() -> jwtService.validate(invalidToken))
-        .isInstanceOf(JwtException.class);
+    assertThatThrownBy(() -> jwtService.validate(invalidToken)).isInstanceOf(JwtException.class);
   }
 
   @Test
-  void Bearer토큰_추출_성공() {
+  void Bearer헤더시_토큰추출() {
     // Given
     String token = "sample-jwt-token";
     String bearerToken = "Bearer " + token;
@@ -86,7 +86,7 @@ public class JwtServiceTest {
   }
 
   @Test
-  void Bearer토큰_추출_잘못된형식_실패() {
+  void 잘못된헤더형식시_예외발생() {
     // Given
     Optional<String> headerOr = Optional.of("InvalidFormat token");
 
@@ -96,7 +96,7 @@ public class JwtServiceTest {
   }
 
   @Test
-  void Bearer토큰_추출_헤더없음_실패() {
+  void 헤더없을시_예외발생() {
     // Given
     Optional<String> headerOr = Optional.empty();
 
@@ -106,7 +106,7 @@ public class JwtServiceTest {
   }
 
   @Test
-  void Claims로부터_토큰발급_ACCESS_TOKEN() {
+  void 클레임으로_액세스토큰발급() {
     // Given
     String email = "test@example.com";
     String name = "Test User";
@@ -126,7 +126,7 @@ public class JwtServiceTest {
   }
 
   @Test
-  void Claims로부터_토큰발급_REFRESH_TOKEN() {
+  void 클레임으로_리프레시토큰발급() {
     // Given
     String email = "test@example.com";
     String name = "Test User";
@@ -146,7 +146,7 @@ public class JwtServiceTest {
   }
 
   @Test
-  void ADMIN역할_토큰발급_검증() {
+  void 관리자역할시_토큰발급() {
     // Given
     String email = "admin@example.com";
     String name = "Admin User";
@@ -161,7 +161,7 @@ public class JwtServiceTest {
   }
 
   @Test
-  void MEMBER역할_토큰발급_검증() {
+  void 멤버역할시_토큰발급() {
     // Given
     String email = "member@example.com";
     String name = "Member User";

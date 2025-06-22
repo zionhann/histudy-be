@@ -11,6 +11,7 @@ import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.exception.*;
 import edu.handong.csee.histudy.repository.*;
 import edu.handong.csee.histudy.service.repository.fake.*;
+import edu.handong.csee.histudy.support.TestDataFactory;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,13 +45,10 @@ public class UserServiceTest {
   }
 
   @Test
-  void 학생명단_검색_키워드없는경우_전부표시() {
+  void 키워드없을시_전체학생조회() {
     // Given
-    User student1 =
-        User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
-
-    User student2 =
-        User.builder().sub("2").sid("22500102").email("user2@test.com").name("Bar").build();
+    User student1 = TestDataFactory.createUser("1", "22500101", "user1@test.com", "Foo", Role.USER);
+    User student2 = TestDataFactory.createUser("2", "22500102", "user2@test.com", "Bar", Role.USER);
 
     userRepository.save(student1);
     userRepository.save(student2);
@@ -63,7 +61,7 @@ public class UserServiceTest {
   }
 
   @Test
-  void 학생명단_검색_키워드있는경우_해당하는학생만표시() {
+  void 키워드제공시_매칭학생조회() {
     // Given
     User student1 =
         User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
@@ -82,19 +80,16 @@ public class UserServiceTest {
   }
 
   @Test
-  void 스터디그룹_최초신청한경우_요청대기중() {
+  void 최초신청시_요청대기중() {
     // Given
-    AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
+    AcademicTerm term = TestDataFactory.createCurrentTerm();
     academicTermRepository.save(term);
 
-    Course course = new Course("Introduction to Test", "ECE2025", "Bar", term);
+    Course course = TestDataFactory.createCourse("Introduction to Test", "ECE2025", "Bar", term);
     courseRepository.saveAll(List.of(course));
 
-    User student1 =
-        User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
-
-    User student2 =
-        User.builder().sub("2").sid("22500102").email("user2@test.com").name("Bar").build();
+    User student1 = TestDataFactory.createUser("1", "22500101", "user1@test.com", "Foo", Role.USER);
+    User student2 = TestDataFactory.createUser("2", "22500102", "user2@test.com", "Bar", Role.USER);
 
     userRepository.save(student1);
     User bar = userRepository.save(student2);
@@ -110,7 +105,7 @@ public class UserServiceTest {
   }
 
   @Test
-  void 스터디그룹_같이하고싶은멤버로_추가된요청이있는경우_서로ACCEPTED() {
+  void 상호요청시_서로승인() {
     // Given
     AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
     academicTermRepository.save(term);
@@ -143,7 +138,7 @@ public class UserServiceTest {
   }
 
   @Test
-  void 스터디그룹_신청하지않은경우_신청정보_없음() {
+  void 신청안했을시_정보없음() {
     // Given
     AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
     academicTermRepository.save(term);
@@ -161,7 +156,7 @@ public class UserServiceTest {
   }
 
   @Test
-  void 스터디그룹_신청한경우_신청정보_있음() {
+  void 신청했을시_정보있음() {
     // Given
     AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
     academicTermRepository.save(term);
@@ -188,7 +183,7 @@ public class UserServiceTest {
   }
 
   @Test
-  void 사용자회원가입_성공() {
+  void 새사용자정보시_회원가입성공() {
     // Given
     UserForm userForm = new UserForm("google-sub-123", "New User", "newuser@test.com", "22500103");
 
@@ -204,14 +199,15 @@ public class UserServiceTest {
   }
 
   @Test
-  void 사용자회원가입_이미존재하는사용자() {
+  void 이미존재하는사용자시_예외발생() {
     // Given
-    User existingUser = User.builder()
-        .sub("google-sub-123")
-        .sid("22500103")
-        .email("existing@test.com")
-        .name("Existing User")
-        .build();
+    User existingUser =
+        User.builder()
+            .sub("google-sub-123")
+            .sid("22500103")
+            .email("existing@test.com")
+            .name("Existing User")
+            .build();
     userRepository.save(existingUser);
 
     UserForm userForm = new UserForm("google-sub-123", "New User", "newuser@test.com", "22500104");
@@ -222,14 +218,15 @@ public class UserServiceTest {
   }
 
   @Test
-  void 사용자정보조회_sub로() {
+  void sub제공시_사용자정보반환() {
     // Given
-    User user = User.builder()
-        .sub("google-sub-123")
-        .sid("22500103")
-        .email("user@test.com")
-        .name("Test User")
-        .build();
+    User user =
+        User.builder()
+            .sub("google-sub-123")
+            .sid("22500103")
+            .email("user@test.com")
+            .name("Test User")
+            .build();
     userRepository.save(user);
 
     // When
@@ -241,29 +238,30 @@ public class UserServiceTest {
   }
 
   @Test
-  void 사용자정보조회_sub없음() {
+  void sub없을시_예외발생() {
     // When & Then
     assertThatThrownBy(() -> userService.getUser(Optional.empty()))
         .isInstanceOf(MissingSubException.class);
   }
 
   @Test
-  void 사용자정보조회_존재하지않는sub() {
+  void 존재하지않는sub시_예외발생() {
     // When & Then
     assertThatThrownBy(() -> userService.getUser(Optional.of("nonexistent-sub")))
         .isInstanceOf(UserNotFoundException.class);
   }
 
   @Test
-  void 내정보조회_성공() {
+  void 이메일제공시_내정보반환() {
     // Given
-    User user = User.builder()
-        .sub("1")
-        .sid("22500101")
-        .email("user1@test.com")
-        .name("Foo")
-        .role(Role.USER)
-        .build();
+    User user =
+        User.builder()
+            .sub("1")
+            .sid("22500101")
+            .email("user1@test.com")
+            .name("Foo")
+            .role(Role.USER)
+            .build();
     userRepository.save(user);
 
     // When
@@ -275,14 +273,14 @@ public class UserServiceTest {
   }
 
   @Test
-  void 내정보조회_이메일없음() {
+  void 이메일없을시_예외발생() {
     // When & Then
     assertThatThrownBy(() -> userService.getUserMe(Optional.empty()))
         .isInstanceOf(MissingEmailException.class);
   }
 
   @Test
-  void 스터디그룹_신청_ApplyForm사용() {
+  void 신청폼제공시_신청성공() {
     // Given
     AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
     academicTermRepository.save(term);
@@ -290,16 +288,16 @@ public class UserServiceTest {
     Course course = new Course("Introduction to Test", "ECE2025", "Bar", term);
     courseRepository.saveAll(List.of(course));
 
-    User student1 = User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
-    User student2 = User.builder().sub("2").sid("22500102").email("user2@test.com").name("Bar").build();
+    User student1 =
+        User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
+    User student2 =
+        User.builder().sub("2").sid("22500102").email("user2@test.com").name("Bar").build();
 
     userRepository.save(student1);
     userRepository.save(student2);
 
-    ApplyForm form = ApplyForm.builder()
-        .friendIds(List.of("22500102"))
-        .courseIds(List.of(1L))
-        .build();
+    ApplyForm form =
+        ApplyForm.builder().friendIds(List.of("22500102")).courseIds(List.of(1L)).build();
 
     // When
     ApplyFormDto result = userService.apply(form, "user1@test.com");
@@ -310,7 +308,7 @@ public class UserServiceTest {
   }
 
   @Test
-  void 스터디그룹_신청_존재하지않는사용자() {
+  void 존재하지않는사용자신청시_예외발생() {
     // Given
     AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
     academicTermRepository.save(term);
@@ -321,9 +319,10 @@ public class UserServiceTest {
   }
 
   @Test
-  void 스터디그룹_신청_현재학기없음() {
+  void 현재학기없이신청시_예외발생() {
     // Given
-    User student = User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
+    User student =
+        User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
     userRepository.save(student);
 
     // When & Then
@@ -332,12 +331,13 @@ public class UserServiceTest {
   }
 
   @Test
-  void 스터디그룹_신청_존재하지않는친구() {
+  void 존재하지않는친구신청시_예외발생() {
     // Given
     AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
     academicTermRepository.save(term);
 
-    User student = User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
+    User student =
+        User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
     userRepository.save(student);
 
     // When & Then
@@ -346,12 +346,13 @@ public class UserServiceTest {
   }
 
   @Test
-  void 스터디그룹_신청_존재하지않는과목() {
+  void 존재하지않는과목신청시_예외발생() {
     // Given
     AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
     academicTermRepository.save(term);
 
-    User student = User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
+    User student =
+        User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
     userRepository.save(student);
 
     // When & Then
@@ -360,18 +361,17 @@ public class UserServiceTest {
   }
 
   @Test
-  void 스터디그룹_신청_ApplyForm_존재하지않는친구() {
+  void 신청폼에존재하지않는친구시_예외발생() {
     // Given
     AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
     academicTermRepository.save(term);
 
-    User student = User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
+    User student =
+        User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
     userRepository.save(student);
 
-    ApplyForm form = ApplyForm.builder()
-        .friendIds(List.of("nonexistent"))
-        .courseIds(List.of())
-        .build();
+    ApplyForm form =
+        ApplyForm.builder().friendIds(List.of("nonexistent")).courseIds(List.of()).build();
 
     // When & Then
     assertThatThrownBy(() -> userService.apply(form, "user1@test.com"))
@@ -379,7 +379,7 @@ public class UserServiceTest {
   }
 
   @Test
-  void 사용자신청서삭제_성공() {
+  void 신청서있을시_삭제성공() {
     // Given
     AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
     academicTermRepository.save(term);
@@ -387,7 +387,8 @@ public class UserServiceTest {
     Course course = new Course("Introduction to Test", "ECE2025", "Bar", term);
     courseRepository.saveAll(List.of(course));
 
-    User student = User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
+    User student =
+        User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
     userRepository.save(student);
 
     userService.apply(List.of(), List.of(1L), "user1@test.com");
@@ -401,7 +402,7 @@ public class UserServiceTest {
   }
 
   @Test
-  void 사용자신청서삭제_존재하지않는사용자() {
+  void 존재하지않는사용자삭제시_예외발생() {
     // Given
     AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
     academicTermRepository.save(term);
@@ -412,7 +413,7 @@ public class UserServiceTest {
   }
 
   @Test
-  void 신청한사용자목록조회() {
+  void 신청한사용자있을시_목록반환() {
     // Given
     AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
     academicTermRepository.save(term);
@@ -420,8 +421,10 @@ public class UserServiceTest {
     Course course = new Course("Introduction to Test", "ECE2025", "Bar", term);
     courseRepository.saveAll(List.of(course));
 
-    User student1 = User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
-    User student2 = User.builder().sub("2").sid("22500102").email("user2@test.com").name("Bar").build();
+    User student1 =
+        User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
+    User student2 =
+        User.builder().sub("2").sid("22500102").email("user2@test.com").name("Bar").build();
 
     userRepository.save(student1);
     userRepository.save(student2);
@@ -437,7 +440,7 @@ public class UserServiceTest {
   }
 
   @Test
-  void 신청한사용자목록조회_현재학기없음() {
+  void 현재학기없이신청자조회시_예외발생() {
     // When & Then
     assertThatThrownBy(() -> userService.getAppliedUsers())
         .isInstanceOf(NoCurrentTermFoundException.class);
