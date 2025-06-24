@@ -160,8 +160,8 @@ class CourseControllerTest {
   @Test
   void 권한없는사용자가_강의조회시_실패() throws Exception {
     Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("guest@test.com");
-    when(claims.get("rol", String.class)).thenReturn("GUEST");
+    when(claims.getSubject()).thenReturn("member@test.com");
+    when(claims.get("rol", String.class)).thenReturn(Role.MEMBER.name());
 
     mockMvc
         .perform(get("/api/courses").requestAttr("claims", claims))

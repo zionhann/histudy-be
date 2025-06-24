@@ -8,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.handong.csee.histudy.controller.form.UserForm;
 import edu.handong.csee.histudy.domain.*;
-import edu.handong.csee.histudy.dto.ApplyFormDto;
 import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
 import edu.handong.csee.histudy.jwt.JwtPair;
@@ -198,7 +197,7 @@ class UserControllerTest {
     void 권한없는사용자가_접근시_실패() throws Exception {
         Claims claims = mock(Claims.class);
         when(claims.getSubject()).thenReturn("user@test.com");
-        when(claims.get("rol", String.class)).thenReturn("GUEST");
+    when(claims.get("rol", String.class)).thenReturn("INVALID_ROLE");
 
         mockMvc.perform(get("/api/users/me")
                 .requestAttr("claims", claims))
