@@ -3,11 +3,14 @@ package edu.handong.csee.histudy.repository;
 import edu.handong.csee.histudy.domain.StudyGroup;
 import edu.handong.csee.histudy.domain.StudyReport;
 import java.util.List;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import java.util.Optional;
 
-@Repository
-public interface StudyReportRepository extends JpaRepository<StudyReport, Long> {
-
+public interface StudyReportRepository {
   List<StudyReport> findAllByStudyGroupOrderByCreatedDateDesc(StudyGroup studyGroup);
+
+  Optional<StudyReport> findById(Long id);
+
+  void delete(StudyReport report);
+
+  StudyReport save(StudyReport report);
 }
