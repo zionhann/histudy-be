@@ -24,4 +24,8 @@ public interface StudyGroupRepository {
   Optional<StudyGroup> findById(Long id);
 
   StudyGroup save(StudyGroup entity);
+
+  long count();
+
+  long countByAcademicTerm(AcademicTerm academicTerm);
 }

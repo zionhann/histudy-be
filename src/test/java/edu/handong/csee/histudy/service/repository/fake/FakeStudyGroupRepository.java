@@ -69,4 +69,14 @@ public class FakeStudyGroupRepository implements StudyGroupRepository {
     store.add(entity);
     return entity;
   }
+
+  @Override
+  public long count() {
+    return store.size();
+  }
+
+  @Override
+  public long countByAcademicTerm(AcademicTerm academicTerm) {
+    return store.stream().filter(e -> e.getAcademicTerm().equals(academicTerm)).count();
+  }
 }

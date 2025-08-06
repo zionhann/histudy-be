@@ -1,5 +1,6 @@
 package edu.handong.csee.histudy.repository;
 
+import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.domain.User;
 import java.util.List;
 import java.util.Optional;
@@ -19,4 +20,8 @@ public interface UserRepository {
   List<User> findAll(Sort sort);
 
   User save(User entity);
+
+  long countByRoleNot(Role role);
+
+  long countByRole(Role role);
 }

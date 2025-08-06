@@ -1,5 +1,6 @@
 package edu.handong.csee.histudy.service.repository.fake;
 
+import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.repository.UserRepository;
 import java.util.ArrayList;
@@ -77,5 +78,15 @@ public class FakeUserRepository implements UserRepository {
     ReflectionTestUtils.setField(user, "userId", sequence++);
     store.add(user);
     return user;
+  }
+
+  @Override
+  public long countByRoleNot(Role role) {
+    return store.stream().filter(user -> !user.getRole().equals(role)).count();
+  }
+
+  @Override
+  public long countByRole(Role role) {
+    return store.stream().filter(user -> user.getRole().equals(role)).count();
   }
 }

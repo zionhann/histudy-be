@@ -1,5 +1,6 @@
 package edu.handong.csee.histudy.repository.impl;
 
+import edu.handong.csee.histudy.domain.AcademicTerm;
 import edu.handong.csee.histudy.domain.StudyGroup;
 import edu.handong.csee.histudy.domain.StudyReport;
 import edu.handong.csee.histudy.repository.StudyReportRepository;
@@ -32,5 +33,25 @@ public class StudyReportRepositoryImpl implements StudyReportRepository {
   @Override
   public StudyReport save(StudyReport report) {
     return repository.save(report);
+  }
+
+  @Override
+  public long count() {
+    return repository.count();
+  }
+
+  @Override
+  public long countByStudyGroupAcademicTerm(AcademicTerm academicTerm) {
+    return repository.countByStudyGroupAcademicTerm(academicTerm);
+  }
+
+  @Override
+  public long sumTotalMinutes() {
+    return repository.sumTotalMinutes();
+  }
+
+  @Override
+  public long sumTotalMinutesByStudyGroupAcademicTerm(AcademicTerm academicTerm) {
+    return repository.sumTotalMinutesByStudyGroupAcademicTerm(academicTerm);
   }
 }
