@@ -3,6 +3,7 @@ package edu.handong.csee.histudy.service;
 import edu.handong.csee.histudy.domain.AcademicTerm;
 import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.dto.ActivityMetricsDto;
+import edu.handong.csee.histudy.dto.ActivityTerm;
 import edu.handong.csee.histudy.repository.AcademicTermRepository;
 import edu.handong.csee.histudy.repository.StudyGroupRepository;
 import edu.handong.csee.histudy.repository.StudyReportRepository;
@@ -19,8 +20,8 @@ public class ActivityMetricsService {
   private final StudyReportRepository studyReportRepository;
   private final AcademicTermRepository academicTermRepository;
 
-  public ActivityMetricsDto getActivityMetrics(String term) {
-    if ("current".equals(term)) {
+  public ActivityMetricsDto getActivityMetrics(ActivityTerm term) {
+    if (term == ActivityTerm.CURRENT) {
       return getCurrentTermActivityMetrics();
     }
     return getAllActivityMetrics();

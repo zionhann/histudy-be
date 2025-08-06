@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import edu.handong.csee.histudy.dto.ActivityMetricsDto;
+import edu.handong.csee.histudy.dto.ActivityTerm;
 import edu.handong.csee.histudy.dto.TeamRankDto;
 import edu.handong.csee.histudy.jwt.JwtProperties;
 import edu.handong.csee.histudy.service.ActivityMetricsService;
@@ -50,7 +51,7 @@ class PublicControllerTest {
             .studyHours(200)
             .reports(300)
             .build();
-    when(activityMetricsService.getActivityMetrics("all")).thenReturn(expectedDto);
+    when(activityMetricsService.getActivityMetrics(ActivityTerm.ALL)).thenReturn(expectedDto);
 
     mockMvc
         .perform(get("/api/public/activity"))
@@ -71,7 +72,7 @@ class PublicControllerTest {
             .studyHours(50)
             .reports(80)
             .build();
-    when(activityMetricsService.getActivityMetrics("current")).thenReturn(expectedDto);
+    when(activityMetricsService.getActivityMetrics(ActivityTerm.CURRENT)).thenReturn(expectedDto);
 
     mockMvc
         .perform(get("/api/public/activity").param("term", "current"))

@@ -1,6 +1,7 @@
 package edu.handong.csee.histudy.controller;
 
 import edu.handong.csee.histudy.dto.ActivityMetricsDto;
+import edu.handong.csee.histudy.dto.ActivityTerm;
 import edu.handong.csee.histudy.dto.TeamRankDto;
 import edu.handong.csee.histudy.service.ActivityMetricsService;
 import edu.handong.csee.histudy.service.TeamService;
@@ -30,6 +31,7 @@ public class PublicController {
   @Operation(summary = "활동 지표 조회")
   @GetMapping("/activity")
   public ActivityMetricsDto getActivityMetrics(@RequestParam(defaultValue = "all") String term) {
-    return activityMetricsService.getActivityMetrics(term);
+    ActivityTerm activityTerm = ActivityTerm.fromString(term);
+    return activityMetricsService.getActivityMetrics(activityTerm);
   }
 }
