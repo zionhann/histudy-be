@@ -1,5 +1,6 @@
 package edu.handong.csee.histudy.repository.impl;
 
+import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.repository.UserRepository;
 import edu.handong.csee.histudy.repository.jpa.JpaUserRepository;
@@ -47,5 +48,15 @@ public class UserRepositoryImpl implements UserRepository {
   @Override
   public User save(User user) {
     return repository.save(user);
+  }
+
+  @Override
+  public long countByRoleNot(Role role) {
+    return repository.countByRoleNot(role);
+  }
+
+  @Override
+  public long countByRole(Role role) {
+    return repository.countByRole(role);
   }
 }

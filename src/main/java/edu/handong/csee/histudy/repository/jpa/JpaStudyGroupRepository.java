@@ -29,4 +29,6 @@ public interface JpaStudyGroupRepository extends JpaRepository<StudyGroup, Long>
           + "where m.user = :user and s.academicTerm = :currentTerm")
   Optional<StudyGroup> findByUserAndTerm(
       @Param("user") User user, @Param("currentTerm") AcademicTerm currentTerm);
+
+  long countByAcademicTerm(AcademicTerm academicTerm);
 }

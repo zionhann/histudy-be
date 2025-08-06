@@ -59,4 +59,14 @@ public class StudyGroupRepositoryImpl implements StudyGroupRepository {
   public StudyGroup save(StudyGroup studyGroup) {
     return repository.save(studyGroup);
   }
+
+  @Override
+  public long count() {
+    return repository.count();
+  }
+
+  @Override
+  public long countByAcademicTerm(AcademicTerm academicTerm) {
+    return repository.countByAcademicTerm(academicTerm);
+  }
 }

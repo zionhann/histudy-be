@@ -1,5 +1,6 @@
 package edu.handong.csee.histudy.repository;
 
+import edu.handong.csee.histudy.domain.AcademicTerm;
 import edu.handong.csee.histudy.domain.StudyGroup;
 import edu.handong.csee.histudy.domain.StudyReport;
 import java.util.List;
@@ -13,4 +14,12 @@ public interface StudyReportRepository {
   void delete(StudyReport report);
 
   StudyReport save(StudyReport report);
+
+  long count();
+
+  long countByStudyGroupAcademicTerm(AcademicTerm academicTerm);
+
+  long sumTotalMinutes();
+
+  long sumTotalMinutesByStudyGroupAcademicTerm(AcademicTerm academicTerm);
 }

@@ -1,5 +1,6 @@
 package edu.handong.csee.histudy.service.repository.fake;
 
+import edu.handong.csee.histudy.domain.AcademicTerm;
 import edu.handong.csee.histudy.domain.StudyGroup;
 import edu.handong.csee.histudy.domain.StudyReport;
 import edu.handong.csee.histudy.repository.StudyReportRepository;
@@ -39,5 +40,30 @@ public class FakeStudyReportRepository implements StudyReportRepository {
     ReflectionTestUtils.setField(report, "lastModifiedDate", LocalDateTime.now());
     store.add(report);
     return report;
+  }
+
+  @Override
+  public long count() {
+    return store.size();
+  }
+
+  @Override
+  public long countByStudyGroupAcademicTerm(AcademicTerm academicTerm) {
+    return store.stream()
+        .filter(report -> report.getStudyGroup().getAcademicTerm().equals(academicTerm))
+        .count();
+  }
+
+  @Override
+  public long sumTotalMinutes() {
+    return store.stream().mapToLong(StudyReport::getTotalMinutes).sum();
+  }
+
+  @Override
+  public long sumTotalMinutesByStudyGroupAcademicTerm(AcademicTerm academicTerm) {
+    return store.stream()
+        .filter(report -> report.getStudyGroup().getAcademicTerm().equals(academicTerm))
+        .mapToLong(StudyReport::getTotalMinutes)
+        .sum();
   }
 }
