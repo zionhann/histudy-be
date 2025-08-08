@@ -3,19 +3,88 @@ info:
   title: OpenAPI definition
   version: v1.3.1
 servers:
+  - url: http://localhost:8080
+    description: local
   - url: /histudy
+    description: dev
+security:
+  - bearerAuth: [ ]
 paths:
-  /api/v2/forms:
-    post:
+  # ===================
+  # Public APIs
+  # ===================
+  /api/public/teams:
+    get:
+      security: [ ]
       tags:
-        - 스터디 신청 API
-      summary: 스터디 신청
-      operationId: applyForStudy
+        - 공개 API
+      summary: 그룹 목록 조회
+      operationId: getTeams
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/TeamRankDto'
+  /api/public/activity:
+    get:
+      security: [ ]
+      tags:
+        - 공개 API
+      summary: 활동 지표 조회
+      operationId: getActivityMetrics
+      parameters:
+        - name: term
+          in: query
+          required: false
+          schema:
+            type: string
+            default: all
+          description: Activity term filter (all or current)
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ActivityMetricsDto'
+
+  # ===================
+  # Authentication APIs
+  # ===================
+  /api/auth/login:
+    get:
+      security: [ ]
+      tags:
+        - 인증 API
+      summary: 로그인
+      operationId: login
+      parameters:
+        - name: sub
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UserLogin'
+  /api/auth/token:
+    post:
+      security: [ ]
+      tags:
+        - 인증 API
+      summary: 토큰 재발급
+      operationId: issueAccessToken
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ApplyFormV2'
+              $ref: '#/components/schemas/TokenForm'
         required: true
       responses:
         '200':
@@ -23,9 +92,11 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/ApplyFormDto'
-      security:
-        - USER: [ ]
+                $ref: '#/components/schemas/TokenInfo'
+
+  # ===================
+  # User Management APIs
+  # ===================
   /api/users:
     get:
       tags:
@@ -47,8 +118,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserDto'
       deprecated: true
-      security:
-        - USER: [ ]
     post:
       tags:
         - 일반 사용자 API
@@ -67,6 +136,203 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/UserLogin'
+  /api/v2/users:
+    get:
+      tags:
+        - 일반 사용자 API
+      summary: 유저 검색
+      operationId: searchUserWithMasking
+      parameters:
+        - name: search
+          in: query
+          required: false
+          allowEmptyValue: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UserDto'
+  /api/users/me:
+    get:
+      tags:
+        - 일반 사용자 API
+      summary: 내 정보 조회 (Deprecated)
+      operationId: getMyInfo
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UserMe'
+  /api/users/me/forms:
+    get:
+      tags:
+        - 일반 사용자 API
+      summary: 스터디 그룹 신청 정보 조회 (Deprecated)
+      operationId: getMyApplicationForm
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApplyFormDto'
+      deprecated: true
+  /api/v2/users/me/forms:
+    get:
+      tags:
+        - 일반 사용자 API
+      summary: 스터디 그룹 신청 정보 조회
+      operationId: getMyApplicationFormWithMasking
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApplyFormDto'
+
+  # ===================
+  # Study Application APIs
+  # ===================
+  /api/forms:
+    post:
+      tags:
+        - 스터디 신청 API
+      summary: 스터디 신청
+      operationId: applyForStudy_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplyForm'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApplyFormDto'
+      deprecated: true
+  /api/v2/forms:
+    post:
+      tags:
+        - 스터디 신청 API
+      summary: 스터디 신청
+      operationId: applyForStudy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplyFormV2'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApplyFormDto'
+
+  # ===================
+  # Course Management APIs
+  # ===================
+  /api/courses:
+    get:
+      tags:
+        - 강의 관리 API
+      summary: 강의 목록 조회
+      operationId: getCourses
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CourseDto'
+    post:
+      tags:
+        - 강의 관리 API
+      summary: 강의 목록 업로드
+      operationId: importCourses
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+                - file
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: OK
+  /api/courses/delete:
+    post:
+      tags:
+        - 강의 관리 API
+      summary: 강의 삭제
+      operationId: deleteCourse
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseIdDto'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: integer
+                format: int32
+
+  # ===================
+  # Study Group/Team APIs
+  # ===================
+  /api/team/users:
+    get:
+      tags:
+        - 스터디 그룹 API
+      summary: 그룹 팀원 목록 조회
+      operationId: getTeamUsers
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserMeWithMasking'
+  /api/team/courses:
+    get:
+      tags:
+        - 스터디 그룹 API
+      summary: 그룹 선택 강의 목록 조회
+      operationId: getTeamCourses
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CourseDto'
   /api/team/reports:
     get:
       tags:
@@ -80,8 +346,6 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ReportDto'
-      security:
-        - MEMBER: [ ]
     post:
       tags:
         - 스터디 그룹 API
@@ -100,8 +364,72 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ReportInfo'
-      security:
-        - MEMBER: [ ]
+  /api/team/reports/{reportId}:
+    get:
+      tags:
+        - 스터디 그룹 API
+      summary: 그룹 특정 보고서 조회
+      operationId: getReport
+      parameters:
+        - name: reportId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ReportInfo'
+    delete:
+      tags:
+        - 스터디 그룹 API
+      summary: 그룹 특정 보고서 삭제
+      operationId: deleteReport
+      parameters:
+        - name: reportId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
+    patch:
+      tags:
+        - 스터디 그룹 API
+      summary: 그룹 특정 보고서 수정
+      operationId: updateReport
+      parameters:
+        - name: reportId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportForm'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
   /api/team/reports/image:
     post:
       tags:
@@ -127,8 +455,6 @@ paths:
             application/json:
               example:
                 imagePath: /path/to/image.png
-      security:
-        - MEMBER: [ ]
   /api/team/reports/{reportIdOr}/image:
     post:
       tags:
@@ -160,291 +486,16 @@ paths:
             application/json:
               example:
                 imagePath: /path/to/image.png
-      security:
-        - MEMBER: [ ]
-  /api/forms:
-    post:
-      tags:
-        - 스터디 신청 API
-      summary: 스터디 신청
-      operationId: applyForStudy_1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ApplyForm'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ApplyFormDto'
-      deprecated: true
-      security:
-        - USER: [ ]
-  /api/courses:
+
+  # ===================
+  # Admin APIs
+  # ===================
+  /api/admin/allUsers:
     get:
-      tags:
-        - 강의 관리 API
-      summary: 강의 목록 조회
-      operationId: getCourses
-      parameters:
-        - name: search
-          in: query
-          required: false
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/CourseDto'
-      security:
-        - USER: [ ]
-        - ADMIN: [ ]
-    post:
-      tags:
-        - 강의 관리 API
-      summary: 강의 목록 업로드
-      operationId: importCourses
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              required:
-                - file
-              type: object
-              properties:
-                file:
-                  type: string
-                  format: binary
-      responses:
-        '200':
-          description: OK
-      security:
-        - ADMIN: [ ]
-  /api/courses/delete:
-    post:
-      tags:
-        - 강의 관리 API
-      summary: 강의 삭제
-      operationId: deleteCourse
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CourseIdDto'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: integer
-                format: int32
-      security:
-        - ADMIN: [ ]
-  /api/auth/token:
-    post:
-      tags:
-        - 인증 API
-      summary: 토큰 재발급
-      operationId: issueAccessToken
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TokenForm'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/TokenInfo'
-  /api/admin/team-match:
-    post:
       tags:
         - 관리자 API
-      summary: 그룹 매칭
-      operationId: matchTeam
-      responses:
-        '200':
-          description: OK
-      security:
-        - ADMIN: [ ]
-  /api/admin/edit-user:
-    post:
-      tags:
-        - 관리자 API
-      summary: 유저 정보 수정
-      operationId: editUser
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserEdit'
-        required: true
-      responses:
-        '200':
-          description: OK
-      security:
-        - ADMIN: [ ]
-  /api/team/reports/{reportId}:
-    get:
-      tags:
-        - 스터디 그룹 API
-      summary: 그룹 특정 보고서 조회
-      operationId: getReport
-      parameters:
-        - name: reportId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ReportInfo'
-      security:
-        - MEMBER: [ ]
-        - ADMIN: [ ]
-    delete:
-      tags:
-        - 스터디 그룹 API
-      summary: 그룹 특정 보고서 삭제
-      operationId: deleteReport
-      parameters:
-        - name: reportId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-          example: 1
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: string
-      security:
-        - MEMBER: [ ]
-    patch:
-      tags:
-        - 스터디 그룹 API
-      summary: 그룹 특정 보고서 수정
-      operationId: updateReport
-      parameters:
-        - name: reportId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-          example: 1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ReportForm'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: string
-      security:
-        - MEMBER: [ ]
-  /api/v2/users:
-    get:
-      tags:
-        - 일반 사용자 API
-      summary: 유저 검색
-      operationId: searchUserWithMasking
-      parameters:
-        - name: search
-          in: query
-          required: false
-          allowEmptyValue: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/UserDto'
-      security:
-        - USER: [ ]
-  /api/v2/users/me/forms:
-    get:
-      tags:
-        - 일반 사용자 API
-      summary: 스터디 그룹 신청 정보 조회
-      operationId: getMyApplicationFormWithMasking
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ApplyFormDto'
-      security:
-        - USER: [ ]
-  /api/users/me:
-    get:
-      tags:
-        - 일반 사용자 API
-      summary: 내 정보 조회
-      operationId: getMyInfo
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/UserMe'
-      security:
-        - USER: [ ]
-        - MEMBER: [ ]
-        - ADMIN: [ ]
-  /api/users/me/forms:
-    get:
-      tags:
-        - 일반 사용자 API
-      summary: 스터디 그룹 신청 정보 조회
-      operationId: getMyApplicationForm
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ApplyFormDto'
-      deprecated: true
-      security:
-        - USER: [ ]
-  /api/team/users:
-    get:
-      tags:
-        - 스터디 그룹 API
-      summary: 그룹 팀원 목록 조회
-      operationId: getTeamUsers
+      summary: 그룹 배정 여부와 관계 없이 스터디 신청한 유저 목록 조회
+      operationId: getAppliedUsers
       responses:
         '200':
           description: OK
@@ -453,77 +504,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/UserMeWithMasking'
-      security:
-        - MEMBER: [ ]
-  /api/team/courses:
-    get:
-      tags:
-        - 스터디 그룹 API
-      summary: 그룹 선택 강의 목록 조회
-      operationId: getTeamCourses
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/CourseDto'
-      security:
-        - MEMBER: [ ]
-  /api/public/teams:
-    get:
-      tags:
-        - 공개 API
-      summary: 그룹 목록 조회
-      operationId: getTeams
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/TeamRankDto'
-  /api/public/activity:
-    get:
-      tags:
-        - 공개 API
-      summary: 활동 지표 조회
-      operationId: getActivityMetrics
-      parameters:
-        - name: term
-          in: query
-          required: false
-          schema:
-            type: string
-            default: all
-          description: Activity term filter (all or current)
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/ActivityMetricsDto'
-  /api/auth/login:
-    get:
-      tags:
-        - 인증 API
-      summary: 로그인
-      operationId: login
-      parameters:
-        - name: sub
-          in: query
-          required: false
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                $ref: '#/components/schemas/UserLogin'
+                  $ref: '#/components/schemas/UserInfo'
   /api/admin/users/unassigned:
     get:
       tags:
@@ -539,8 +520,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/UserInfo'
-      security:
-        - ADMIN: [ ]
   /api/admin/unmatched-users:
     get:
       tags:
@@ -556,8 +535,45 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/UserInfo'
-      security:
-        - ADMIN: [ ]
+  /api/admin/edit-user:
+    post:
+      tags:
+        - 관리자 API
+      summary: 유저 정보 수정
+      operationId: editUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserEdit'
+        required: true
+      responses:
+        '200':
+          description: OK
+  /api/admin/form:
+    delete:
+      tags:
+        - 관리자 API
+      summary: 특정 유저 지원폼 삭제
+      operationId: deleteForm
+      parameters:
+        - name: sid
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+  /api/admin/team-match:
+    post:
+      tags:
+        - 관리자 API
+      summary: 그룹 매칭
+      operationId: matchTeam
+      responses:
+        '200':
+          description: OK
   /api/admin/manageGroup:
     get:
       tags:
@@ -573,8 +589,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/TeamDto'
-      security:
-        - ADMIN: [ ]
   /api/admin/groupReport/{id}:
     get:
       tags:
@@ -596,25 +610,6 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/TeamReportDto'
-      security:
-        - ADMIN: [ ]
-  /api/admin/allUsers:
-    get:
-      tags:
-        - 관리자 API
-      summary: 그룹 배정 여부와 관계 없이 스터디 신청한 유저 목록 조회
-      operationId: getAppliedUsers
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UserInfo'
-      security:
-        - ADMIN: [ ]
   /api/admin/group:
     delete:
       tags:
@@ -636,25 +631,7 @@ paths:
                 type: integer
                 format: int32
       deprecated: true
-      security:
-        - ADMIN: [ ]
-  /api/admin/form:
-    delete:
-      tags:
-        - 관리자 API
-      summary: 특정 유저 지원폼 삭제
-      operationId: deleteForm
-      parameters:
-        - name: sid
-          in: query
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-      security:
-        - ADMIN: [ ]
+
 components:
   schemas:
     ApplyFormV2:
@@ -1213,27 +1190,7 @@ components:
           description: Number of study reports
           example: 300
   securitySchemes:
-    USER:
+    bearerAuth:
       type: http
-      description: |-
-        For user testing, use the following token:
-
-        eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2FwaS56aW9uaGFubi5jb20iLCJzdWIiOiJpYW0udXNlci50ZXN0QGhhbmRvbmcuYWMua3IiLCJuYW1lIjoi64KY64qU7IKs7Jqp7J6QIiwicm9sIjoiVVNFUiIsImlhdCI6MTc0OTc4Mzc3MH0.phq_ORR0Fyo_xcZwZu24Vg3xKFPDyVZjLplEWx73kOY
-      scheme: bearer
-      bearerFormat: JWT
-    MEMBER:
-      type: http
-      description: |-
-        For member testing, use the following token:
-
-        eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2FwaS56aW9uaGFubi5jb20iLCJzdWIiOiJpYW0ubWVtYmVyLnRlc3RAaGFuZG9uZy5hYy5rciIsIm5hbWUiOiLrgpjripTrqaTrsoQiLCJyb2wiOiJNRU1CRVIiLCJpYXQiOjE3NDk3ODM3NzB9.9XYImHVl2Q0GZsl81SkoDftqFwO3waMCkAxhGttrEqA
-      scheme: bearer
-      bearerFormat: JWT
-    ADMIN:
-      type: http
-      description: |-
-        For administrator testing, use the following token:
-
-        eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2FwaS56aW9uaGFubi5jb20iLCJzdWIiOiJpYW0uYWRtaW4udGVzdEBoYW5kb25nLmFjLmtyIiwibmFtZSI6IuuCmOuKlOyWtOuTnOuvvCIsInJvbCI6IkFETUlOIiwiaWF0IjoxNzQ5NzgzNzcwfQ.Wc6GtbzuqRK_P6M9NJ2RKmLHqFudYXCFd9EQI14kvWk
       scheme: bearer
       bearerFormat: JWT
