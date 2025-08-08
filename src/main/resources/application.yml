@@ -42,7 +42,7 @@ custom:
     ## - access-token-expiry: The expiry time of the access token in seconds.
     ## - refresh-token-expiry: The expiry time of the refresh token in seconds.
     issuer: http://localhost:8080
-    secret: a-string-secret-at-least-256-bits-long # Development use only
+    secret: aStringSecretAtLeast256BitsLong # Development use only
     access-token-expiry: 10800    # 3 hours
     refresh-token-expiry: 2592000 # 1 month
   path-patterns:
