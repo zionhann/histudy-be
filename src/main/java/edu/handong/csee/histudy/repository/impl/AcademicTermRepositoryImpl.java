@@ -38,9 +38,4 @@ public class AcademicTermRepositoryImpl implements AcademicTermRepository {
   public Optional<AcademicTerm> findById(Long id) {
     return repository.findById(id);
   }
-
-  @Override
-  public void setAllCurrentToFalse() {
-    repository.setAllCurrentToFalse();
-  }
 }

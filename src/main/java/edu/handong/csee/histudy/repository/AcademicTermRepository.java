@@ -15,6 +15,4 @@ public interface AcademicTermRepository {
   List<AcademicTerm> findAllByYearDescAndSemesterDesc();
 
   Optional<AcademicTerm> findById(Long id);
-
-  void setAllCurrentToFalse();
 }

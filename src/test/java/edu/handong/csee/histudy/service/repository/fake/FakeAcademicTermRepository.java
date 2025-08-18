@@ -56,16 +56,4 @@ public class FakeAcademicTermRepository implements AcademicTermRepository {
   public Optional<AcademicTerm> findById(Long id) {
     return store.stream().filter(term -> term.getAcademicTermId().equals(id)).findFirst();
   }
-
-  @Override
-  public void setAllCurrentToFalse() {
-    for (AcademicTerm term : store) {
-      ReflectionTestUtils.setField(term, "isCurrent", false);
-    }
-  }
-
-  public void clear() {
-    store.clear();
-    sequence = 1L;
-  }
 }

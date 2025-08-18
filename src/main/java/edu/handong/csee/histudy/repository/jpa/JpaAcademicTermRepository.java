@@ -5,7 +5,6 @@ import edu.handong.csee.histudy.domain.TermType;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -19,8 +18,4 @@ public interface JpaAcademicTermRepository extends JpaRepository<AcademicTerm, L
 
   @Query("SELECT at FROM AcademicTerm at ORDER BY at.academicYear DESC, at.semester DESC")
   List<AcademicTerm> findAllByYearAndSemesterDesc();
-
-  @Modifying
-  @Query("UPDATE AcademicTerm at SET at.isCurrent = false")
-  void setAllCurrentToFalse();
 }
