@@ -1,11 +1,14 @@
 package edu.handong.csee.histudy.controller;
 
+import edu.handong.csee.histudy.controller.form.AcademicTermForm;
 import edu.handong.csee.histudy.domain.Role;
+import edu.handong.csee.histudy.dto.AcademicTermDto;
 import edu.handong.csee.histudy.dto.TeamDto;
 import edu.handong.csee.histudy.dto.TeamIdDto;
 import edu.handong.csee.histudy.dto.TeamReportDto;
 import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.exception.ForbiddenException;
+import edu.handong.csee.histudy.service.AcademicTermService;
 import edu.handong.csee.histudy.service.TeamService;
 import edu.handong.csee.histudy.service.UserService;
 import io.jsonwebtoken.Claims;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 public class AdminController {
   private final TeamService teamService;
   private final UserService userService;
+  private final AcademicTermService academicTermService;
 
   @GetMapping(value = "/manageGroup")
   public ResponseEntity<List<TeamDto>> getTeams(@RequestAttribute Claims claims) {
@@ -122,6 +126,34 @@ public class AdminController {
   public ResponseEntity<List<UserDto.UserInfo>> unassignedUser(@RequestAttribute Claims claims) {
     if (Role.isAuthorized(claims, Role.ADMIN)) {
       return ResponseEntity.ok(userService.getAppliedWithoutGroup());
+    }
+    throw new ForbiddenException();
+  }
+
+  @PostMapping("/academicTerm")
+  public ResponseEntity<Void> createAcademicTerm(
+      @RequestBody AcademicTermForm form, @RequestAttribute Claims claims) {
+    if (Role.isAuthorized(claims, Role.ADMIN)) {
+      academicTermService.createAcademicTerm(form);
+      return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+    throw new ForbiddenException();
+  }
+
+  @GetMapping("/academicTerm")
+  public ResponseEntity<AcademicTermDto> getAllAcademicTerms(@RequestAttribute Claims claims) {
+    if (Role.isAuthorized(claims, Role.ADMIN)) {
+      return ResponseEntity.ok(academicTermService.getAllAcademicTerms());
+    }
+    throw new ForbiddenException();
+  }
+
+  @PatchMapping("/academicTerm/{id}/current")
+  public ResponseEntity<Void> setCurrentTerm(
+      @PathVariable Long id, @RequestAttribute Claims claims) {
+    if (Role.isAuthorized(claims, Role.ADMIN)) {
+      academicTermService.setCurrentTerm(id);
+      return ResponseEntity.ok().build();
     }
     throw new ForbiddenException();
   }

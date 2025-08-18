@@ -21,4 +21,8 @@ public class AcademicTerm extends BaseTime {
   private TermType semester = TermType.NONE;
 
   @Builder.Default private Boolean isCurrent = false;
+
+  public void setCurrent(Boolean current) {
+    isCurrent = current;
+  }
 }
