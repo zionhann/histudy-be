@@ -17,8 +17,8 @@ public interface JpaAcademicTermRepository extends JpaRepository<AcademicTerm, L
   @Query("SELECT at FROM AcademicTerm at WHERE at.academicYear = :year AND at.semester = :sem")
   Optional<AcademicTerm> findByYearAndTerm(@Param("year") int year, @Param("sem") TermType sem);
 
-  @Query("SELECT at FROM AcademicTerm at ORDER BY at.academicYear DESC")
-  List<AcademicTerm> findAllByYearDesc();
+  @Query("SELECT at FROM AcademicTerm at ORDER BY at.academicYear DESC, at.semester DESC")
+  List<AcademicTerm> findAllByYearAndSemesterDesc();
 
   @Modifying
   @Query("UPDATE AcademicTerm at SET at.isCurrent = false")

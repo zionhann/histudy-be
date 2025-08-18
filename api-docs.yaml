@@ -1238,9 +1238,10 @@ components:
       properties:
         year:
           type: integer
+          format: int64
           description: Academic year (YYYY)
           example: 2025
-        term:
+        semester:
           type: string
           description: Term type (SPRING | FALL | SUMMER | WINTER)
           example: FALL
@@ -1250,8 +1251,23 @@ components:
         academicTerms:
           type: array
           items:
-            $ref: '#/components/schemas/AcademicTermForm'
-
+            $ref: '#/components/schemas/AcademicTermItem'
+    AcademicTermItem:
+      type: object
+      properties:
+        academicTermId:
+          type: integer
+          format: int64
+          example: 1
+        year:
+          type: integer
+          format: int64
+          description: Academic year (YYYY)
+          example: 2025
+        semester:
+          type: string
+          description: Term type (SPRING | FALL | SUMMER | WINTER)
+          example: FALL
   securitySchemes:
     bearerAuth:
       type: http

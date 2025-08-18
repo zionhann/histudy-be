@@ -1,5 +1,6 @@
 package edu.handong.csee.histudy.controller;
 
+import static edu.handong.csee.histudy.dto.AcademicTermDto.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -258,10 +259,11 @@ class AdminControllerTest {
     when(claims.getSubject()).thenReturn("admin@test.com");
     when(claims.get("rol", String.class)).thenReturn(Role.ADMIN.name());
 
-    List<AcademicTermForm> termForms =
+    List<AcademicTermItem> termItems =
         List.of(
-            new AcademicTermForm(2024, TermType.FALL), new AcademicTermForm(2025, TermType.SPRING));
-    AcademicTermDto response = new AcademicTermDto(termForms);
+            new AcademicTermItem(1L, 2024, TermType.FALL),
+            new AcademicTermItem(2L, 2025, TermType.SPRING));
+    AcademicTermDto response = new AcademicTermDto(termItems);
     when(academicTermService.getAllAcademicTerms()).thenReturn(response);
 
     // When & Then

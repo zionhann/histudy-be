@@ -1,8 +1,11 @@
 package edu.handong.csee.histudy.service;
 
+import static edu.handong.csee.histudy.dto.AcademicTermDto.*;
+
 import edu.handong.csee.histudy.controller.form.AcademicTermForm;
 import edu.handong.csee.histudy.domain.AcademicTerm;
 import edu.handong.csee.histudy.dto.AcademicTermDto;
+import edu.handong.csee.histudy.exception.NoCurrentTermFoundException;
 import edu.handong.csee.histudy.repository.AcademicTermRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +23,7 @@ public class AcademicTermService {
     AcademicTerm academicTerm =
         AcademicTerm.builder()
             .academicYear(form.getYear())
-            .semester(form.getTerm())
+            .semester(form.getSemester())
             .isCurrent(false)
             .build();
 
@@ -29,23 +32,25 @@ public class AcademicTermService {
 
   @Transactional(readOnly = true)
   public AcademicTermDto getAllAcademicTerms() {
-    List<AcademicTerm> terms = academicTermRepository.findAllByYearDesc();
-
-    List<AcademicTermForm> termForms =
+    List<AcademicTerm> terms = academicTermRepository.findAllByYearDescAndSemesterDesc();
+    List<AcademicTermItem> items =
         terms.stream()
-            .map(term -> new AcademicTermForm(term.getAcademicYear(), term.getSemester()))
+            .map(
+                term ->
+                    new AcademicTermItem(
+                        term.getAcademicTermId(), term.getAcademicYear(), term.getSemester()))
             .toList();
 
-    return new AcademicTermDto(termForms);
+    return new AcademicTermDto(items);
   }
 
   @Transactional
   public void setCurrentTerm(Long id) {
-    AcademicTerm targetTerm =
-        academicTermRepository
-            .findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Academic term not found"));
-    academicTermRepository.setAllCurrentToFalse();
-    targetTerm.setCurrent(true);
+    academicTermRepository.findCurrentSemester().ifPresent(term -> term.setCurrent(false));
+
+    academicTermRepository
+        .findById(id)
+        .orElseThrow(NoCurrentTermFoundException::new)
+        .setCurrent(true);
   }
 }

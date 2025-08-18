@@ -13,5 +13,5 @@ public class AcademicTermForm {
 
   private Integer year;
 
-  private TermType term;
+  private TermType semester;
 }

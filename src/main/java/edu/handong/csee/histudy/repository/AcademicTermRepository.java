@@ -12,7 +12,7 @@ public interface AcademicTermRepository {
 
   AcademicTerm save(AcademicTerm entity);
 
-  List<AcademicTerm> findAllByYearDesc();
+  List<AcademicTerm> findAllByYearDescAndSemesterDesc();
 
   Optional<AcademicTerm> findById(Long id);
 

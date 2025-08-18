@@ -39,9 +39,12 @@ public class FakeAcademicTermRepository implements AcademicTermRepository {
   }
 
   @Override
-  public List<AcademicTerm> findAllByYearDesc() {
+  public List<AcademicTerm> findAllByYearDescAndSemesterDesc() {
     List<AcademicTerm> result = new ArrayList<>(store);
-    result.sort(Comparator.comparing(AcademicTerm::getAcademicYear).reversed());
+    result.sort(
+        Comparator.comparing(AcademicTerm::getAcademicYear)
+            .reversed()
+            .thenComparing(AcademicTerm::getSemester, Comparator.reverseOrder()));
     return result;
   }
 

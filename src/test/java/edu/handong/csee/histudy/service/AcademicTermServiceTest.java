@@ -1,5 +1,6 @@
 package edu.handong.csee.histudy.service;
 
+import static edu.handong.csee.histudy.dto.AcademicTermDto.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -7,6 +8,7 @@ import edu.handong.csee.histudy.controller.form.AcademicTermForm;
 import edu.handong.csee.histudy.domain.AcademicTerm;
 import edu.handong.csee.histudy.domain.TermType;
 import edu.handong.csee.histudy.dto.AcademicTermDto;
+import edu.handong.csee.histudy.exception.NoCurrentTermFoundException;
 import edu.handong.csee.histudy.service.repository.fake.FakeAcademicTermRepository;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,23 +62,28 @@ public class AcademicTermServiceTest {
     // Then
     assertThat(result.academicTerms()).hasSize(2);
 
-    List<AcademicTermForm> termForms = result.academicTerms();
-    assertThat(termForms)
-        .extracting(AcademicTermForm::getYear)
-        .containsExactlyInAnyOrder(2024, 2025);
+    List<AcademicTermItem> termForms = result.academicTerms();
+    assertThat(termForms).extracting(AcademicTermItem::year).containsExactlyInAnyOrder(2024, 2025);
 
     assertThat(termForms)
-        .extracting(AcademicTermForm::getTerm)
+        .extracting(AcademicTermItem::semester)
         .containsExactlyInAnyOrder(TermType.FALL, TermType.SPRING);
   }
 
   @Test
-  void 학기_목록_연도_내림차순_정렬_조회() {
-    // Given
+  void 학기_목록_연도_내림차순_학기_내림차순_정렬_조회() {
+    // Given - 같은 연도에 여러 학기가 있는 경우 포함
     academicTermRepository.save(
         AcademicTerm.builder()
-            .academicYear(2023)
+            .academicYear(2024)
             .semester(TermType.SPRING)
+            .isCurrent(false)
+            .build());
+
+    academicTermRepository.save(
+        AcademicTerm.builder()
+            .academicYear(2024)
+            .semester(TermType.WINTER)
             .isCurrent(false)
             .build());
 
@@ -84,9 +91,12 @@ public class AcademicTermServiceTest {
         AcademicTerm.builder().academicYear(2025).semester(TermType.FALL).isCurrent(false).build());
 
     academicTermRepository.save(
+        AcademicTerm.builder().academicYear(2024).semester(TermType.FALL).isCurrent(false).build());
+
+    academicTermRepository.save(
         AcademicTerm.builder()
-            .academicYear(2024)
-            .semester(TermType.SPRING)
+            .academicYear(2023)
+            .semester(TermType.SUMMER)
             .isCurrent(true)
             .build());
 
@@ -94,11 +104,32 @@ public class AcademicTermServiceTest {
     AcademicTermDto result = academicTermService.getAllAcademicTerms();
 
     // Then
-    assertThat(result.academicTerms()).hasSize(3);
+    assertThat(result.academicTerms()).hasSize(5);
 
-    List<AcademicTermForm> termForms = result.academicTerms();
-    // 연도 내림차순으로 정렬되어야 함: 2025, 2024, 2023
-    assertThat(termForms).extracting(AcademicTermForm::getYear).containsExactly(2025, 2024, 2023);
+    List<AcademicTermItem> termForms = result.academicTerms();
+
+    // 연도 내림차순, 같은 연도에서는 학기 내림차순
+    // 2025 FALL, 2024 WINTER, 2024 FALL, 2024 SPRING, 2023 SUMMER
+    assertThat(termForms.get(0).year()).isEqualTo(2025);
+    assertThat(termForms.get(0).semester()).isEqualTo(TermType.FALL);
+
+    assertThat(termForms.get(1).year()).isEqualTo(2024);
+    assertThat(termForms.get(1).semester()).isEqualTo(TermType.WINTER);
+
+    assertThat(termForms.get(2).year()).isEqualTo(2024);
+    assertThat(termForms.get(2).semester()).isEqualTo(TermType.FALL);
+
+    assertThat(termForms.get(3).year()).isEqualTo(2024);
+    assertThat(termForms.get(3).semester()).isEqualTo(TermType.SPRING);
+
+    assertThat(termForms.get(4).year()).isEqualTo(2023);
+    assertThat(termForms.get(4).semester()).isEqualTo(TermType.SUMMER);
+
+    // 연도가 내림차순인지 확인
+    List<Integer> years = termForms.stream().map(AcademicTermItem::year).toList();
+    for (int i = 0; i < years.size() - 1; i++) {
+      assertThat(years.get(i)).isGreaterThanOrEqualTo(years.get(i + 1));
+    }
   }
 
   @Test
@@ -157,8 +188,7 @@ public class AcademicTermServiceTest {
 
     // When & Then
     assertThatThrownBy(() -> academicTermService.setCurrentTerm(nonExistentId))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Academic term not found");
+        .isInstanceOf(NoCurrentTermFoundException.class);
   }
 
   @Test
@@ -179,5 +209,86 @@ public class AcademicTermServiceTest {
     AcademicTerm currentTerm = academicTermRepository.findCurrentSemester().get();
     assertThat(currentTerm.getAcademicTermId()).isEqualTo(term.getAcademicTermId());
     assertThat(currentTerm.getIsCurrent()).isTrue();
+  }
+
+  @Test
+  void 현재_학기_변경시_이전_현재학기만_false로_변경() {
+    // Given - 여러 학기 중 하나가 현재 학기인 상황
+    AcademicTerm term1 =
+        academicTermRepository.save(
+            AcademicTerm.builder()
+                .academicYear(2023)
+                .semester(TermType.FALL)
+                .isCurrent(false)
+                .build());
+
+    AcademicTerm term2 =
+        academicTermRepository.save(
+            AcademicTerm.builder()
+                .academicYear(2024)
+                .semester(TermType.SPRING)
+                .isCurrent(true) // 현재 학기
+                .build());
+
+    AcademicTerm term3 =
+        academicTermRepository.save(
+            AcademicTerm.builder()
+                .academicYear(2024)
+                .semester(TermType.FALL)
+                .isCurrent(false)
+                .build());
+
+    AcademicTerm term4 =
+        academicTermRepository.save(
+            AcademicTerm.builder()
+                .academicYear(2025)
+                .semester(TermType.SPRING)
+                .isCurrent(false)
+                .build());
+
+    // When - term4를 새로운 현재 학기로 설정
+    academicTermService.setCurrentTerm(term4.getAcademicTermId());
+
+    // Then - term2만 false로 변경되고, term4가 true로 변경됨
+    AcademicTerm updatedTerm1 = academicTermRepository.findById(term1.getAcademicTermId()).get();
+    AcademicTerm updatedTerm2 = academicTermRepository.findById(term2.getAcademicTermId()).get();
+    AcademicTerm updatedTerm3 = academicTermRepository.findById(term3.getAcademicTermId()).get();
+    AcademicTerm updatedTerm4 = academicTermRepository.findById(term4.getAcademicTermId()).get();
+
+    // term1과 term3는 원래 false였으므로 그대로 유지
+    assertThat(updatedTerm1.getIsCurrent()).isFalse();
+    assertThat(updatedTerm3.getIsCurrent()).isFalse();
+
+    // term2는 현재 학기였으므로 false로 변경됨
+    assertThat(updatedTerm2.getIsCurrent()).isFalse();
+
+    // term4가 새로운 현재 학기로 설정됨
+    assertThat(updatedTerm4.getIsCurrent()).isTrue();
+
+    // 현재 학기 조회시 term4가 반환됨
+    AcademicTerm currentTerm = academicTermRepository.findCurrentSemester().get();
+    assertThat(currentTerm.getAcademicTermId()).isEqualTo(term4.getAcademicTermId());
+  }
+
+  @Test
+  void 같은_학기를_다시_현재학기로_설정시_정상작동() {
+    // Given - 이미 현재 학기인 학기가 있는 상황
+    AcademicTerm currentTerm =
+        academicTermRepository.save(
+            AcademicTerm.builder()
+                .academicYear(2024)
+                .semester(TermType.SPRING)
+                .isCurrent(true)
+                .build());
+
+    // When - 같은 학기를 다시 현재 학기로 설정
+    academicTermService.setCurrentTerm(currentTerm.getAcademicTermId());
+
+    // Then - 여전히 현재 학기로 유지됨
+    AcademicTerm result = academicTermRepository.findById(currentTerm.getAcademicTermId()).get();
+    assertThat(result.getIsCurrent()).isTrue();
+
+    AcademicTerm foundCurrentTerm = academicTermRepository.findCurrentSemester().get();
+    assertThat(foundCurrentTerm.getAcademicTermId()).isEqualTo(currentTerm.getAcademicTermId());
   }
 }
