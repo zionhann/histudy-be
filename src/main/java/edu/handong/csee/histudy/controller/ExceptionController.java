@@ -2,18 +2,19 @@ package edu.handong.csee.histudy.controller;
 
 import edu.handong.csee.histudy.dto.ExceptionResponse;
 import edu.handong.csee.histudy.dto.UserDto;
+import edu.handong.csee.histudy.exception.AcademicTermNotFoundException;
+import edu.handong.csee.histudy.exception.DuplicateAcademicTermException;
 import edu.handong.csee.histudy.exception.ForbiddenException;
 import edu.handong.csee.histudy.exception.MissingParameterException;
 import edu.handong.csee.histudy.exception.UserNotFoundException;
 import io.jsonwebtoken.JwtException;
+import java.util.Arrays;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import java.util.Arrays;
 
 @Slf4j
 @RestControllerAdvice
@@ -25,7 +26,6 @@ public class ExceptionController {
                 .body(ExceptionResponse.builder()
                         .status(HttpStatus.FORBIDDEN)
                         .message(e.getMessage())
-                        .trace(Arrays.toString(e.getStackTrace()))
                         .build());
     }
 
@@ -35,7 +35,6 @@ public class ExceptionController {
                 .body(ExceptionResponse.builder()
                         .status(HttpStatus.UNAUTHORIZED)
                         .message(e.getMessage())
-                        .trace(Arrays.toString(e.getStackTrace()))
                         .build());
     }
 
@@ -48,19 +47,46 @@ public class ExceptionController {
                         .build());
     }
 
-    @ExceptionHandler({
-            MissingParameterException.class,
-            HttpMessageNotReadableException.class
-    })
-    public ResponseEntity<ExceptionResponse> missingParameter(MissingParameterException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ExceptionResponse.builder()
-                        .status(HttpStatus.BAD_REQUEST)
-                        .message(e.getMessage())
-                        .trace(Arrays.toString(e.getStackTrace()))
-                        .build());
+  @ExceptionHandler(MissingParameterException.class)
+  public ResponseEntity<ExceptionResponse> missingParameter(MissingParameterException e) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(
+            ExceptionResponse.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .message(e.getMessage())
+                .build());
+  }
+
+  @ExceptionHandler(HttpMessageNotReadableException.class)
+  public ResponseEntity<ExceptionResponse> httpMessageNotReadable(
+      HttpMessageNotReadableException e) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(
+            ExceptionResponse.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .message("Invalid request format")
+                .build());
     }
 
+  @ExceptionHandler(DuplicateAcademicTermException.class)
+  public ResponseEntity<ExceptionResponse> duplicateAcademicTerm(DuplicateAcademicTermException e) {
+    return ResponseEntity.status(HttpStatus.CONFLICT)
+        .body(
+            ExceptionResponse.builder()
+                .status(HttpStatus.CONFLICT)
+                .message(e.getMessage())
+                .build());
+  }
+
+  @ExceptionHandler(AcademicTermNotFoundException.class)
+  public ResponseEntity<ExceptionResponse> academicTermNotFound(AcademicTermNotFoundException e) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body(
+            ExceptionResponse.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(e.getMessage())
+                .build());
+  }
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ExceptionResponse> runtimeException(RuntimeException e) {
@@ -69,7 +95,6 @@ public class ExceptionController {
                 .body(ExceptionResponse.builder()
                         .status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .message(e.getMessage())
-                        .trace(Arrays.toString(e.getStackTrace()))
                         .build());
     }
 }

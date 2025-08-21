@@ -4,6 +4,7 @@ import edu.handong.csee.histudy.domain.AcademicTerm;
 import edu.handong.csee.histudy.domain.TermType;
 import edu.handong.csee.histudy.repository.AcademicTermRepository;
 import edu.handong.csee.histudy.repository.jpa.JpaAcademicTermRepository;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -26,5 +27,15 @@ public class AcademicTermRepositoryImpl implements AcademicTermRepository {
   @Override
   public AcademicTerm save(AcademicTerm academicTerm) {
     return repository.save(academicTerm);
+  }
+
+  @Override
+  public List<AcademicTerm> findAllByYearDescAndSemesterDesc() {
+    return repository.findAllByYearAndSemesterDesc();
+  }
+
+  @Override
+  public Optional<AcademicTerm> findById(Long id) {
+    return repository.findById(id);
   }
 }

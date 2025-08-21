@@ -631,6 +631,56 @@ paths:
                 type: integer
                 format: int32
       deprecated: true
+  /api/admin/academicTerm:
+    post:
+      tags:
+        - 관리자 API
+      summary: 학기 생성
+      operationId: createAcademicTerm
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcademicTermForm'
+        required: true
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: 잘못된 요청(유효하지 않은 year/semester)
+        '409':
+          description: 이미 동일한 (year, semester)의 학기가 존재
+    get:
+      tags:
+        - 관리자 API
+      summary: 학기 목록 조회
+      operationId: getAllAcademicTerms
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AcademicTermDto'
+  /api/admin/academicTerm/{id}/current:
+    patch:
+      tags:
+        - 관리자 API
+      summary: 현재 학기 설정
+      operationId: setCurrentTerm
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Academic term ID
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: 학기 ID를 찾을 수 없습니다.
 
 components:
   schemas:
@@ -1189,6 +1239,49 @@ components:
           format: int64
           description: Number of study reports
           example: 300
+    AcademicTermForm:
+      type: object
+      required:
+        - year
+        - semester
+      properties:
+        year:
+          type: integer
+          format: int32
+          description: Academic year (YYYY)
+          example: 2025
+        semester:
+          type: string
+          description: Term type (SPRING | FALL | SUMMER | WINTER)
+          enum: [ SPRING, FALL, SUMMER, WINTER ]
+          example: FALL
+    AcademicTermDto:
+      type: object
+      properties:
+        academicTerms:
+          type: array
+          items:
+            $ref: '#/components/schemas/AcademicTermItem'
+    AcademicTermItem:
+      type: object
+      properties:
+        academicTermId:
+          type: integer
+          format: int64
+          example: 1
+        year:
+          type: integer
+          format: int32
+          description: Academic year (YYYY)
+          example: 2025
+        semester:
+          type: string
+          description: Term type (SPRING | FALL | SUMMER | WINTER)
+          example: FALL
+        isCurrent:
+          type: boolean
+          description: 현재 학기 여부
+          example: true
   securitySchemes:
     bearerAuth:
       type: http
