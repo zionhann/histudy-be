@@ -8,8 +8,8 @@ import edu.handong.csee.histudy.controller.form.AcademicTermForm;
 import edu.handong.csee.histudy.domain.AcademicTerm;
 import edu.handong.csee.histudy.domain.TermType;
 import edu.handong.csee.histudy.dto.AcademicTermDto;
+import edu.handong.csee.histudy.exception.AcademicTermNotFoundException;
 import edu.handong.csee.histudy.exception.DuplicateAcademicTermException;
-import edu.handong.csee.histudy.exception.NoCurrentTermFoundException;
 import edu.handong.csee.histudy.service.repository.fake.FakeAcademicTermRepository;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -207,7 +207,8 @@ public class AcademicTermServiceTest {
 
     // When & Then
     assertThatThrownBy(() -> academicTermService.setCurrentTerm(nonExistentId))
-        .isInstanceOf(NoCurrentTermFoundException.class);
+        .isInstanceOf(AcademicTermNotFoundException.class)
+        .hasMessage("학기 ID를 찾을 수 없습니다.");
   }
 
   @Test
@@ -300,10 +301,10 @@ public class AcademicTermServiceTest {
                 .isCurrent(true)
                 .build());
 
-    // When - 같은 학기를 다시 현재 학기로 설정
+    // When - 같은 학기를 다시 현재 학기로 설정 (idempotent operation)
     academicTermService.setCurrentTerm(currentTerm.getAcademicTermId());
 
-    // Then - 여전히 현재 학기로 유지됨
+    // Then - 여전히 현재 학기로 유지됨 (no database updates occurred)
     AcademicTerm result = academicTermRepository.findById(currentTerm.getAcademicTermId()).get();
     assertThat(result.getIsCurrent()).isTrue();
 

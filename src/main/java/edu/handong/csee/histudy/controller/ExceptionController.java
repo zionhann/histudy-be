@@ -2,6 +2,7 @@ package edu.handong.csee.histudy.controller;
 
 import edu.handong.csee.histudy.dto.ExceptionResponse;
 import edu.handong.csee.histudy.dto.UserDto;
+import edu.handong.csee.histudy.exception.AcademicTermNotFoundException;
 import edu.handong.csee.histudy.exception.DuplicateAcademicTermException;
 import edu.handong.csee.histudy.exception.ForbiddenException;
 import edu.handong.csee.histudy.exception.MissingParameterException;
@@ -64,6 +65,12 @@ public class ExceptionController {
   @ExceptionHandler(DuplicateAcademicTermException.class)
   public ResponseEntity<ExceptionResponse> duplicateAcademicTerm(DuplicateAcademicTermException e) {
     return ResponseEntity.status(HttpStatus.CONFLICT)
+        .body(ExceptionResponse.builder().message(e.getMessage()).build());
+  }
+
+  @ExceptionHandler(AcademicTermNotFoundException.class)
+  public ResponseEntity<ExceptionResponse> academicTermNotFound(AcademicTermNotFoundException e) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
         .body(ExceptionResponse.builder().message(e.getMessage()).build());
   }
 

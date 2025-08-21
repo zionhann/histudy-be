@@ -5,8 +5,8 @@ import static edu.handong.csee.histudy.dto.AcademicTermDto.*;
 import edu.handong.csee.histudy.controller.form.AcademicTermForm;
 import edu.handong.csee.histudy.domain.AcademicTerm;
 import edu.handong.csee.histudy.dto.AcademicTermDto;
+import edu.handong.csee.histudy.exception.AcademicTermNotFoundException;
 import edu.handong.csee.histudy.exception.DuplicateAcademicTermException;
-import edu.handong.csee.histudy.exception.NoCurrentTermFoundException;
 import edu.handong.csee.histudy.repository.AcademicTermRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -57,11 +57,13 @@ public class AcademicTermService {
 
   @Transactional
   public void setCurrentTerm(Long id) {
-    academicTermRepository.findCurrentSemester().ifPresent(term -> term.setCurrent(false));
+    AcademicTerm targetTerm =
+        academicTermRepository.findById(id).orElseThrow(AcademicTermNotFoundException::new);
 
-    academicTermRepository
-        .findById(id)
-        .orElseThrow(NoCurrentTermFoundException::new)
-        .setCurrent(true);
+    if (targetTerm.getIsCurrent()) {
+      return;
+    }
+    academicTermRepository.findCurrentSemester().ifPresent(term -> term.setCurrent(false));
+    targetTerm.setCurrent(true);
   }
 }
