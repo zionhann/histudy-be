@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -32,12 +33,12 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@WebMvcTest(TeamController.class)
+@WebMvcTest(controllers = {TeamController.class, ExceptionController.class})
 class TeamControllerTest {
 
     private MockMvc mockMvc;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+  @Autowired private ObjectMapper objectMapper;
 
     @MockBean
     private AuthenticationInterceptor authenticationInterceptor;
@@ -70,11 +71,19 @@ class TeamControllerTest {
     void setUp() throws Exception {
         when(authenticationInterceptor.preHandle(any(), any(), any())).thenReturn(true);
 
-        mockMvc = MockMvcBuilders
-                .standaloneSetup(new TeamController(reportService, courseService, teamService, imageService, userRepository, academicTermRepository, studyGroupRepository))
-                .setControllerAdvice(ExceptionController.class)
-                .addInterceptors(authenticationInterceptor)
-                .build();
+    mockMvc =
+        MockMvcBuilders.standaloneSetup(
+                new TeamController(
+                    reportService,
+                    courseService,
+                    teamService,
+                    imageService,
+                    userRepository,
+                    academicTermRepository,
+                    studyGroupRepository))
+            .setControllerAdvice(new ExceptionController())
+            .addInterceptors(authenticationInterceptor)
+            .build();
     }
 
     @Test

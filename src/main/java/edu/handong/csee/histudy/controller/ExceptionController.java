@@ -26,7 +26,6 @@ public class ExceptionController {
                 .body(ExceptionResponse.builder()
                         .status(HttpStatus.FORBIDDEN)
                         .message(e.getMessage())
-                        .trace(Arrays.toString(e.getStackTrace()))
                         .build());
     }
 
@@ -36,7 +35,6 @@ public class ExceptionController {
                 .body(ExceptionResponse.builder()
                         .status(HttpStatus.UNAUTHORIZED)
                         .message(e.getMessage())
-                        .trace(Arrays.toString(e.getStackTrace()))
                         .build());
     }
 
@@ -49,29 +47,45 @@ public class ExceptionController {
                         .build());
     }
 
-    @ExceptionHandler({
-            MissingParameterException.class,
-            HttpMessageNotReadableException.class
-    })
-    public ResponseEntity<ExceptionResponse> missingParameter(MissingParameterException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ExceptionResponse.builder()
-                        .status(HttpStatus.BAD_REQUEST)
-                        .message(e.getMessage())
-                        .trace(Arrays.toString(e.getStackTrace()))
-                        .build());
+  @ExceptionHandler(MissingParameterException.class)
+  public ResponseEntity<ExceptionResponse> missingParameter(MissingParameterException e) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(
+            ExceptionResponse.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .message(e.getMessage())
+                .build());
+  }
+
+  @ExceptionHandler(HttpMessageNotReadableException.class)
+  public ResponseEntity<ExceptionResponse> httpMessageNotReadable(
+      HttpMessageNotReadableException e) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(
+            ExceptionResponse.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .message("Invalid request format")
+                .build());
     }
 
   @ExceptionHandler(DuplicateAcademicTermException.class)
   public ResponseEntity<ExceptionResponse> duplicateAcademicTerm(DuplicateAcademicTermException e) {
     return ResponseEntity.status(HttpStatus.CONFLICT)
-        .body(ExceptionResponse.builder().message(e.getMessage()).build());
+        .body(
+            ExceptionResponse.builder()
+                .status(HttpStatus.CONFLICT)
+                .message(e.getMessage())
+                .build());
   }
 
   @ExceptionHandler(AcademicTermNotFoundException.class)
   public ResponseEntity<ExceptionResponse> academicTermNotFound(AcademicTermNotFoundException e) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .body(ExceptionResponse.builder().message(e.getMessage()).build());
+        .body(
+            ExceptionResponse.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(e.getMessage())
+                .build());
   }
 
     @ExceptionHandler(RuntimeException.class)
@@ -81,7 +95,6 @@ public class ExceptionController {
                 .body(ExceptionResponse.builder()
                         .status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .message(e.getMessage())
-                        .trace(Arrays.toString(e.getStackTrace()))
                         .build());
     }
 }
