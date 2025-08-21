@@ -32,7 +32,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@WebMvcTest(controllers = {AdminController.class, ExceptionController.class})
+@WebMvcTest(AdminController.class)
 class AdminControllerTest {
 
   private MockMvc mockMvc;
@@ -56,7 +56,7 @@ class AdminControllerTest {
     mockMvc =
         MockMvcBuilders.standaloneSetup(
                 new AdminController(teamService, userService, academicTermService))
-            .setControllerAdvice(new ExceptionController())
+            .setControllerAdvice(ExceptionController.class)
             .addInterceptors(authenticationInterceptor)
             .build();
   }

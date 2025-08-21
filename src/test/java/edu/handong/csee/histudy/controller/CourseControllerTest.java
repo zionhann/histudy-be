@@ -24,7 +24,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@WebMvcTest(controllers = {CourseController.class, ExceptionController.class})
+@WebMvcTest(CourseController.class)
 class CourseControllerTest {
 
   private MockMvc mockMvc;
@@ -43,7 +43,7 @@ class CourseControllerTest {
 
     mockMvc =
         MockMvcBuilders.standaloneSetup(new CourseController(courseService))
-            .setControllerAdvice(new ExceptionController())
+            .setControllerAdvice(ExceptionController.class)
             .addInterceptors(authenticationInterceptor)
             .build();
   }
