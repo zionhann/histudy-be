@@ -5,6 +5,7 @@ import static edu.handong.csee.histudy.dto.AcademicTermDto.*;
 import edu.handong.csee.histudy.controller.form.AcademicTermForm;
 import edu.handong.csee.histudy.domain.AcademicTerm;
 import edu.handong.csee.histudy.dto.AcademicTermDto;
+import edu.handong.csee.histudy.exception.DuplicateAcademicTermException;
 import edu.handong.csee.histudy.exception.NoCurrentTermFoundException;
 import edu.handong.csee.histudy.repository.AcademicTermRepository;
 import java.util.List;
@@ -20,6 +21,13 @@ public class AcademicTermService {
 
   @Transactional
   public void createAcademicTerm(AcademicTermForm form) {
+    academicTermRepository
+        .findByYearAndTerm(form.getYear(), form.getSemester())
+        .ifPresent(
+            existing -> {
+              throw new DuplicateAcademicTermException(form.getYear(), form.getSemester());
+            });
+
     AcademicTerm academicTerm =
         AcademicTerm.builder()
             .academicYear(form.getYear())
@@ -38,7 +46,10 @@ public class AcademicTermService {
             .map(
                 term ->
                     new AcademicTermItem(
-                        term.getAcademicTermId(), term.getAcademicYear(), term.getSemester()))
+                        term.getAcademicTermId(),
+                        term.getAcademicYear(),
+                        term.getSemester(),
+                        term.getIsCurrent()))
             .toList();
 
     return new AcademicTermDto(items);

@@ -22,7 +22,7 @@ public class FakeAcademicTermRepository implements AcademicTermRepository {
   @Override
   public Optional<AcademicTerm> findByYearAndTerm(int year, TermType sem) {
     return store.stream()
-        .filter(cal -> cal.getAcademicYear().equals(year) && cal.getSemester().equals(sem))
+        .filter(cal -> cal.getAcademicYear() == year && cal.getSemester() == sem)
         .findFirst();
   }
 

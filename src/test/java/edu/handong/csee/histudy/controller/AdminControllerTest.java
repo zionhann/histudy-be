@@ -55,7 +55,7 @@ class AdminControllerTest {
     mockMvc =
         MockMvcBuilders.standaloneSetup(
                 new AdminController(teamService, userService, academicTermService))
-            .setControllerAdvice(ExceptionController.class)
+            .setControllerAdvice(new ExceptionController())
             .addInterceptors(authenticationInterceptor)
             .build();
   }
@@ -261,8 +261,8 @@ class AdminControllerTest {
 
     List<AcademicTermItem> termItems =
         List.of(
-            new AcademicTermItem(1L, 2024, TermType.FALL),
-            new AcademicTermItem(2L, 2025, TermType.SPRING));
+            new AcademicTermItem(1L, 2024, TermType.FALL, false),
+            new AcademicTermItem(2L, 2025, TermType.SPRING, true));
     AcademicTermDto response = new AcademicTermDto(termItems);
     when(academicTermService.getAllAcademicTerms()).thenReturn(response);
 

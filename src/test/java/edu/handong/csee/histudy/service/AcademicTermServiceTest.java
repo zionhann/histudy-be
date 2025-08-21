@@ -8,6 +8,7 @@ import edu.handong.csee.histudy.controller.form.AcademicTermForm;
 import edu.handong.csee.histudy.domain.AcademicTerm;
 import edu.handong.csee.histudy.domain.TermType;
 import edu.handong.csee.histudy.dto.AcademicTermDto;
+import edu.handong.csee.histudy.exception.DuplicateAcademicTermException;
 import edu.handong.csee.histudy.exception.NoCurrentTermFoundException;
 import edu.handong.csee.histudy.service.repository.fake.FakeAcademicTermRepository;
 import java.util.List;
@@ -41,6 +42,24 @@ public class AcademicTermServiceTest {
     assertThat(savedTerm.getAcademicYear()).isEqualTo(2025);
     assertThat(savedTerm.getSemester()).isEqualTo(TermType.SPRING);
     assertThat(savedTerm.getIsCurrent()).isFalse();
+  }
+
+  @Test
+  void 중복_학기_생성시_예외발생() {
+    // Given - 이미 존재하는 학기
+    academicTermRepository.save(
+        AcademicTerm.builder()
+            .academicYear(2024)
+            .semester(TermType.SPRING)
+            .isCurrent(false)
+            .build());
+
+    AcademicTermForm duplicateForm = new AcademicTermForm(2024, TermType.SPRING);
+
+    // When & Then
+    assertThatThrownBy(() -> academicTermService.createAcademicTerm(duplicateForm))
+        .isInstanceOf(DuplicateAcademicTermException.class)
+        .hasMessage("Academic term already exists for year 2024 and semester SPRING");
   }
 
   @Test
@@ -290,5 +309,23 @@ public class AcademicTermServiceTest {
 
     AcademicTerm foundCurrentTerm = academicTermRepository.findCurrentSemester().get();
     assertThat(foundCurrentTerm.getAcademicTermId()).isEqualTo(currentTerm.getAcademicTermId());
+  }
+
+  @Test
+  void 중복학기생성시_DuplicateAcademicTermException_발생_및_메시지_확인() {
+    // Given - 이미 존재하는 학기
+    academicTermRepository.save(
+        AcademicTerm.builder()
+            .academicYear(2024)
+            .semester(TermType.SPRING)
+            .isCurrent(false)
+            .build());
+
+    AcademicTermForm duplicateForm = new AcademicTermForm(2024, TermType.SPRING);
+
+    // When & Then - 중복 생성 시도시 정확한 메시지와 함께 예외 발생
+    assertThatThrownBy(() -> academicTermService.createAcademicTerm(duplicateForm))
+        .isInstanceOf(DuplicateAcademicTermException.class)
+        .hasMessage("Academic term already exists for year 2024 and semester SPRING");
   }
 }
