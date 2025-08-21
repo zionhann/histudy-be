@@ -23,7 +23,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(AuthController.class)
+@WebMvcTest({AuthController.class, ExceptionController.class})
 class AuthControllerTest {
 
   @Autowired private MockMvc mockMvc;
