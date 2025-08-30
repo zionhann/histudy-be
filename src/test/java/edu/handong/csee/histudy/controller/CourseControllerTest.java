@@ -11,6 +11,7 @@ import edu.handong.csee.histudy.dto.CourseDto;
 import edu.handong.csee.histudy.dto.CourseIdDto;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
 import edu.handong.csee.histudy.service.CourseService;
+import edu.handong.csee.histudy.service.DiscordService;
 import edu.handong.csee.histudy.service.JwtService;
 import io.jsonwebtoken.Claims;
 import java.util.List;
@@ -18,9 +19,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -31,11 +32,13 @@ class CourseControllerTest {
 
   @Autowired private ObjectMapper objectMapper;
 
-  @MockBean private AuthenticationInterceptor authenticationInterceptor;
+  @MockitoBean private AuthenticationInterceptor authenticationInterceptor;
 
-  @MockBean private CourseService courseService;
+  @MockitoBean private CourseService courseService;
 
-  @MockBean private JwtService jwtService;
+  @MockitoBean private JwtService jwtService;
+
+  @MockitoBean private DiscordService discordService;
 
   @BeforeEach
   void setUp() throws Exception {
@@ -43,7 +46,7 @@ class CourseControllerTest {
 
     mockMvc =
         MockMvcBuilders.standaloneSetup(new CourseController(courseService))
-            .setControllerAdvice(ExceptionController.class)
+            .setControllerAdvice(new ExceptionController(discordService))
             .addInterceptors(authenticationInterceptor)
             .build();
   }

@@ -11,6 +11,7 @@ import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.jwt.GrantType;
 import edu.handong.csee.histudy.jwt.JwtPair;
+import edu.handong.csee.histudy.service.DiscordService;
 import edu.handong.csee.histudy.service.JwtService;
 import edu.handong.csee.histudy.service.UserService;
 import io.jsonwebtoken.Claims;
@@ -19,8 +20,8 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest({AuthController.class, ExceptionController.class})
@@ -28,9 +29,11 @@ class AuthControllerTest {
 
   @Autowired private MockMvc mockMvc;
 
-  @MockBean private UserService userService;
+  @MockitoBean private UserService userService;
 
-  @MockBean private JwtService jwtService;
+  @MockitoBean private JwtService jwtService;
+
+  @MockitoBean private DiscordService discordService;
 
   @Autowired private ObjectMapper objectMapper;
 
@@ -106,6 +109,6 @@ class AuthControllerTest {
             post("/api/auth/token")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(objectMapper.writeValueAsString(tokenForm)))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isUnauthorized());
   }
 }

@@ -17,6 +17,7 @@ import edu.handong.csee.histudy.dto.TeamReportDto;
 import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
 import edu.handong.csee.histudy.service.AcademicTermService;
+import edu.handong.csee.histudy.service.DiscordService;
 import edu.handong.csee.histudy.service.JwtService;
 import edu.handong.csee.histudy.service.TeamService;
 import edu.handong.csee.histudy.service.UserService;
@@ -26,8 +27,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -39,15 +40,17 @@ class AdminControllerTest {
 
   @Autowired private ObjectMapper objectMapper;
 
-  @MockBean private AuthenticationInterceptor authenticationInterceptor;
+  @MockitoBean private AuthenticationInterceptor authenticationInterceptor;
 
-  @MockBean private TeamService teamService;
+  @MockitoBean private TeamService teamService;
 
-  @MockBean private UserService userService;
+  @MockitoBean private UserService userService;
 
-  @MockBean private AcademicTermService academicTermService;
+  @MockitoBean private AcademicTermService academicTermService;
 
-  @MockBean private JwtService jwtService;
+  @MockitoBean private JwtService jwtService;
+
+  @MockitoBean private DiscordService discordService;
 
   @BeforeEach
   void setUp() throws Exception {
@@ -56,7 +59,7 @@ class AdminControllerTest {
     mockMvc =
         MockMvcBuilders.standaloneSetup(
                 new AdminController(teamService, userService, academicTermService))
-            .setControllerAdvice(ExceptionController.class)
+            .setControllerAdvice(new ExceptionController(discordService))
             .addInterceptors(authenticationInterceptor)
             .build();
   }
