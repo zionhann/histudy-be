@@ -63,3 +63,7 @@ custom:
     # Define the allowed origins for CORS.
     ## - allowed: The comma-separated list of allowed origins.
     allowed: http://localhost:3000
+  webhook:
+    # Define webhook URL for exception notifications.
+    ## - discord: The Discord webhook URL.
+    discord: ${WEBHOOK_DISCORD:}

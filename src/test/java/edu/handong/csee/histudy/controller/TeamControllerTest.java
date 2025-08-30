@@ -16,6 +16,7 @@ import edu.handong.csee.histudy.repository.AcademicTermRepository;
 import edu.handong.csee.histudy.repository.StudyGroupRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import edu.handong.csee.histudy.service.CourseService;
+import edu.handong.csee.histudy.service.DiscordService;
 import edu.handong.csee.histudy.service.ImageService;
 import edu.handong.csee.histudy.service.JwtService;
 import edu.handong.csee.histudy.service.ReportService;
@@ -27,9 +28,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -40,23 +41,25 @@ class TeamControllerTest {
 
   @Autowired private ObjectMapper objectMapper;
 
-  @MockBean private AuthenticationInterceptor authenticationInterceptor;
+  @MockitoBean private AuthenticationInterceptor authenticationInterceptor;
 
-  @MockBean private ReportService reportService;
+  @MockitoBean private ReportService reportService;
 
-  @MockBean private CourseService courseService;
+  @MockitoBean private CourseService courseService;
 
-  @MockBean private TeamService teamService;
+  @MockitoBean private TeamService teamService;
 
-  @MockBean private ImageService imageService;
+  @MockitoBean private ImageService imageService;
 
-  @MockBean private UserRepository userRepository;
+  @MockitoBean private UserRepository userRepository;
 
-  @MockBean private AcademicTermRepository academicTermRepository;
+  @MockitoBean private AcademicTermRepository academicTermRepository;
 
-  @MockBean private StudyGroupRepository studyGroupRepository;
+  @MockitoBean private StudyGroupRepository studyGroupRepository;
 
-  @MockBean private JwtService jwtService;
+  @MockitoBean private JwtService jwtService;
+
+  @MockitoBean private DiscordService discordService;
 
   @BeforeEach
   void setUp() throws Exception {
@@ -72,7 +75,7 @@ class TeamControllerTest {
                     userRepository,
                     academicTermRepository,
                     studyGroupRepository))
-            .setControllerAdvice(ExceptionController.class)
+            .setControllerAdvice(new ExceptionController(discordService))
             .addInterceptors(authenticationInterceptor)
             .build();
   }

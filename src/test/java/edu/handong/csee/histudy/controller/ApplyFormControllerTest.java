@@ -14,6 +14,7 @@ import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.domain.StudyApplicant;
 import edu.handong.csee.histudy.dto.ApplyFormDto;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
+import edu.handong.csee.histudy.service.DiscordService;
 import edu.handong.csee.histudy.service.JwtService;
 import edu.handong.csee.histudy.service.UserService;
 import io.jsonwebtoken.Claims;
@@ -22,8 +23,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -34,11 +35,13 @@ class ApplyFormControllerTest {
 
   @Autowired private ObjectMapper objectMapper;
 
-  @MockBean private AuthenticationInterceptor authenticationInterceptor;
+  @MockitoBean private AuthenticationInterceptor authenticationInterceptor;
 
-  @MockBean private UserService userService;
+  @MockitoBean private UserService userService;
 
-  @MockBean private JwtService jwtService;
+  @MockitoBean private JwtService jwtService;
+
+  @MockitoBean private DiscordService discordService;
 
   @BeforeEach
   void setUp() throws Exception {
@@ -46,7 +49,7 @@ class ApplyFormControllerTest {
 
     mockMvc =
         MockMvcBuilders.standaloneSetup(new ApplyFormController(userService))
-            .setControllerAdvice(ExceptionController.class)
+            .setControllerAdvice(new ExceptionController(discordService))
             .addInterceptors(authenticationInterceptor)
             .build();
   }

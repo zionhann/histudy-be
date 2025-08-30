@@ -9,13 +9,14 @@ import edu.handong.csee.histudy.dto.ActivityTerm;
 import edu.handong.csee.histudy.dto.TeamRankDto;
 import edu.handong.csee.histudy.jwt.JwtProperties;
 import edu.handong.csee.histudy.service.ActivityMetricsService;
+import edu.handong.csee.histudy.service.DiscordService;
 import edu.handong.csee.histudy.service.JwtService;
 import edu.handong.csee.histudy.service.TeamService;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest({PublicController.class, ExceptionController.class})
@@ -23,13 +24,15 @@ class PublicControllerTest {
 
   @Autowired private MockMvc mockMvc;
 
-  @MockBean private TeamService teamService;
+  @MockitoBean private TeamService teamService;
 
-  @MockBean private ActivityMetricsService activityMetricsService;
+  @MockitoBean private ActivityMetricsService activityMetricsService;
 
-  @MockBean private JwtService jwtService;
+  @MockitoBean private JwtService jwtService;
 
-  @MockBean private JwtProperties jwtProperties;
+  @MockitoBean private JwtProperties jwtProperties;
+
+  @MockitoBean private DiscordService discordService;
 
   @Test
   void 공개그룹목록조회시_성공() throws Exception {
