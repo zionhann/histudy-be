@@ -33,7 +33,7 @@ public class DiscordService {
         String exceptionMessage = ExceptionUtils.getMessage(e);
         String requestMessage = getRequestMessage(req);
         String rootCause = ExceptionUtils.getRootCauseMessage(e);
-        String stackTrace = ExceptionUtils.getStackTrace(e);
+        String stackTrace = String.join("\n", ExceptionUtils.getRootCauseStackTrace(e));
 
         Payload payload =
             createExceptionPayload(requestMessage, exceptionMessage, rootCause, stackTrace);

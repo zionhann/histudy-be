@@ -20,7 +20,6 @@ import edu.handong.csee.histudy.exception.UserAlreadyExistsException;
 import edu.handong.csee.histudy.exception.UserNotFoundException;
 import edu.handong.csee.histudy.service.DiscordService;
 import io.jsonwebtoken.JwtException;
-import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -112,8 +111,8 @@ public class ExceptionController {
   @ExceptionHandler(RuntimeException.class)
   public ResponseEntity<ExceptionResponse> runtimeException(
       RuntimeException e, WebRequest request) {
-    log.error(
-        "{}({}): {}", e.getMessage(), e.getClass().getName(), Arrays.toString(e.getStackTrace()));
-    return handleStandardException(e, HttpStatus.INTERNAL_SERVER_ERROR, request);
+    log.error("Unhandled Exception Occurred", e);
+    notifyException(e, request);
+    return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다.");
   }
 }
