@@ -227,8 +227,17 @@ public class UserService {
             () ->
                 applicantOr.ifPresent(
                     applicant -> {
+                      StudyGroup studyGroup = applicant.getStudyGroup();
                       applicant.leaveGroup();
-                      studyGroupRepository.deleteEmptyGroup(currentTerm);
+
+                      if (studyGroup != null && studyGroup.getMembers().isEmpty()) {
+                        /*
+                         TODO: Need to check there are associated reports
+                         Currently deleting a group with no members but with reports
+                         will cause FK constraint violation
+                        */
+                        studyGroupRepository.deleteById(studyGroup.getStudyGroupId());
+                      }
                     }));
   }
 

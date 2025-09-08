@@ -3,7 +3,9 @@ package edu.handong.csee.histudy.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import edu.handong.csee.histudy.domain.*;
+import edu.handong.csee.histudy.repository.jpa.JpaStudyApplicantRepository;
 import edu.handong.csee.histudy.repository.jpa.JpaStudyGroupRepository;
+import edu.handong.csee.histudy.repository.jpa.JpaStudyReportRepository;
 import edu.handong.csee.histudy.support.BaseRepositoryTest;
 import edu.handong.csee.histudy.support.TestDataFactory;
 import java.util.List;
@@ -15,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 class StudyGroupRepositoryTest extends BaseRepositoryTest {
 
   @Autowired private JpaStudyGroupRepository studyGroupRepository;
+  @Autowired private JpaStudyReportRepository studyReportRepository;
+  @Autowired private JpaStudyApplicantRepository studyApplicantRepository;
 
   @Test
   void 태그와학기로조회시_해당스터디그룹반환() {
@@ -159,17 +163,14 @@ class StudyGroupRepositoryTest extends BaseRepositoryTest {
 
   @Test
   void 스터디그룹삭제시_삭제성공() {
-    // Given
-    StudyGroup studyGroup = TestDataFactory.createStudyGroup(1, currentTerm);
-    StudyGroup savedGroup = persistAndFlush(studyGroup);
+    StudyApplicant applicant =
+        studyApplicantRepository.save(
+            TestDataFactory.createStudyApplicant(currentTerm, user1, List.of(), List.of(course1)));
+    StudyGroup group = studyGroupRepository.save(StudyGroup.of(1, currentTerm, List.of(applicant)));
 
-    // When
-    studyGroupRepository.delete(savedGroup);
-    flushAndClear();
+    studyGroupRepository.deleteById(group.getStudyGroupId());
 
-    // Then
-    Optional<StudyGroup> deletedGroup =
-        studyGroupRepository.findByTagAndAcademicTerm(1, currentTerm);
+    Optional<StudyGroup> deletedGroup = studyGroupRepository.findById(group.getStudyGroupId());
     assertThat(deletedGroup).isEmpty();
   }
 

@@ -20,14 +20,6 @@ public class FakeStudyGroupRepository implements StudyGroupRepository {
   }
 
   @Override
-  public void deleteEmptyGroup(AcademicTerm academicTerm) {
-    store.stream()
-        .filter(e -> e.getAcademicTerm().equals(academicTerm) && e.getMembers().isEmpty())
-        .toList()
-        .forEach(store::remove);
-  }
-
-  @Override
   public Optional<Integer> countMaxTag(AcademicTerm academicTerm) {
     return store.stream()
         .filter(e -> e.getAcademicTerm().equals(academicTerm))
