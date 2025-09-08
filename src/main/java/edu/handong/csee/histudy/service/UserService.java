@@ -227,9 +227,8 @@ public class UserService {
             () ->
                 applicantOr.ifPresent(
                     applicant -> {
-                      applicant.leaveGroup();
-
                       StudyGroup studyGroup = applicant.getStudyGroup();
+                      applicant.leaveGroup();
 
                       if (studyGroup != null && studyGroup.getMembers().isEmpty()) {
                         /*
