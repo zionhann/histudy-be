@@ -9,8 +9,6 @@ import java.util.Optional;
 public interface StudyGroupRepository {
   Optional<StudyGroup> findByTagAndAcademicTerm(int tag, AcademicTerm academicTerm);
 
-  void deleteEmptyGroup(AcademicTerm academicTerm);
-
   Optional<Integer> countMaxTag(AcademicTerm academicTerm);
 
   List<StudyGroup> findAllByAcademicTerm(AcademicTerm academicTerm);

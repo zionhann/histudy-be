@@ -21,11 +21,6 @@ public class StudyGroupRepositoryImpl implements StudyGroupRepository {
   }
 
   @Override
-  public void deleteEmptyGroup(AcademicTerm academicTerm) {
-    repository.deleteEmptyGroup(academicTerm);
-  }
-
-  @Override
   public Optional<Integer> countMaxTag(AcademicTerm academicTerm) {
     return repository.countMaxTag(academicTerm);
   }
