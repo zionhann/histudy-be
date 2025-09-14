@@ -149,6 +149,24 @@ class CourseControllerTest {
   }
 
   @Test
+  void 사용자가_앞뒤공백포함_검색어로_강의목록조회시_트림처리후_검색() throws Exception {
+    Claims claims = mock(Claims.class);
+    when(claims.getSubject()).thenReturn("user@test.com");
+    when(claims.get("rol", String.class)).thenReturn(Role.USER.name());
+
+    List<CourseDto.CourseInfo> courses = List.of();
+    when(courseService.search(anyString())).thenReturn(courses);
+
+    mockMvc
+        .perform(get("/api/courses").requestAttr("claims", claims).param("search", "  java  "))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType("application/json"));
+
+    verify(courseService).search("java");
+    verify(courseService, never()).getCurrentCourses();
+  }
+
+  @Test
   void 권한없는사용자가_강의업로드시_실패() throws Exception {
     Claims claims = mock(Claims.class);
     when(claims.getSubject()).thenReturn("user@test.com");
