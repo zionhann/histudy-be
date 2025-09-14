@@ -12,7 +12,7 @@ public interface JpaCourseRepository extends JpaRepository<Course, Long> {
   @Query(
       "select c from Course c "
           + "where lower(c.name) "
-          + "like lower(concat('%',:keyword,'%'))"
+          + "like lower(concat('%', :keyword, '%')) "
           + "and c.academicTerm.isCurrent = true")
   List<Course> findAllByNameContainingIgnoreCase(@Param("keyword") String keyword);
 

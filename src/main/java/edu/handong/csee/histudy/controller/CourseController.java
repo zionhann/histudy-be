@@ -51,7 +51,7 @@ public class CourseController {
       List<CourseDto.CourseInfo> courses =
           (keyword == null || keyword.isBlank())
               ? courseService.getCurrentCourses()
-              : courseService.search(keyword);
+              : courseService.search(keyword.trim());
 
       return ResponseEntity.ok(new CourseDto(courses));
     }
