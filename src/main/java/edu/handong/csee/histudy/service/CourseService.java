@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -22,30 +23,27 @@ public class CourseService {
   private final UserRepository userRepository;
   private final AcademicTermRepository academicTermRepository;
   private final StudyGroupRepository studyGroupRepository;
-  private final StudyApplicantRepository studyApplicantRepository;
 
+  @Transactional
   public void readCourseCSV(MultipartFile file) throws IOException {
     CSVResolver resolver = CSVResolver.of(file.getInputStream());
     List<CourseCSV> courseData = resolver.createCourseCSV();
 
-    List<Course> courses = handleCourseCSV(courseData);
+    AcademicTerm currentTerm =
+        academicTermRepository.findCurrentSemester().orElseThrow(NoCurrentTermFoundException::new);
+    courseRepository.deleteAllByAcademicTerm(currentTerm);
+
+    List<Course> courses = toCourses(courseData, currentTerm);
     courseRepository.saveAll(courses);
   }
 
-  private List<Course> handleCourseCSV(List<CourseCSV> courseData) {
+  private List<Course> toCourses(List<CourseCSV> courseData, AcademicTerm currentTerm) {
     return courseData.stream()
         .map(
             csv -> {
-              AcademicTerm academicTerm = getOrCreateSemester(csv.toAcademicTerm());
-              return csv.toCourse(academicTerm);
+              return csv.toCourse(currentTerm);
             })
         .toList();
-  }
-
-  private AcademicTerm getOrCreateSemester(AcademicTerm academicTerm) {
-    return academicTermRepository
-        .findByYearAndTerm(academicTerm.getAcademicYear(), academicTerm.getSemester())
-        .orElseGet(() -> academicTermRepository.save(academicTerm));
   }
 
   public List<CourseDto.CourseInfo> getCurrentCourses() {

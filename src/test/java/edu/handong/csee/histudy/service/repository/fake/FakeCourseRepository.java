@@ -1,5 +1,6 @@
 package edu.handong.csee.histudy.service.repository.fake;
 
+import edu.handong.csee.histudy.domain.AcademicTerm;
 import edu.handong.csee.histudy.domain.Course;
 import edu.handong.csee.histudy.repository.CourseRepository;
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ public class FakeCourseRepository implements CourseRepository {
   @Override
   public List<Course> findAllByNameContainingIgnoreCase(String keyword) {
     return store.stream()
-        .filter(course -> course.getName().toLowerCase().contains(keyword))
+        .filter(course -> course.getName().toLowerCase().contains(keyword.toLowerCase()))
         .collect(Collectors.toList());
   }
 
@@ -40,6 +41,11 @@ public class FakeCourseRepository implements CourseRepository {
   @Override
   public void deleteById(Long id) {
     store.removeIf(c -> c.getCourseId().equals(id));
+  }
+
+  @Override
+  public void deleteAllByAcademicTerm(AcademicTerm academicTerm) {
+    store.removeIf(c -> c.getAcademicTerm().equals(academicTerm));
   }
 
   @Override
