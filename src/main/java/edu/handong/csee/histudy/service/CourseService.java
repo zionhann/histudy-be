@@ -31,10 +31,12 @@ public class CourseService {
 
     AcademicTerm currentTerm =
         academicTermRepository.findCurrentSemester().orElseThrow(NoCurrentTermFoundException::new);
-    courseRepository.deleteAllByAcademicTerm(currentTerm);
-
     List<Course> courses = toCourses(courseData, currentTerm);
-    courseRepository.saveAll(courses);
+
+    if (!courses.isEmpty()) {
+      courseRepository.deleteAllByAcademicTerm(currentTerm);
+      courseRepository.saveAll(courses);
+    }
   }
 
   private List<Course> toCourses(List<CourseCSV> courseData, AcademicTerm currentTerm) {

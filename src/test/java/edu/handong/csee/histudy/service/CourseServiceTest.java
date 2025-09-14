@@ -170,4 +170,66 @@ public class CourseServiceTest {
         .isInstanceOf(IOException.class)
         .hasMessage("File read error");
   }
+
+  @Test
+  void 빈필드포함CSV업로드시_검증예외발생() throws IOException {
+    // Given
+    String csvContent =
+        """
+    title,code,prof
+    Advanced Programming,CSE30201,Dr. Kim
+    ,CSE30301,Prof. Lee
+    Operating Systems,,Dr. Park
+    """;
+    InputStream stream = new ByteArrayInputStream(csvContent.getBytes());
+    MockMultipartFile file =
+        new MockMultipartFile("courses.csv", "courses.csv", "text/csv", stream);
+
+    // When & Then
+    assertThatThrownBy(() -> courseService.readCourseCSV(file))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Missing or empty required field");
+  }
+
+  @Test
+  void 공백필드포함CSV업로드시_검증예외발생() throws IOException {
+    // Given
+    String csvContent =
+        """
+    title,code,prof
+    Advanced Programming,CSE30201,Dr. Kim
+    Database Systems,   ,Prof. Lee
+    """;
+    InputStream stream = new ByteArrayInputStream(csvContent.getBytes());
+    MockMultipartFile file =
+        new MockMultipartFile("courses.csv", "courses.csv", "text/csv", stream);
+
+    // When & Then
+    assertThatThrownBy(() -> courseService.readCourseCSV(file))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Missing or empty required field 'code'");
+  }
+
+  @Test
+  void 앞뒤공백포함CSV업로드시_트림처리후_저장성공() throws IOException {
+    // Given
+    String csvContent =
+        """
+    title,code,prof
+      Advanced Programming  ,  CSE30201  ,  Dr. Kim
+    """;
+    InputStream stream = new ByteArrayInputStream(csvContent.getBytes());
+    MockMultipartFile file =
+        new MockMultipartFile("courses.csv", "courses.csv", "text/csv", stream);
+
+    // When
+    courseService.readCourseCSV(file);
+
+    // Then
+    List<Course> savedCourses = ((FakeCourseRepository) courseRepository).findAll();
+    assertThat(savedCourses).hasSize(1);
+    assertThat(savedCourses.get(0).getName()).isEqualTo("Advanced Programming");
+    assertThat(savedCourses.get(0).getCode()).isEqualTo("CSE30201");
+    assertThat(savedCourses.get(0).getProfessor()).isEqualTo("Dr. Kim");
+  }
 }
