@@ -131,6 +131,24 @@ class CourseControllerTest {
   }
 
   @Test
+  void 사용자가_빈검색어로_강의목록조회시_현재강의목록_반환() throws Exception {
+    Claims claims = mock(Claims.class);
+    when(claims.getSubject()).thenReturn("user@test.com");
+    when(claims.get("rol", String.class)).thenReturn(Role.USER.name());
+
+    List<CourseDto.CourseInfo> currentCourses = List.of();
+    when(courseService.getCurrentCourses()).thenReturn(currentCourses);
+
+    mockMvc
+        .perform(get("/api/courses").requestAttr("claims", claims).param("search", ""))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType("application/json"));
+
+    verify(courseService).getCurrentCourses();
+    verify(courseService, never()).search(anyString());
+  }
+
+  @Test
   void 권한없는사용자가_강의업로드시_실패() throws Exception {
     Claims claims = mock(Claims.class);
     when(claims.getSubject()).thenReturn("user@test.com");
