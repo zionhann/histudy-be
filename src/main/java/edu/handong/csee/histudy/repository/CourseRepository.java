@@ -1,5 +1,6 @@
 package edu.handong.csee.histudy.repository;
 
+import edu.handong.csee.histudy.domain.AcademicTerm;
 import edu.handong.csee.histudy.domain.Course;
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +15,8 @@ public interface CourseRepository {
   boolean existsById(Long id);
 
   void deleteById(Long id);
+
+  void deleteAllByAcademicTerm(AcademicTerm academicTerm);
 
   Optional<Course> findById(Long id);
 }

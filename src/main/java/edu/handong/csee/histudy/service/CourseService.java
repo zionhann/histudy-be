@@ -7,13 +7,11 @@ import edu.handong.csee.histudy.exception.NoCurrentTermFoundException;
 import edu.handong.csee.histudy.exception.StudyGroupNotFoundException;
 import edu.handong.csee.histudy.exception.UserNotFoundException;
 import edu.handong.csee.histudy.repository.*;
-import edu.handong.csee.histudy.util.CSVResolver;
 import edu.handong.csee.histudy.util.CourseCSV;
-import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,30 +20,22 @@ public class CourseService {
   private final UserRepository userRepository;
   private final AcademicTermRepository academicTermRepository;
   private final StudyGroupRepository studyGroupRepository;
-  private final StudyApplicantRepository studyApplicantRepository;
 
-  public void readCourseCSV(MultipartFile file) throws IOException {
-    CSVResolver resolver = CSVResolver.of(file.getInputStream());
-    List<CourseCSV> courseData = resolver.createCourseCSV();
+  @Transactional
+  public void replaceCourses(List<CourseCSV> courseData) {
+    if (courseData.isEmpty()) {
+      return;
+    }
+    AcademicTerm currentTerm =
+        academicTermRepository.findCurrentSemester().orElseThrow(NoCurrentTermFoundException::new);
+    List<Course> courses = toCourses(courseData, currentTerm);
 
-    List<Course> courses = handleCourseCSV(courseData);
+    courseRepository.deleteAllByAcademicTerm(currentTerm);
     courseRepository.saveAll(courses);
   }
 
-  private List<Course> handleCourseCSV(List<CourseCSV> courseData) {
-    return courseData.stream()
-        .map(
-            csv -> {
-              AcademicTerm academicTerm = getOrCreateSemester(csv.toAcademicTerm());
-              return csv.toCourse(academicTerm);
-            })
-        .toList();
-  }
-
-  private AcademicTerm getOrCreateSemester(AcademicTerm academicTerm) {
-    return academicTermRepository
-        .findByYearAndTerm(academicTerm.getAcademicYear(), academicTerm.getSemester())
-        .orElseGet(() -> academicTermRepository.save(academicTerm));
+  private List<Course> toCourses(List<CourseCSV> courseData, AcademicTerm currentTerm) {
+    return courseData.stream().map(csv -> csv.toCourse(currentTerm)).toList();
   }
 
   public List<CourseDto.CourseInfo> getCurrentCourses() {

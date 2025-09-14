@@ -2,38 +2,38 @@ package edu.handong.csee.histudy.util;
 
 import edu.handong.csee.histudy.domain.AcademicTerm;
 import edu.handong.csee.histudy.domain.Course;
-import edu.handong.csee.histudy.domain.TermType;
 import lombok.Builder;
 import org.apache.commons.csv.CSVRecord;
 
 @Builder
 public class CourseCSV {
-  private String clazz;
+  private String title;
   private String code;
   private String professor;
-  private int year;
-  private int semester;
 
   public static CourseCSV of(CSVRecord record) {
-    return CourseCSV.builder()
-        .clazz(record.get("class"))
-        .code(record.get("code"))
-        .professor(record.get("professor"))
-        .year(Integer.parseInt(record.get("year")))
-        .semester(Integer.parseInt(record.get("semester")))
-        .build();
+    String title = validateAndTrim(record.get("title"), "title", record.getRecordNumber());
+    String code = validateAndTrim(record.get("code"), "code", record.getRecordNumber());
+    String professor = validateAndTrim(record.get("prof"), "prof", record.getRecordNumber());
+
+    return CourseCSV.builder().title(title).code(code).professor(professor).build();
+  }
+
+  private static String validateAndTrim(String value, String fieldName, long recordNumber) {
+    String trimmed = value != null ? value.trim() : null;
+    if (trimmed == null || trimmed.isEmpty()) {
+      throw new IllegalArgumentException(
+          "Missing or empty required field '" + fieldName + "' in CSV record " + recordNumber);
+    }
+    return trimmed;
   }
 
   public Course toCourse(AcademicTerm academicTerm) {
     return Course.builder()
-        .name(clazz)
+        .name(title)
         .code(code)
         .professor(professor)
         .academicTerm(academicTerm)
         .build();
-  }
-
-  public AcademicTerm toAcademicTerm() {
-    return AcademicTerm.builder().academicYear(year).semester(TermType.parse(semester)).build();
   }
 }

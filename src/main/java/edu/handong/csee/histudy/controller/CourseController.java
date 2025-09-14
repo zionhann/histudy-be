@@ -5,8 +5,9 @@ import edu.handong.csee.histudy.dto.CourseDto;
 import edu.handong.csee.histudy.dto.CourseIdDto;
 import edu.handong.csee.histudy.exception.ForbiddenException;
 import edu.handong.csee.histudy.service.CourseService;
+import edu.handong.csee.histudy.util.CSVResolver;
+import edu.handong.csee.histudy.util.CourseCSV;
 import io.jsonwebtoken.Claims;
-import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,13 +24,13 @@ public class CourseController {
 
   @PostMapping(consumes = {"multipart/form-data"})
   public ResponseEntity<Void> importCourses(
-      @RequestParam("file") MultipartFile file, @RequestAttribute Claims claims)
-      throws IOException {
+      @RequestParam("file") MultipartFile file, @RequestAttribute Claims claims) {
     if (Role.isAuthorized(claims, Role.ADMIN)) {
       if (file.isEmpty()) {
         return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).build();
       }
-      courseService.readCourseCSV(file);
+      List<CourseCSV> courseData = CSVResolver.of(file).resolve();
+      courseService.replaceCourses(courseData);
       return ResponseEntity.status(HttpStatus.CREATED).build();
     }
     throw new ForbiddenException();
@@ -49,7 +50,9 @@ public class CourseController {
       @RequestAttribute Claims claims) {
     if (Role.isAuthorized(claims, Role.ADMIN, Role.USER)) {
       List<CourseDto.CourseInfo> courses =
-          (keyword == null) ? courseService.getCurrentCourses() : courseService.search(keyword);
+          (keyword == null || keyword.isBlank())
+              ? courseService.getCurrentCourses()
+              : courseService.search(keyword.trim());
 
       return ResponseEntity.ok(new CourseDto(courses));
     }

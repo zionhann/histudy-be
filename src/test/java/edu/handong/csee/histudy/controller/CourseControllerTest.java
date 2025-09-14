@@ -60,7 +60,7 @@ class CourseControllerTest {
     MockMultipartFile file =
         new MockMultipartFile("file", "courses.csv", "text/csv", "course content".getBytes());
 
-    doNothing().when(courseService).readCourseCSV(any());
+    doNothing().when(courseService).replaceCourses(any());
 
     mockMvc
         .perform(multipart("/api/courses").file(file).requestAttr("claims", claims))
@@ -128,6 +128,42 @@ class CourseControllerTest {
         .perform(get("/api/courses").requestAttr("claims", claims).param("search", "java"))
         .andExpect(status().isOk())
         .andExpect(content().contentType("application/json"));
+  }
+
+  @Test
+  void 사용자가_빈검색어로_강의목록조회시_현재강의목록_반환() throws Exception {
+    Claims claims = mock(Claims.class);
+    when(claims.getSubject()).thenReturn("user@test.com");
+    when(claims.get("rol", String.class)).thenReturn(Role.USER.name());
+
+    List<CourseDto.CourseInfo> currentCourses = List.of();
+    when(courseService.getCurrentCourses()).thenReturn(currentCourses);
+
+    mockMvc
+        .perform(get("/api/courses").requestAttr("claims", claims).param("search", ""))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType("application/json"));
+
+    verify(courseService).getCurrentCourses();
+    verify(courseService, never()).search(anyString());
+  }
+
+  @Test
+  void 사용자가_앞뒤공백포함_검색어로_강의목록조회시_트림처리후_검색() throws Exception {
+    Claims claims = mock(Claims.class);
+    when(claims.getSubject()).thenReturn("user@test.com");
+    when(claims.get("rol", String.class)).thenReturn(Role.USER.name());
+
+    List<CourseDto.CourseInfo> courses = List.of();
+    when(courseService.search(anyString())).thenReturn(courses);
+
+    mockMvc
+        .perform(get("/api/courses").requestAttr("claims", claims).param("search", "  java  "))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType("application/json"));
+
+    verify(courseService).search("java");
+    verify(courseService, never()).getCurrentCourses();
   }
 
   @Test

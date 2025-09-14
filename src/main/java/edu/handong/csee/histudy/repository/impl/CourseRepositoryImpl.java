@@ -1,5 +1,6 @@
 package edu.handong.csee.histudy.repository.impl;
 
+import edu.handong.csee.histudy.domain.AcademicTerm;
 import edu.handong.csee.histudy.domain.Course;
 import edu.handong.csee.histudy.repository.CourseRepository;
 import edu.handong.csee.histudy.repository.jpa.JpaCourseRepository;
@@ -36,6 +37,11 @@ public class CourseRepositoryImpl implements CourseRepository {
   @Override
   public void deleteById(Long id) {
     repository.deleteById(id);
+  }
+
+  @Override
+  public void deleteAllByAcademicTerm(AcademicTerm academicTerm) {
+    repository.deleteAllByAcademicTerm(academicTerm);
   }
 
   @Override
