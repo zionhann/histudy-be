@@ -7,7 +7,8 @@ import edu.handong.csee.histudy.dto.CourseDto;
 import edu.handong.csee.histudy.repository.*;
 import edu.handong.csee.histudy.service.repository.fake.*;
 import edu.handong.csee.histudy.support.TestDataFactory;
-import java.io.ByteArrayInputStream;
+import edu.handong.csee.histudy.util.CSVResolver;
+import edu.handong.csee.histudy.util.CourseCSV;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -142,12 +143,12 @@ public class CourseServiceTest {
     Database Systems,CSE30301,Prof. Lee
     Operating Systems,CSE30401,Dr. Park
     """;
-    InputStream stream = new ByteArrayInputStream(csvContent.getBytes());
     MockMultipartFile file =
-        new MockMultipartFile("courses.csv", "courses.csv", "text/csv", stream);
+        new MockMultipartFile("courses.csv", "courses.csv", "text/csv", csvContent.getBytes());
 
     // When
-    courseService.readCourseCSV(file);
+    List<CourseCSV> courseData = CSVResolver.of(file).resolve();
+    courseService.replaceCourses(courseData);
 
     // Then
     List<Course> savedCourses = ((FakeCourseRepository) courseRepository).findAll();
@@ -166,9 +167,9 @@ public class CourseServiceTest {
         };
 
     // When & Then
-    assertThatThrownBy(() -> courseService.readCourseCSV(file))
-        .isInstanceOf(IOException.class)
-        .hasMessage("File read error");
+    assertThatThrownBy(() -> CSVResolver.of(file).resolve())
+        .isInstanceOf(RuntimeException.class)
+        .hasCauseInstanceOf(IOException.class);
   }
 
   @Test
@@ -181,12 +182,11 @@ public class CourseServiceTest {
     ,CSE30301,Prof. Lee
     Operating Systems,,Dr. Park
     """;
-    InputStream stream = new ByteArrayInputStream(csvContent.getBytes());
     MockMultipartFile file =
-        new MockMultipartFile("courses.csv", "courses.csv", "text/csv", stream);
+        new MockMultipartFile("courses.csv", "courses.csv", "text/csv", csvContent.getBytes());
 
     // When & Then
-    assertThatThrownBy(() -> courseService.readCourseCSV(file))
+    assertThatThrownBy(() -> CSVResolver.of(file).resolve())
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Missing or empty required field");
   }
@@ -200,12 +200,11 @@ public class CourseServiceTest {
     Advanced Programming,CSE30201,Dr. Kim
     Database Systems,   ,Prof. Lee
     """;
-    InputStream stream = new ByteArrayInputStream(csvContent.getBytes());
     MockMultipartFile file =
-        new MockMultipartFile("courses.csv", "courses.csv", "text/csv", stream);
+        new MockMultipartFile("courses.csv", "courses.csv", "text/csv", csvContent.getBytes());
 
     // When & Then
-    assertThatThrownBy(() -> courseService.readCourseCSV(file))
+    assertThatThrownBy(() -> CSVResolver.of(file).resolve())
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Missing or empty required field 'code'");
   }
@@ -218,12 +217,12 @@ public class CourseServiceTest {
     title,code,prof
       Advanced Programming  ,  CSE30201  ,  Dr. Kim
     """;
-    InputStream stream = new ByteArrayInputStream(csvContent.getBytes());
     MockMultipartFile file =
-        new MockMultipartFile("courses.csv", "courses.csv", "text/csv", stream);
+        new MockMultipartFile("courses.csv", "courses.csv", "text/csv", csvContent.getBytes());
 
     // When
-    courseService.readCourseCSV(file);
+    List<CourseCSV> courseData = CSVResolver.of(file).resolve();
+    courseService.replaceCourses(courseData);
 
     // Then
     List<Course> savedCourses = ((FakeCourseRepository) courseRepository).findAll();

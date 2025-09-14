@@ -7,15 +7,11 @@ import edu.handong.csee.histudy.exception.NoCurrentTermFoundException;
 import edu.handong.csee.histudy.exception.StudyGroupNotFoundException;
 import edu.handong.csee.histudy.exception.UserNotFoundException;
 import edu.handong.csee.histudy.repository.*;
-import edu.handong.csee.histudy.util.CSVResolver;
 import edu.handong.csee.histudy.util.CourseCSV;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -26,31 +22,20 @@ public class CourseService {
   private final StudyGroupRepository studyGroupRepository;
 
   @Transactional
-  public void readCourseCSV(MultipartFile file) throws IOException {
-    try (InputStream in = file.getInputStream()) {
-      CSVResolver resolver = CSVResolver.of(in);
-      List<CourseCSV> courseData = resolver.createCourseCSV();
-
-      AcademicTerm currentTerm =
-          academicTermRepository
-              .findCurrentSemester()
-              .orElseThrow(NoCurrentTermFoundException::new);
-      List<Course> courses = toCourses(courseData, currentTerm);
-
-      if (!courses.isEmpty()) {
-        courseRepository.deleteAllByAcademicTerm(currentTerm);
-        courseRepository.saveAll(courses);
-      }
+  public void replaceCourses(List<CourseCSV> courseData) {
+    if (courseData.isEmpty()) {
+      return;
     }
+    AcademicTerm currentTerm =
+        academicTermRepository.findCurrentSemester().orElseThrow(NoCurrentTermFoundException::new);
+    List<Course> courses = toCourses(courseData, currentTerm);
+
+    courseRepository.deleteAllByAcademicTerm(currentTerm);
+    courseRepository.saveAll(courses);
   }
 
   private List<Course> toCourses(List<CourseCSV> courseData, AcademicTerm currentTerm) {
-    return courseData.stream()
-        .map(
-            csv -> {
-              return csv.toCourse(currentTerm);
-            })
-        .toList();
+    return courseData.stream().map(csv -> csv.toCourse(currentTerm)).toList();
   }
 
   public List<CourseDto.CourseInfo> getCurrentCourses() {

@@ -60,7 +60,7 @@ class CourseControllerTest {
     MockMultipartFile file =
         new MockMultipartFile("file", "courses.csv", "text/csv", "course content".getBytes());
 
-    doNothing().when(courseService).readCourseCSV(any());
+    doNothing().when(courseService).replaceCourses(any());
 
     mockMvc
         .perform(multipart("/api/courses").file(file).requestAttr("claims", claims))
