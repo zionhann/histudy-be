@@ -10,6 +10,7 @@ import edu.handong.csee.histudy.repository.*;
 import edu.handong.csee.histudy.util.CSVResolver;
 import edu.handong.csee.histudy.util.CourseCSV;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,16 +27,20 @@ public class CourseService {
 
   @Transactional
   public void readCourseCSV(MultipartFile file) throws IOException {
-    CSVResolver resolver = CSVResolver.of(file.getInputStream());
-    List<CourseCSV> courseData = resolver.createCourseCSV();
+    try (InputStream in = file.getInputStream()) {
+      CSVResolver resolver = CSVResolver.of(in);
+      List<CourseCSV> courseData = resolver.createCourseCSV();
 
-    AcademicTerm currentTerm =
-        academicTermRepository.findCurrentSemester().orElseThrow(NoCurrentTermFoundException::new);
-    List<Course> courses = toCourses(courseData, currentTerm);
+      AcademicTerm currentTerm =
+          academicTermRepository
+              .findCurrentSemester()
+              .orElseThrow(NoCurrentTermFoundException::new);
+      List<Course> courses = toCourses(courseData, currentTerm);
 
-    if (!courses.isEmpty()) {
-      courseRepository.deleteAllByAcademicTerm(currentTerm);
-      courseRepository.saveAll(courses);
+      if (!courses.isEmpty()) {
+        courseRepository.deleteAllByAcademicTerm(currentTerm);
+        courseRepository.saveAll(courses);
+      }
     }
   }
 
