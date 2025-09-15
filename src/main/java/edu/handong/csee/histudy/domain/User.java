@@ -49,8 +49,4 @@ public class User extends BaseTime {
   public String getSidWithMasking() {
     return this.sid.substring(0, 3) + "****" + this.sid.substring(7);
   }
-
-  public void changeRole(Role role) {
-    this.role = role;
-  }
 }

@@ -1,6 +1,6 @@
 package edu.handong.csee.histudy.dto;
 
-import edu.handong.csee.histudy.domain.GroupMember;
+import edu.handong.csee.histudy.domain.StudyApplicant;
 import edu.handong.csee.histudy.domain.StudyGroup;
 import edu.handong.csee.histudy.domain.StudyReport;
 import edu.handong.csee.histudy.domain.User;
@@ -35,7 +35,7 @@ public class TeamRankDto {
     public TeamInfo(StudyGroup studyGroup, List<StudyReport> reports, String imgPath) {
       this.id = studyGroup.getTag();
       this.members =
-          studyGroup.getMembers().stream().map(GroupMember::getUser).map(User::getName).toList();
+          studyGroup.getMembers().stream().map(StudyApplicant::getUser).map(User::getName).toList();
       this.reports = reports.size();
       this.totalMinutes = reports.stream().mapToLong(StudyReport::getTotalMinutes).sum();
       this.thumbnail = imgPath;

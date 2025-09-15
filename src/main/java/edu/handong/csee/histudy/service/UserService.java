@@ -105,7 +105,7 @@ public class UserService {
         .findByUserAndTerm(user, currentTerm)
         .ifPresent(
             applicant -> {
-              if (applicant.isMarkedAsGrouped()) {
+              if (applicant.hasStudyGroup()) {
                 throw new IllegalStateException("그룹이 이미 배정된 신청서는 삭제할 수 없습니다.");
               }
               List<User> receivers = applicant.getRequestedUsers();
@@ -228,7 +228,7 @@ public class UserService {
                 applicantOr.ifPresent(
                     applicant -> {
                       StudyGroup studyGroup = applicant.getStudyGroup();
-                      applicant.leaveGroup();
+                      applicant.leaveStudyGroup();
 
                       if (studyGroup != null && studyGroup.getMembers().isEmpty()) {
                         /*

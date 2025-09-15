@@ -61,7 +61,7 @@ public class TeamService {
     StudyGroup studyGroup = studyGroupRepository.findById(id).orElseThrow();
     List<UserDto.UserBasic> users =
         studyGroup.getMembers().stream()
-            .map(GroupMember::getUser)
+            .map(StudyApplicant::getUser)
             .map(UserDto.UserBasic::new)
             .toList();
 
@@ -96,7 +96,7 @@ public class TeamService {
     StudyGroup studyGroup = studyGroupRepository.findByUserAndTerm(user, currentTerm).orElseThrow();
 
     return studyGroup.getMembers().stream()
-        .map(GroupMember::getUser)
+        .map(StudyApplicant::getUser)
         .map(_user -> new UserDto.UserMeWithMasking(_user, studyGroup.getTag()))
         .toList();
   }
@@ -198,9 +198,7 @@ public class TeamService {
           Map<Course, List<StudyApplicant>> courseToUserMap =
               preferredCourses.stream()
                   .filter(
-                      uc ->
-                          uc.getPriority().equals(priority)
-                              && uc.getApplicant().isNotMarkedAsGrouped())
+                      uc -> uc.getPriority().equals(priority) && !uc.getApplicant().hasStudyGroup())
                   .collect(
                       Collectors.groupingBy(
                           PreferredCourse::getCourse,
@@ -253,7 +251,7 @@ public class TeamService {
         (course, queue) -> {
           List<StudyApplicant> group =
               queue.stream()
-                  .filter(StudyApplicant::isNotMarkedAsGrouped)
+                  .filter(applicant -> !applicant.hasStudyGroup())
                   .sorted(queue.comparator())
                   .collect(Collectors.toList());
           Set<StudyGroup> groups = createGroup(group, tag, current);
