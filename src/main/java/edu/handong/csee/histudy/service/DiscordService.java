@@ -20,7 +20,6 @@ import org.springframework.web.context.request.WebRequest;
 public class DiscordService {
 
   private static final int ERROR_COLOR = 15548997;
-  private static final int MAX_STACK_TRACE_LENGTH = 1000;
   private static final String UNKNOWN_VALUE = "Unknown";
   private static final DateTimeFormatter TIMESTAMP_FORMATTER =
       DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -32,11 +31,11 @@ public class DiscordService {
       if (r instanceof ServletWebRequest req) {
         String exceptionMessage = ExceptionUtils.getMessage(e);
         String requestMessage = getRequestMessage(req);
-        String rootCause = ExceptionUtils.getRootCauseMessage(e);
-        String stackTrace = String.join("\n", ExceptionUtils.getRootCauseStackTrace(e));
+        String rootCauseMessage = ExceptionUtils.getRootCauseMessage(e);
+        String stackTrace = e.getStackTrace()[0].toString();
 
         Payload payload =
-            createExceptionPayload(requestMessage, exceptionMessage, rootCause, stackTrace);
+            createExceptionPayload(requestMessage, exceptionMessage, rootCauseMessage, stackTrace);
         client.executeWebhook(payload);
       }
     } catch (Exception ex) {
@@ -60,19 +59,17 @@ public class DiscordService {
 
     fields.add(createField("Timestamp", LocalDateTime.now().format(TIMESTAMP_FORMATTER)));
     fields.add(createField("Request", requestSummary));
-    fields.add(createField("Root Cause", rootCause));
+    fields.add(createField("Location", stackTrace));
 
-    if (stackTrace != null && !stackTrace.trim().isEmpty()) {
-      String truncatedTrace = truncateStackTrace(stackTrace);
-      fields.add(createField("Stack Trace", "```\n" + truncatedTrace + "\n```"));
+    if (errorMessage != null && !errorMessage.equals(rootCause)) {
+      fields.add(createField("Root Cause", rootCause));
     }
 
     String title =
         (errorMessage != null && !errorMessage.isEmpty()) ? errorMessage : "Unknown Error Occurred";
 
-    Embed embed = Embed.builder().title(title).color(ERROR_COLOR).fields(fields).build();
-
-    return new Payload(List.of(embed));
+    return new Payload(
+        List.of(Embed.builder().title(title).color(ERROR_COLOR).fields(fields).build()));
   }
 
   private Field createField(String name, String value) {
@@ -81,11 +78,5 @@ public class DiscordService {
         .value(value != null && !value.trim().isEmpty() ? value : UNKNOWN_VALUE)
         .inline(false)
         .build();
-  }
-
-  private String truncateStackTrace(String stackTrace) {
-    return stackTrace.length() > MAX_STACK_TRACE_LENGTH
-        ? stackTrace.substring(0, MAX_STACK_TRACE_LENGTH) + "..."
-        : stackTrace;
   }
 }

@@ -5,9 +5,7 @@ import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.exception.AcademicTermNotFoundException;
 import edu.handong.csee.histudy.exception.CourseNotFoundException;
 import edu.handong.csee.histudy.exception.DuplicateAcademicTermException;
-import edu.handong.csee.histudy.exception.FileTransferException;
 import edu.handong.csee.histudy.exception.ForbiddenException;
-import edu.handong.csee.histudy.exception.InvalidTokenTypeException;
 import edu.handong.csee.histudy.exception.MissingEmailException;
 import edu.handong.csee.histudy.exception.MissingParameterException;
 import edu.handong.csee.histudy.exception.MissingSubException;
@@ -36,47 +34,35 @@ public class ExceptionController {
 
   private final DiscordService discordService;
 
-  private void notifyException(Exception e, WebRequest req) {
-    discordService.notifyException(e, req);
-  }
-
   private ResponseEntity<ExceptionResponse> createErrorResponse(HttpStatus status, String message) {
     return ResponseEntity.status(status)
         .body(ExceptionResponse.builder().status(status).message(message).build());
   }
 
-  private ResponseEntity<ExceptionResponse> handleStandardException(
-      Exception e, HttpStatus status, WebRequest request) {
-    notifyException(e, request);
-    return createErrorResponse(status, e.getMessage());
-  }
-
   @ExceptionHandler({
     MissingParameterException.class,
-    InvalidTokenTypeException.class,
+    MissingTokenException.class,
     MissingEmailException.class,
     MissingSubException.class
   })
-  public ResponseEntity<ExceptionResponse> handleBadRequest(Exception e, WebRequest request) {
-    return handleStandardException(e, HttpStatus.BAD_REQUEST, request);
+  public ResponseEntity<ExceptionResponse> handleBadRequest(Exception e) {
+    return createErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage());
   }
 
   @ExceptionHandler(HttpMessageNotReadableException.class)
   public ResponseEntity<ExceptionResponse> handleHttpMessageNotReadable(
-      HttpMessageNotReadableException e, WebRequest request) {
-    notifyException(e, request);
+      HttpMessageNotReadableException e) {
     return createErrorResponse(HttpStatus.BAD_REQUEST, "Invalid request format");
   }
 
-  @ExceptionHandler({JwtException.class, MissingTokenException.class})
-  public ResponseEntity<ExceptionResponse> handleUnauthorized(Exception e, WebRequest request) {
-    return handleStandardException(e, HttpStatus.UNAUTHORIZED, request);
+  @ExceptionHandler(JwtException.class)
+  public ResponseEntity<ExceptionResponse> handleUnauthorized(Exception e) {
+    return createErrorResponse(HttpStatus.UNAUTHORIZED, e.getMessage());
   }
 
   @ExceptionHandler(ForbiddenException.class)
-  public ResponseEntity<ExceptionResponse> handleForbidden(
-      ForbiddenException e, WebRequest request) {
-    return handleStandardException(e, HttpStatus.FORBIDDEN, request);
+  public ResponseEntity<ExceptionResponse> handleForbidden(ForbiddenException e) {
+    return createErrorResponse(HttpStatus.FORBIDDEN, e.getMessage());
   }
 
   @ExceptionHandler({
@@ -87,8 +73,8 @@ public class ExceptionController {
     NoCurrentTermFoundException.class,
     NoStudyApplicationFound.class
   })
-  public ResponseEntity<ExceptionResponse> handleNotFound(Exception e, WebRequest request) {
-    return handleStandardException(e, HttpStatus.NOT_FOUND, request);
+  public ResponseEntity<ExceptionResponse> handleNotFound(Exception e) {
+    return createErrorResponse(HttpStatus.NOT_FOUND, e.getMessage());
   }
 
   @ExceptionHandler(UserNotFoundException.class)
@@ -98,21 +84,15 @@ public class ExceptionController {
   }
 
   @ExceptionHandler({DuplicateAcademicTermException.class, UserAlreadyExistsException.class})
-  public ResponseEntity<ExceptionResponse> handleConflict(Exception e, WebRequest request) {
-    return handleStandardException(e, HttpStatus.CONFLICT, request);
-  }
-
-  @ExceptionHandler(FileTransferException.class)
-  public ResponseEntity<ExceptionResponse> handleInternalServerError(
-      FileTransferException e, WebRequest request) {
-    return handleStandardException(e, HttpStatus.INTERNAL_SERVER_ERROR, request);
+  public ResponseEntity<ExceptionResponse> handleConflict(Exception e) {
+    return createErrorResponse(HttpStatus.CONFLICT, e.getMessage());
   }
 
   @ExceptionHandler(RuntimeException.class)
   public ResponseEntity<ExceptionResponse> runtimeException(
       RuntimeException e, WebRequest request) {
     log.error("Unhandled Exception Occurred", e);
-    notifyException(e, request);
+    discordService.notifyException(e, request);
     return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다.");
   }
 }
