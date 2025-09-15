@@ -41,7 +41,6 @@ public class ExceptionController {
 
   @ExceptionHandler({
     MissingParameterException.class,
-    MissingTokenException.class,
     MissingEmailException.class,
     MissingSubException.class
   })
@@ -55,7 +54,7 @@ public class ExceptionController {
     return createErrorResponse(HttpStatus.BAD_REQUEST, "Invalid request format");
   }
 
-  @ExceptionHandler(JwtException.class)
+  @ExceptionHandler({JwtException.class, MissingTokenException.class})
   public ResponseEntity<ExceptionResponse> handleUnauthorized(Exception e) {
     return createErrorResponse(HttpStatus.UNAUTHORIZED, e.getMessage());
   }
@@ -88,9 +87,8 @@ public class ExceptionController {
     return createErrorResponse(HttpStatus.CONFLICT, e.getMessage());
   }
 
-  @ExceptionHandler(RuntimeException.class)
-  public ResponseEntity<ExceptionResponse> runtimeException(
-      RuntimeException e, WebRequest request) {
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<ExceptionResponse> runtimeException(Exception e, WebRequest request) {
     log.error("Unhandled Exception Occurred", e);
     discordService.notifyException(e, request);
     return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다.");
