@@ -68,16 +68,13 @@ public class StudyApplicant extends BaseTime {
 
   public void markAsGrouped(StudyGroup studyGroup) {
     this.studyGroup = studyGroup;
-    this.user.changeRole(Role.MEMBER);
   }
 
   public void leaveGroup() {
     if (isNotMarkedAsGrouped()) {
       return;
     }
-    this.studyGroup.removeMember(this.user);
     this.studyGroup = null;
-    this.user.changeRole(Role.USER);
   }
 
   public boolean isNotMarkedAsGrouped() {

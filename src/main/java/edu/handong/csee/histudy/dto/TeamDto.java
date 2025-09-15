@@ -28,7 +28,7 @@ public class TeamDto {
     this.tag = group.getTag();
     this.members =
         group.getMembers().stream()
-            .map(GroupMember::getUser)
+            .map(StudyApplicant::getUser)
             .map(
                 user -> {
                   StudyApplicant applicant = applicantMap.get(user);
@@ -73,7 +73,7 @@ public class TeamDto {
       this.tag = studyGroup.getTag();
       this.users =
           studyGroup.getMembers().stream()
-              .map(GroupMember::getUser)
+              .map(StudyApplicant::getUser)
               .map(UserDto.UserMatching::new)
               .toList();
       this.courses =

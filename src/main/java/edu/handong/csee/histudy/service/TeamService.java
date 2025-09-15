@@ -61,7 +61,7 @@ public class TeamService {
     StudyGroup studyGroup = studyGroupRepository.findById(id).orElseThrow();
     List<UserDto.UserBasic> users =
         studyGroup.getMembers().stream()
-            .map(GroupMember::getUser)
+            .map(StudyApplicant::getUser)
             .map(UserDto.UserBasic::new)
             .toList();
 
@@ -96,7 +96,7 @@ public class TeamService {
     StudyGroup studyGroup = studyGroupRepository.findByUserAndTerm(user, currentTerm).orElseThrow();
 
     return studyGroup.getMembers().stream()
-        .map(GroupMember::getUser)
+        .map(StudyApplicant::getUser)
         .map(_user -> new UserDto.UserMeWithMasking(_user, studyGroup.getTag()))
         .toList();
   }

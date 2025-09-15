@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.handong.csee.histudy.controller.form.TokenForm;
 import edu.handong.csee.histudy.domain.Role;
+import edu.handong.csee.histudy.domain.StudyApplicant;
 import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.jwt.GrantType;
 import edu.handong.csee.histudy.jwt.JwtPair;
@@ -47,6 +48,7 @@ class AuthControllerTest {
     JwtPair tokens = new JwtPair(List.of("access-token", "refresh-token"));
 
     when(userService.getUser(any(Optional.class))).thenReturn(user);
+    when(userService.getUserInfo(anyString())).thenReturn(Optional.empty());
     when(jwtService.issueToken(anyString(), anyString(), any(Role.class))).thenReturn(tokens);
 
     mockMvc
@@ -68,6 +70,7 @@ class AuthControllerTest {
     JwtPair tokens = new JwtPair(List.of("access-token", "refresh-token"));
 
     when(userService.getUser(any(Optional.class))).thenReturn(user);
+    when(userService.getUserInfo(anyString())).thenReturn(Optional.empty());
     when(jwtService.issueToken(anyString(), anyString(), any(Role.class))).thenReturn(tokens);
 
     mockMvc
@@ -110,5 +113,47 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(objectMapper.writeValueAsString(tokenForm)))
         .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void 그룹배정된사용자_로그인시_MEMBER역할반환() throws Exception {
+    User user = mock(User.class);
+    when(user.getEmail()).thenReturn("member@test.com");
+    when(user.getName()).thenReturn("Test Member");
+    when(user.getRole()).thenReturn(Role.USER);
+
+    StudyApplicant applicant = mock(StudyApplicant.class);
+    when(applicant.isMarkedAsGrouped()).thenReturn(true);
+
+    JwtPair tokens = new JwtPair(List.of("access-token", "refresh-token"));
+
+    when(userService.getUser(any(Optional.class))).thenReturn(user);
+    when(userService.getUserInfo(anyString())).thenReturn(Optional.of(applicant));
+    when(jwtService.issueToken(anyString(), anyString(), any(Role.class))).thenReturn(tokens);
+
+    mockMvc
+        .perform(get("/api/auth/login").param("sub", "member@test.com"))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType("application/json;charset=UTF-8"))
+        .andExpect(jsonPath("$.role").value("MEMBER"));
+  }
+
+  @Test
+  void 관리자사용자_로그인시_ADMIN역할반환() throws Exception {
+    User admin = mock(User.class);
+    when(admin.getEmail()).thenReturn("admin@test.com");
+    when(admin.getName()).thenReturn("Test Admin");
+    when(admin.getRole()).thenReturn(Role.ADMIN);
+
+    JwtPair tokens = new JwtPair(List.of("access-token", "refresh-token"));
+
+    when(userService.getUser(any(Optional.class))).thenReturn(admin);
+    when(jwtService.issueToken(anyString(), anyString(), any(Role.class))).thenReturn(tokens);
+
+    mockMvc
+        .perform(get("/api/auth/login").param("sub", "admin@test.com"))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType("application/json;charset=UTF-8"))
+        .andExpect(jsonPath("$.role").value("ADMIN"));
   }
 }

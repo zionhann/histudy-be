@@ -25,7 +25,7 @@ public class StudyGroup extends BaseTime {
   private AcademicTerm academicTerm;
 
   @OneToMany(mappedBy = "studyGroup", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<GroupMember> members = new ArrayList<>();
+  private List<StudyApplicant> members = new ArrayList<>();
 
   @OneToMany(mappedBy = "studyGroup", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<GroupCourse> courses = new ArrayList<>();
@@ -91,17 +91,11 @@ public class StudyGroup extends BaseTime {
               } else if (isAlreadyInOtherGroup(applicant)) {
                 applicant.leaveGroup();
               }
-              GroupMember.of(this, applicant);
+              applicant.markAsGrouped(this);
+              this.members.add(applicant);
             });
     assignCommonCourses(applicants);
     return this;
-  }
-
-  public void removeMember(User member) {
-    this.members.stream()
-        .filter(_member -> _member.getUser().equals(member))
-        .findFirst()
-        .ifPresent(GroupMember::remove);
   }
 
   private boolean isAlreadyInOtherGroup(StudyApplicant applicant) {
@@ -127,7 +121,8 @@ public class StudyGroup extends BaseTime {
     }
     Set<User> users =
         Arrays.stream(applicants).map(StudyApplicant::getUser).collect(Collectors.toSet());
-    Set<User> members = this.members.stream().map(GroupMember::getUser).collect(Collectors.toSet());
+    Set<User> members =
+        this.members.stream().map(StudyApplicant::getUser).collect(Collectors.toSet());
     return members.containsAll(users);
   }
 
