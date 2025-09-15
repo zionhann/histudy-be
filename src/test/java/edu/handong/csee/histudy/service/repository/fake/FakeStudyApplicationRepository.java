@@ -25,14 +25,14 @@ public class FakeStudyApplicationRepository implements StudyApplicantRepository 
   @Override
   public List<StudyApplicant> findUnassignedApplicants(AcademicTerm currentTerm) {
     return store.stream()
-        .filter(e -> e.getAcademicTerm().equals(currentTerm) && e.isNotMarkedAsGrouped())
+        .filter(e -> e.getAcademicTerm().equals(currentTerm) && !e.hasStudyGroup())
         .toList();
   }
 
   @Override
   public List<StudyApplicant> findAssignedApplicants(AcademicTerm currentTerm) {
     return store.stream()
-        .filter(e -> e.getAcademicTerm().equals(currentTerm) && e.isMarkedAsGrouped())
+        .filter(e -> e.getAcademicTerm().equals(currentTerm) && e.hasStudyGroup())
         .toList();
   }
 

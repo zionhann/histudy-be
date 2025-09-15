@@ -52,7 +52,7 @@ class StudyApplicantRepositoryTest extends BaseRepositoryTest {
 
     // Create a study group and assign one applicant
     StudyGroup studyGroup = StudyGroup.of(1, currentTerm, List.of(unassignedApplicant2));
-    unassignedApplicant2.markAsGrouped(studyGroup);
+    unassignedApplicant2.joinStudyGroup(studyGroup);
 
     persistAndFlush(unassignedApplicant1);
     persistAndFlush(unassignedApplicant2);
@@ -65,7 +65,7 @@ class StudyApplicantRepositoryTest extends BaseRepositoryTest {
     // Then
     assertThat(unassignedApplicants).hasSize(1);
     assertThat(unassignedApplicants.get(0).getUser()).isEqualTo(user1);
-    assertThat(unassignedApplicants.get(0).isNotMarkedAsGrouped()).isTrue();
+    assertThat(unassignedApplicants.get(0).hasStudyGroup()).isFalse();
   }
 
   @Test
@@ -77,8 +77,8 @@ class StudyApplicantRepositoryTest extends BaseRepositoryTest {
         TestDataFactory.createStudyApplicant(currentTerm, user2, List.of(user1), List.of(course1));
 
     StudyGroup studyGroup = StudyGroup.of(1, currentTerm, List.of(applicant1, applicant2));
-    applicant1.markAsGrouped(studyGroup);
-    applicant2.markAsGrouped(studyGroup);
+    applicant1.joinStudyGroup(studyGroup);
+    applicant2.joinStudyGroup(studyGroup);
 
     persistAndFlush(applicant1);
     persistAndFlush(applicant2);
@@ -90,7 +90,7 @@ class StudyApplicantRepositoryTest extends BaseRepositoryTest {
 
     // Then
     assertThat(assignedApplicants).hasSize(2);
-    assertThat(assignedApplicants).allMatch(StudyApplicant::isMarkedAsGrouped);
+    assertThat(assignedApplicants).allMatch(StudyApplicant::hasStudyGroup);
   }
 
   @Test
@@ -130,9 +130,9 @@ class StudyApplicantRepositoryTest extends BaseRepositoryTest {
     StudyGroup studyGroup1 = StudyGroup.of(1, currentTerm, List.of(applicant1, applicant2));
     StudyGroup studyGroup2 = StudyGroup.of(2, currentTerm, List.of(applicant3));
 
-    applicant1.markAsGrouped(studyGroup1);
-    applicant2.markAsGrouped(studyGroup1);
-    applicant3.markAsGrouped(studyGroup2);
+    applicant1.joinStudyGroup(studyGroup1);
+    applicant2.joinStudyGroup(studyGroup1);
+    applicant3.joinStudyGroup(studyGroup2);
 
     persistAndFlush(applicant1);
     persistAndFlush(applicant2);

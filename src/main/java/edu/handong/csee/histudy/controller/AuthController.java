@@ -58,7 +58,7 @@ public class AuthController {
 
     return userService
         .getUserInfo(user.getEmail())
-        .filter(StudyApplicant::isMarkedAsGrouped)
+        .filter(StudyApplicant::hasStudyGroup)
         .map(__ -> Role.MEMBER)
         .orElse(Role.USER);
   }

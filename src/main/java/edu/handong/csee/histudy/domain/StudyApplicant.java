@@ -66,22 +66,23 @@ public class StudyApplicant extends BaseTime {
     return this.partnerRequests.stream().map(StudyPartnerRequest::getReceiver).toList();
   }
 
-  public void markAsGrouped(StudyGroup studyGroup) {
+  public void joinStudyGroup(StudyGroup studyGroup) {
+    if (hasStudyGroup()) {
+      leaveStudyGroup();
+    }
     this.studyGroup = studyGroup;
+    studyGroup.getMembers().add(this);
   }
 
-  public void leaveGroup() {
-    if (isNotMarkedAsGrouped()) {
+  public void leaveStudyGroup() {
+    if (!hasStudyGroup()) {
       return;
     }
+    this.studyGroup.getMembers().remove(this);
     this.studyGroup = null;
   }
 
-  public boolean isNotMarkedAsGrouped() {
-    return this.studyGroup == null;
-  }
-
-  public boolean isMarkedAsGrouped() {
+  public boolean hasStudyGroup() {
     return this.studyGroup != null;
   }
 }

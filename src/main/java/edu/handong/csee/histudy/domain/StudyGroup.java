@@ -24,7 +24,9 @@ public class StudyGroup extends BaseTime {
   @JoinColumn(name = "academic_term_id")
   private AcademicTerm academicTerm;
 
-  @OneToMany(mappedBy = "studyGroup", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(
+      mappedBy = "studyGroup",
+      cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   private List<StudyApplicant> members = new ArrayList<>();
 
   @OneToMany(mappedBy = "studyGroup", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -89,10 +91,9 @@ public class StudyGroup extends BaseTime {
               if (isInSameGroup(applicant)) {
                 return;
               } else if (isAlreadyInOtherGroup(applicant)) {
-                applicant.leaveGroup();
+                applicant.leaveStudyGroup();
               }
-              applicant.markAsGrouped(this);
-              this.members.add(applicant);
+              applicant.joinStudyGroup(this);
             });
     assignCommonCourses(applicants);
     return this;

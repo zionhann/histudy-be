@@ -123,7 +123,7 @@ class AuthControllerTest {
     when(user.getRole()).thenReturn(Role.USER);
 
     StudyApplicant applicant = mock(StudyApplicant.class);
-    when(applicant.isMarkedAsGrouped()).thenReturn(true);
+    when(applicant.hasStudyGroup()).thenReturn(true);
 
     JwtPair tokens = new JwtPair(List.of("access-token", "refresh-token"));
 

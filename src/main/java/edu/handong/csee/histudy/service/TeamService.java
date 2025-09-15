@@ -198,9 +198,7 @@ public class TeamService {
           Map<Course, List<StudyApplicant>> courseToUserMap =
               preferredCourses.stream()
                   .filter(
-                      uc ->
-                          uc.getPriority().equals(priority)
-                              && uc.getApplicant().isNotMarkedAsGrouped())
+                      uc -> uc.getPriority().equals(priority) && !uc.getApplicant().hasStudyGroup())
                   .collect(
                       Collectors.groupingBy(
                           PreferredCourse::getCourse,
@@ -253,7 +251,7 @@ public class TeamService {
         (course, queue) -> {
           List<StudyApplicant> group =
               queue.stream()
-                  .filter(StudyApplicant::isNotMarkedAsGrouped)
+                  .filter(applicant -> !applicant.hasStudyGroup())
                   .sorted(queue.comparator())
                   .collect(Collectors.toList());
           Set<StudyGroup> groups = createGroup(group, tag, current);
