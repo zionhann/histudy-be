@@ -87,7 +87,7 @@ public class ExceptionController {
     return createErrorResponse(HttpStatus.CONFLICT, e.getMessage());
   }
 
-  @ExceptionHandler(Exception.class)
+  @ExceptionHandler(RuntimeException.class)
   public ResponseEntity<ExceptionResponse> runtimeException(Exception e, WebRequest request) {
     log.error("Unhandled Exception Occurred", e);
     discordService.notifyException(e, request);
