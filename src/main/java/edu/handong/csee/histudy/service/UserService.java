@@ -221,8 +221,11 @@ public class UserService {
               studyGroupRepository
                   .findByTagAndAcademicTerm(tag, currentTerm)
                   .ifPresentOrElse(
-                      group -> group.assignMembers(applicant),
-                      () -> StudyGroup.of(tag, currentTerm, List.of(applicant)));
+                      existingGroup -> existingGroup.assignMembers(applicant),
+                      () -> {
+                        StudyGroup newGroup = StudyGroup.of(tag, currentTerm, List.of(applicant));
+                        studyGroupRepository.save(newGroup);
+                      });
             },
             () ->
                 applicantOr.ifPresent(

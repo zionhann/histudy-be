@@ -12,7 +12,6 @@ import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.domain.TermType;
 import edu.handong.csee.histudy.dto.AcademicTermDto;
 import edu.handong.csee.histudy.dto.TeamDto;
-import edu.handong.csee.histudy.dto.TeamIdDto;
 import edu.handong.csee.histudy.dto.TeamReportDto;
 import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
@@ -77,25 +76,6 @@ class AdminControllerTest {
         .perform(get("/api/admin/manageGroup").requestAttr("claims", claims))
         .andExpect(status().isOk())
         .andExpect(content().contentType("application/json"));
-  }
-
-  @Test
-  void 관리자가_그룹삭제시_성공() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("admin@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.ADMIN.name());
-
-    TeamIdDto dto = mock(TeamIdDto.class);
-    when(teamService.deleteTeam(any(TeamIdDto.class), anyString())).thenReturn(1);
-
-    mockMvc
-        .perform(
-            delete("/api/admin/group")
-                .requestAttr("claims", claims)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(objectMapper.writeValueAsString(dto)))
-        .andExpect(status().isOk())
-        .andExpect(content().string("1"));
   }
 
   @Test

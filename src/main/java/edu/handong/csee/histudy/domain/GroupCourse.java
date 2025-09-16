@@ -25,7 +25,5 @@ public class GroupCourse extends BaseTime {
   public GroupCourse(StudyGroup studyGroup, Course course) {
     this.studyGroup = studyGroup;
     this.course = course;
-
-    studyGroup.getCourses().add(this);
   }
 }

@@ -26,7 +26,7 @@ public class StudyApplicant extends BaseTime {
   @JoinColumn(name = "user_id")
   private User user;
 
-  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "study_group_id")
   private StudyGroup studyGroup;
 
@@ -67,11 +67,14 @@ public class StudyApplicant extends BaseTime {
   }
 
   public void joinStudyGroup(StudyGroup studyGroup) {
-    if (hasStudyGroup()) {
+    if (hasStudyGroup() && !this.studyGroup.equals(studyGroup)) {
       leaveStudyGroup();
     }
     this.studyGroup = studyGroup;
-    studyGroup.getMembers().add(this);
+
+    if (!studyGroup.getMembers().contains(this)) {
+      studyGroup.getMembers().add(this);
+    }
   }
 
   public void leaveStudyGroup() {

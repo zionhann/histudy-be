@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import jakarta.persistence.PersistenceException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Sort;
 
 class UserRepositoryTest extends BaseRepositoryTest {
@@ -25,7 +25,7 @@ class UserRepositoryTest extends BaseRepositoryTest {
     User user =
         TestDataFactory.createUser(
             "google-sub-901", "22500901", "test901@example.com", "Test User", Role.USER);
-    persistAndFlush(user);
+    userRepository.save(user);
 
     // When
     Optional<User> result = userRepository.findUserBySid("22500901");
@@ -50,7 +50,7 @@ class UserRepositoryTest extends BaseRepositoryTest {
     User user =
         TestDataFactory.createUser(
             "google-sub-902", "22500902", "test902@example.com", "Test User", Role.USER);
-    persistAndFlush(user);
+    userRepository.save(user);
 
     // When
     Optional<User> result = userRepository.findUserByEmail("test902@example.com");
@@ -75,7 +75,7 @@ class UserRepositoryTest extends BaseRepositoryTest {
     User user =
         TestDataFactory.createUser(
             "google-sub-903", "22500903", "test903@example.com", "Test User", Role.USER);
-    persistAndFlush(user);
+    userRepository.save(user);
 
     // When
     Optional<User> result = userRepository.findUserBySub("google-sub-903");
@@ -96,9 +96,9 @@ class UserRepositoryTest extends BaseRepositoryTest {
     User bobUser =
         TestDataFactory.createUser("sub-bob", "22500906", "bob@test.com", "Bob Johnson", Role.USER);
 
-    persistAndFlush(johnUser);
-    persistAndFlush(janeUser);
-    persistAndFlush(bobUser);
+    userRepository.save(johnUser);
+    userRepository.save(janeUser);
+    userRepository.save(bobUser);
 
     // When - 이름으로 검색 (부분 매칭으로 "Doe"만 검색)
     List<User> nameResults = userRepository.findUserByNameOrSidOrEmail("Doe");
@@ -123,7 +123,7 @@ class UserRepositoryTest extends BaseRepositoryTest {
     // Given
     User user =
         TestDataFactory.createUser("sub-test", "22500907", "test907@example.com", "Test User", Role.USER);
-    persistAndFlush(user);
+    userRepository.save(user);
 
     // When
     List<User> results = userRepository.findUserByNameOrSidOrEmail("nonexistent");
@@ -137,7 +137,7 @@ class UserRepositoryTest extends BaseRepositoryTest {
     // Given
     User user =
         TestDataFactory.createUser("sub-id", "22500908", "test908@example.com", "Test User", Role.USER);
-    User savedUser = persistAndFlush(user);
+    User savedUser = userRepository.save(user);
 
     // When
     Optional<User> result = userRepository.findById(savedUser.getUserId());
@@ -158,9 +158,9 @@ class UserRepositoryTest extends BaseRepositoryTest {
     User bobUser =
         TestDataFactory.createUser("sub-bobby", "22500911", "bobby@example.com", "Bobby", Role.USER);
 
-    persistAndFlush(charlieUser);
-    persistAndFlush(aliceUser);
-    persistAndFlush(bobUser);
+    userRepository.save(charlieUser);
+    userRepository.save(aliceUser);
+    userRepository.save(bobUser);
 
     // When - 이름으로 오름차순 정렬
     List<User> results = userRepository.findAll(Sort.by("name"));
@@ -206,11 +206,16 @@ class UserRepositoryTest extends BaseRepositoryTest {
     User user2 =
         TestDataFactory.createUser("sub-dup2", "22500982", "same@example.com", "User 2", Role.USER);
 
-    persistAndFlush(user1);
+    userRepository.save(user1);
+    flushAndClear();
 
     // When & Then
-    assertThatThrownBy(() -> persistAndFlush(user2))
-        .isInstanceOf(PersistenceException.class);
+    assertThatThrownBy(
+            () -> {
+              userRepository.save(user2);
+              flushAndClear();
+            })
+        .isInstanceOf(DataIntegrityViolationException.class);
   }
 
   @Test
@@ -221,11 +226,16 @@ class UserRepositoryTest extends BaseRepositoryTest {
     User user2 =
         TestDataFactory.createUser("sub-dup4", "22500983", "user2@example.com", "User 2", Role.USER);
 
-    persistAndFlush(user1);
+    userRepository.save(user1);
+    flushAndClear();
 
     // When & Then
-    assertThatThrownBy(() -> persistAndFlush(user2))
-        .isInstanceOf(PersistenceException.class);
+    assertThatThrownBy(
+            () -> {
+              userRepository.save(user2);
+              flushAndClear();
+            })
+        .isInstanceOf(DataIntegrityViolationException.class);
   }
 
   @Test
@@ -238,11 +248,16 @@ class UserRepositoryTest extends BaseRepositoryTest {
         TestDataFactory.createUser(
             "same-sub", "22500985", "user4@example.com", "User 2", Role.USER);
 
-    persistAndFlush(user1);
+    userRepository.save(user1);
+    flushAndClear();
 
     // When & Then
-    assertThatThrownBy(() -> persistAndFlush(user2))
-        .isInstanceOf(PersistenceException.class);
+    assertThatThrownBy(
+            () -> {
+              userRepository.save(user2);
+              flushAndClear();
+            })
+        .isInstanceOf(DataIntegrityViolationException.class);
   }
 
   @Test

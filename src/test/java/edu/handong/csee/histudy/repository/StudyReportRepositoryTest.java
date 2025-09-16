@@ -3,6 +3,8 @@ package edu.handong.csee.histudy.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import edu.handong.csee.histudy.domain.*;
+import edu.handong.csee.histudy.repository.jpa.JpaStudyApplicantRepository;
+import edu.handong.csee.histudy.repository.jpa.JpaStudyGroupRepository;
 import edu.handong.csee.histudy.repository.jpa.JpaStudyReportRepository;
 import edu.handong.csee.histudy.support.BaseRepositoryTest;
 import edu.handong.csee.histudy.support.TestDataFactory;
@@ -10,34 +12,37 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.DirtiesContext;
 
 class StudyReportRepositoryTest extends BaseRepositoryTest {
 
   @Autowired private JpaStudyReportRepository studyReportRepository;
+  @Autowired private JpaStudyGroupRepository studyGroupRepository;
+  @Autowired private JpaStudyApplicantRepository studyApplicantRepository;
 
   private StudyGroup studyGroup1;
   private StudyGroup studyGroup2;
 
   @BeforeEach
   void setUp() {
-    // Create study groups
     StudyApplicant applicant1 =
         TestDataFactory.createStudyApplicant(currentTerm, user1, List.of(), List.of(course1));
     StudyApplicant applicant2 =
         TestDataFactory.createStudyApplicant(currentTerm, user2, List.of(), List.of(course2));
 
-    studyGroup1 = StudyGroup.of(1, currentTerm, List.of(applicant1));
-    studyGroup2 = StudyGroup.of(2, currentTerm, List.of(applicant2));
+    studyApplicantRepository.save(applicant1);
+    studyApplicantRepository.save(applicant2);
 
-    persistAndFlush(applicant1);
-    persistAndFlush(applicant2);
-    persistAndFlush(studyGroup1);
-    persistAndFlush(studyGroup2);
+    studyGroup1 = TestDataFactory.createStudyGroup(1, currentTerm);
+    studyGroup2 = TestDataFactory.createStudyGroup(2, currentTerm);
+
+    studyGroupRepository.save(studyGroup1);
+    studyGroupRepository.save(studyGroup2);
+
+    applicant1.joinStudyGroup(studyGroup1);
+    applicant2.joinStudyGroup(studyGroup2);
   }
 
   @Test
-  @DirtiesContext
   void 스터디그룹별보고서조회시_생성일자내림차순정렬반환() {
     // Given
     StudyReport report1 =
@@ -74,9 +79,9 @@ class StudyReportRepositoryTest extends BaseRepositoryTest {
             .build();
 
     // Save reports with order: report1 first, then report2, then report3
-    persistAndFlush(report1);
-    persistAndFlush(report2);
-    persistAndFlush(report3);
+    studyReportRepository.save(report1);
+    studyReportRepository.save(report2);
+    studyReportRepository.save(report3);
 
     // When
     List<StudyReport> group1Reports =
@@ -87,9 +92,7 @@ class StudyReportRepositoryTest extends BaseRepositoryTest {
     // Then
     assertThat(group1Reports).hasSize(2);
     // Since we can't guarantee order with identical timestamps, just verify group membership
-    assertThat(group1Reports)
-        .extracting("title")
-        .containsExactlyInAnyOrder("First Report", "Second Report");
+    assertThat(group1Reports).extracting("title").containsExactly("Second Report", "First Report");
     assertThat(group1Reports).allMatch(report -> report.getStudyGroup().equals(studyGroup1));
 
     assertThat(group2Reports).hasSize(1);
@@ -124,7 +127,7 @@ class StudyReportRepositoryTest extends BaseRepositoryTest {
   void 스터디보고서삭제시_삭제성공() {
     // Given
     StudyReport report = TestDataFactory.createStudyReport(studyGroup1, "Test Report");
-    StudyReport savedReport = persistAndFlush(report);
+    StudyReport savedReport = studyReportRepository.save(report);
 
     // When
     studyReportRepository.delete(savedReport);
@@ -158,8 +161,8 @@ class StudyReportRepositoryTest extends BaseRepositoryTest {
     StudyReport group1Report = TestDataFactory.createStudyReport(studyGroup1, "Group 1 Report");
     StudyReport group2Report = TestDataFactory.createStudyReport(studyGroup2, "Group 2 Report");
 
-    persistAndFlush(group1Report);
-    persistAndFlush(group2Report);
+    studyReportRepository.save(group1Report);
+    studyReportRepository.save(group2Report);
 
     // When
     List<StudyReport> group1Reports =

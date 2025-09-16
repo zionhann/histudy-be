@@ -610,27 +610,6 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/TeamReportDto'
-  /api/admin/group:
-    delete:
-      tags:
-        - 관리자 API
-      summary: 그룹 삭제
-      operationId: deleteTeam
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TeamIdDto'
-        required: true
-      responses:
-        '200':
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: integer
-                format: int32
-      deprecated: true
   /api/admin/academicTerm:
     post:
       tags:

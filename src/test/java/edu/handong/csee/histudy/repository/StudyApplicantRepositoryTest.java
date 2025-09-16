@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.repository.jpa.JpaStudyApplicantRepository;
+import edu.handong.csee.histudy.repository.jpa.JpaStudyGroupRepository;
 import edu.handong.csee.histudy.support.BaseRepositoryTest;
 import edu.handong.csee.histudy.support.TestDataFactory;
 import java.util.List;
@@ -14,13 +15,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 class StudyApplicantRepositoryTest extends BaseRepositoryTest {
 
   @Autowired private JpaStudyApplicantRepository studyApplicantRepository;
+  @Autowired private JpaStudyGroupRepository studyGroupRepository;
 
   @Test
   void 사용자와학기로조회시_해당신청서반환() {
     // Given
     StudyApplicant applicant =
         TestDataFactory.createStudyApplicant(currentTerm, user1, List.of(user2), List.of(course1));
-    persistAndFlush(applicant);
+    studyApplicantRepository.save(applicant);
 
     // When
     Optional<StudyApplicant> result =
@@ -50,13 +52,12 @@ class StudyApplicantRepositoryTest extends BaseRepositoryTest {
     StudyApplicant unassignedApplicant2 =
         TestDataFactory.createStudyApplicant(currentTerm, user2, List.of(user1), List.of(course1));
 
+    studyApplicantRepository.save(unassignedApplicant1);
+    studyApplicantRepository.save(unassignedApplicant2);
+
     // Create a study group and assign one applicant
     StudyGroup studyGroup = StudyGroup.of(1, currentTerm, List.of(unassignedApplicant2));
-    unassignedApplicant2.joinStudyGroup(studyGroup);
-
-    persistAndFlush(unassignedApplicant1);
-    persistAndFlush(unassignedApplicant2);
-    persistAndFlush(studyGroup);
+    studyGroupRepository.save(studyGroup);
 
     // When
     List<StudyApplicant> unassignedApplicants =
@@ -76,13 +77,11 @@ class StudyApplicantRepositoryTest extends BaseRepositoryTest {
     StudyApplicant applicant2 =
         TestDataFactory.createStudyApplicant(currentTerm, user2, List.of(user1), List.of(course1));
 
-    StudyGroup studyGroup = StudyGroup.of(1, currentTerm, List.of(applicant1, applicant2));
-    applicant1.joinStudyGroup(studyGroup);
-    applicant2.joinStudyGroup(studyGroup);
+    studyApplicantRepository.save(applicant1);
+    studyApplicantRepository.save(applicant2);
 
-    persistAndFlush(applicant1);
-    persistAndFlush(applicant2);
-    persistAndFlush(studyGroup);
+    StudyGroup studyGroup = StudyGroup.of(1, currentTerm, List.of(applicant1, applicant2));
+    studyGroupRepository.save(studyGroup);
 
     // When
     List<StudyApplicant> assignedApplicants =
@@ -101,8 +100,8 @@ class StudyApplicantRepositoryTest extends BaseRepositoryTest {
     StudyApplicant pastApplicant =
         TestDataFactory.createStudyApplicant(pastTerm, user2, List.of(user1), List.of(course2));
 
-    persistAndFlush(currentApplicant);
-    persistAndFlush(pastApplicant);
+    studyApplicantRepository.save(currentApplicant);
+    studyApplicantRepository.save(pastApplicant);
 
     // When
     List<StudyApplicant> currentTermApplicants =
@@ -127,18 +126,15 @@ class StudyApplicantRepositoryTest extends BaseRepositoryTest {
     StudyApplicant applicant3 =
         TestDataFactory.createStudyApplicant(currentTerm, user3, List.of(), List.of(course2));
 
+    studyApplicantRepository.save(applicant1);
+    studyApplicantRepository.save(applicant2);
+    studyApplicantRepository.save(applicant3);
+
     StudyGroup studyGroup1 = StudyGroup.of(1, currentTerm, List.of(applicant1, applicant2));
     StudyGroup studyGroup2 = StudyGroup.of(2, currentTerm, List.of(applicant3));
 
-    applicant1.joinStudyGroup(studyGroup1);
-    applicant2.joinStudyGroup(studyGroup1);
-    applicant3.joinStudyGroup(studyGroup2);
-
-    persistAndFlush(applicant1);
-    persistAndFlush(applicant2);
-    persistAndFlush(applicant3);
-    persistAndFlush(studyGroup1);
-    persistAndFlush(studyGroup2);
+    studyGroupRepository.save(studyGroup1);
+    studyGroupRepository.save(studyGroup2);
 
     // When
     List<StudyApplicant> group1Applicants =
@@ -177,7 +173,7 @@ class StudyApplicantRepositoryTest extends BaseRepositoryTest {
     // Given
     StudyApplicant applicant =
         TestDataFactory.createStudyApplicant(currentTerm, user1, List.of(user2), List.of(course1));
-    StudyApplicant savedApplicant = persistAndFlush(applicant);
+    StudyApplicant savedApplicant = studyApplicantRepository.save(applicant);
 
     // When
     studyApplicantRepository.delete(savedApplicant);
@@ -194,7 +190,7 @@ class StudyApplicantRepositoryTest extends BaseRepositoryTest {
     // Given - 다른 학기 신청자만 존재
     StudyApplicant pastApplicant =
         TestDataFactory.createStudyApplicant(pastTerm, user1, List.of(user2), List.of(course1));
-    persistAndFlush(pastApplicant);
+    studyApplicantRepository.save(pastApplicant);
 
     // When
     List<StudyApplicant> currentTermApplicants =

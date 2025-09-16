@@ -15,13 +15,13 @@ public interface StudyGroupRepository {
 
   Optional<StudyGroup> findByUserAndTerm(User user, AcademicTerm currentTerm);
 
-  boolean existsById(Long id);
-
   void deleteById(Long id);
 
   Optional<StudyGroup> findById(Long id);
 
   StudyGroup save(StudyGroup entity);
+
+  List<StudyGroup> saveAll(Iterable<StudyGroup> entities);
 
   long count();
 
