@@ -2,15 +2,18 @@ package edu.handong.csee.histudy.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import edu.handong.csee.histudy.config.JpaConfig;
 import edu.handong.csee.histudy.domain.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.Import;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Import(JpaConfig.class)
 public abstract class BaseRepositoryTest {
 
     @Autowired

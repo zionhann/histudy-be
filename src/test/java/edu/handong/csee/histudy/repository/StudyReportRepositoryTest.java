@@ -45,7 +45,7 @@ class StudyReportRepositoryTest extends BaseRepositoryTest {
 
   @Test
   @DirtiesContext
-  void 스터디그룹별보고서조회시_생성일자내림차순정렬반환() {
+  void 스터디그룹별보고서조회시_생성일자내림차순정렬반환() throws InterruptedException {
     // Given
     StudyReport report1 =
         StudyReport.builder()
@@ -94,9 +94,7 @@ class StudyReportRepositoryTest extends BaseRepositoryTest {
     // Then
     assertThat(group1Reports).hasSize(2);
     // Since we can't guarantee order with identical timestamps, just verify group membership
-    assertThat(group1Reports)
-        .extracting("title")
-        .containsExactlyInAnyOrder("First Report", "Second Report");
+    assertThat(group1Reports).extracting("title").containsExactly("Second Report", "First Report");
     assertThat(group1Reports).allMatch(report -> report.getStudyGroup().equals(studyGroup1));
 
     assertThat(group2Reports).hasSize(1);
