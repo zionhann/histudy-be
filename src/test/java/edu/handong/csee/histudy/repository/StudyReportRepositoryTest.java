@@ -12,7 +12,6 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.DirtiesContext;
 
 class StudyReportRepositoryTest extends BaseRepositoryTest {
 
@@ -44,8 +43,7 @@ class StudyReportRepositoryTest extends BaseRepositoryTest {
   }
 
   @Test
-  @DirtiesContext
-  void 스터디그룹별보고서조회시_생성일자내림차순정렬반환() throws InterruptedException {
+  void 스터디그룹별보고서조회시_생성일자내림차순정렬반환() {
     // Given
     StudyReport report1 =
         StudyReport.builder()
