@@ -124,35 +124,44 @@ public class TeamService {
   }
 
   public void matchTeam() {
-    // Get users who are not in a team
     AcademicTerm current =
         academicTermRepository.findCurrentSemester().orElseThrow(NoCurrentTermFoundException::new);
-    List<StudyApplicant> applicants = studyApplicantRepository.findUnassignedApplicants(current);
+    List<StudyApplicant> allApplicants = studyApplicantRepository.findUnassignedApplicants(current);
+
+    if (allApplicants.isEmpty()) {
+      return;
+    }
 
     int latestGroupTag = studyGroupRepository.countMaxTag(current).orElse(0);
     AtomicInteger tag = new AtomicInteger(latestGroupTag + 1);
 
-    // First matching
-    matchFriendFirst(applicants, tag, current);
+    Set<StudyGroup> allMatchedGroups = new HashSet<>();
 
-    // Remove users who have already been matched
-    //    applicants.removeIf(StudyApplicant::isMarkedAsGrouped);
+    // First matching - friend-based
+    Set<StudyGroup> friendGroups = matchFriendFirst(allApplicants, tag, current);
+    allMatchedGroups.addAll(friendGroups);
 
-    // Second matching
-    matchCourseFirst(applicants, tag, current);
+    // Second matching - course-based with priority (remaining unassigned applicants)
+    Set<StudyGroup> courseFirstGroups = matchCourseFirst(allApplicants, tag, current);
+    allMatchedGroups.addAll(courseFirstGroups);
 
-    // Remove users who have already been matched
-    //    applicants.removeIf(StudyApplicant::isMarkedAsGrouped);
+    // Third matching - remaining course-based (final unassigned applicants)
+    Set<StudyGroup> courseSecondGroups = matchCourseSecond(allApplicants, tag, current);
+    allMatchedGroups.addAll(courseSecondGroups);
 
-    // Third matching
-    matchCourseSecond(applicants, tag, current);
+    if (!allMatchedGroups.isEmpty()) {
+      studyGroupRepository.saveAll(allMatchedGroups);
+    }
   }
 
   public Set<StudyGroup> matchFriendFirst(
       List<StudyApplicant> applicants, AtomicInteger tag, AcademicTerm current) {
-    // First matching
-    // Make teams with friends
+    if (applicants.isEmpty()) {
+      return new HashSet<>();
+    }
+
     return applicants.stream()
+        .filter(applicant -> !applicant.hasStudyGroup())
         .map(StudyApplicant::getPartnerRequests)
         .flatMap(Collection::stream)
         .filter(StudyPartnerRequest::isAccepted)
@@ -169,10 +178,15 @@ public class TeamService {
 
   public Set<StudyGroup> matchCourseFirst(
       List<StudyApplicant> applicants, AtomicInteger tag, AcademicTerm current) {
+    if (applicants.isEmpty()) {
+      return new HashSet<>();
+    }
+
     Set<StudyGroup> results = new HashSet<>();
 
     List<PreferredCourse> preferredCourses =
         applicants.stream()
+            .filter(applicant -> !applicant.hasStudyGroup())
             .flatMap(applicant -> applicant.getPreferredCourses().stream())
             .sorted(Comparator.comparingInt(PreferredCourse::getPriority))
             .toList();
@@ -233,6 +247,10 @@ public class TeamService {
 
   private Set<StudyGroup> matchCourseSecond(
       List<StudyApplicant> applicants, AtomicInteger tag, AcademicTerm current) {
+    if (applicants.isEmpty()) {
+      return new HashSet<>();
+    }
+
     Set<StudyGroup> matchedGroups = new HashSet<>();
 
     Map<Course, PriorityQueue<StudyApplicant>> courseToUserByPriority =

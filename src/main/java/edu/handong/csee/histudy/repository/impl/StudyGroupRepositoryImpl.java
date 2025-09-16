@@ -36,11 +36,6 @@ public class StudyGroupRepositoryImpl implements StudyGroupRepository {
   }
 
   @Override
-  public boolean existsById(Long id) {
-    return repository.existsById(id);
-  }
-
-  @Override
   public void deleteById(Long id) {
     repository.deleteById(id);
   }
@@ -53,6 +48,11 @@ public class StudyGroupRepositoryImpl implements StudyGroupRepository {
   @Override
   public StudyGroup save(StudyGroup studyGroup) {
     return repository.save(studyGroup);
+  }
+
+  @Override
+  public List<StudyGroup> saveAll(Iterable<StudyGroup> entities) {
+    return repository.saveAll(entities);
   }
 
   @Override

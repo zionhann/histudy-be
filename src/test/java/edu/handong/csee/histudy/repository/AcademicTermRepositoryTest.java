@@ -33,7 +33,7 @@ class AcademicTermRepositoryTest extends BaseRepositoryTest {
             .semester(TermType.WINTER)
             .isCurrent(false)
             .build();
-    persistAndFlush(testTerm);
+    academicTermRepository.save(testTerm);
 
     // When
     Optional<AcademicTerm> result = academicTermRepository.findByYearAndTerm(2020, TermType.WINTER);

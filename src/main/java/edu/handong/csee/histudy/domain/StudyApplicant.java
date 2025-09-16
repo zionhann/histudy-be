@@ -26,7 +26,7 @@ public class StudyApplicant extends BaseTime {
   @JoinColumn(name = "user_id")
   private User user;
 
-  @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "study_group_id")
   private StudyGroup studyGroup;
 

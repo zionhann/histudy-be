@@ -41,9 +41,9 @@ class CourseRepositoryTest extends BaseRepositoryTest {
             .academicTerm(currentTerm)
             .build();
 
-    persistAndFlush(course1);
-    persistAndFlush(course2);
-    persistAndFlush(course3);
+    courseRepository.save(course1);
+    courseRepository.save(course2);
+    courseRepository.save(course3);
 
     // When
     List<Course> results = courseRepository.findAllByNameContainingIgnoreCase("programming");
@@ -66,7 +66,7 @@ class CourseRepositoryTest extends BaseRepositoryTest {
             .academicTerm(currentTerm)
             .build();
 
-    persistAndFlush(course);
+    courseRepository.save(course);
 
     // When
     List<Course> results = courseRepository.findAllByNameContainingIgnoreCase("physics");
@@ -94,8 +94,8 @@ class CourseRepositoryTest extends BaseRepositoryTest {
             .academicTerm(pastTerm)
             .build();
 
-    persistAndFlush(currentCourse);
-    persistAndFlush(pastCourse);
+    courseRepository.save(currentCourse);
+    courseRepository.save(pastCourse);
 
     // When
     List<Course> results = courseRepository.findAllByAcademicTermIsCurrentTrue();
@@ -146,7 +146,7 @@ class CourseRepositoryTest extends BaseRepositoryTest {
             .academicTerm(currentTerm)
             .build();
 
-    Course savedCourse = persistAndFlush(course);
+    Course savedCourse = courseRepository.save(course);
 
     // When
     boolean exists = courseRepository.existsById(savedCourse.getCourseId());
@@ -168,7 +168,7 @@ class CourseRepositoryTest extends BaseRepositoryTest {
             .academicTerm(currentTerm)
             .build();
 
-    Course savedCourse = persistAndFlush(course);
+    Course savedCourse = courseRepository.save(course);
     Long courseId = savedCourse.getCourseId();
 
     // When
@@ -191,7 +191,7 @@ class CourseRepositoryTest extends BaseRepositoryTest {
             .academicTerm(currentTerm)
             .build();
 
-    Course savedCourse = persistAndFlush(course);
+    Course savedCourse = courseRepository.save(course);
 
     // When
     Optional<Course> result = courseRepository.findById(savedCourse.getCourseId());
@@ -221,7 +221,7 @@ class CourseRepositoryTest extends BaseRepositoryTest {
             .academicTerm(currentTerm)
             .build();
 
-    persistAndFlush(course);
+    courseRepository.save(course);
 
     // When
     List<Course> results = courseRepository.findAllByNameContainingIgnoreCase("");

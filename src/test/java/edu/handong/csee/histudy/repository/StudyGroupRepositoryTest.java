@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.repository.jpa.JpaStudyApplicantRepository;
 import edu.handong.csee.histudy.repository.jpa.JpaStudyGroupRepository;
-import edu.handong.csee.histudy.repository.jpa.JpaStudyReportRepository;
 import edu.handong.csee.histudy.support.BaseRepositoryTest;
 import edu.handong.csee.histudy.support.TestDataFactory;
 import java.util.List;
@@ -17,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 class StudyGroupRepositoryTest extends BaseRepositoryTest {
 
   @Autowired private JpaStudyGroupRepository studyGroupRepository;
-  @Autowired private JpaStudyReportRepository studyReportRepository;
   @Autowired private JpaStudyApplicantRepository studyApplicantRepository;
 
   @Test
@@ -28,10 +26,11 @@ class StudyGroupRepositoryTest extends BaseRepositoryTest {
     StudyApplicant applicant2 =
         TestDataFactory.createStudyApplicant(currentTerm, user2, List.of(user1), List.of(course1));
 
+    studyApplicantRepository.save(applicant1);
+    studyApplicantRepository.save(applicant2);
+
     StudyGroup studyGroup = StudyGroup.of(1, currentTerm, List.of(applicant1, applicant2));
-    persistAndFlush(applicant1);
-    persistAndFlush(applicant2);
-    persistAndFlush(studyGroup);
+    studyGroupRepository.save(studyGroup);
 
     // When
     Optional<StudyGroup> result = studyGroupRepository.findByTagAndAcademicTerm(1, currentTerm);
@@ -57,9 +56,9 @@ class StudyGroupRepositoryTest extends BaseRepositoryTest {
     StudyGroup studyGroup2 = TestDataFactory.createStudyGroup(3, currentTerm);
     StudyGroup studyGroup3 = TestDataFactory.createStudyGroup(2, currentTerm);
 
-    persistAndFlush(studyGroup1);
-    persistAndFlush(studyGroup2);
-    persistAndFlush(studyGroup3);
+    studyGroupRepository.save(studyGroup1);
+    studyGroupRepository.save(studyGroup2);
+    studyGroupRepository.save(studyGroup3);
 
     // When
     Optional<Integer> maxTag = studyGroupRepository.countMaxTag(currentTerm);
@@ -85,9 +84,9 @@ class StudyGroupRepositoryTest extends BaseRepositoryTest {
     StudyGroup studyGroup1 = TestDataFactory.createStudyGroup(1, currentTerm);
     StudyGroup studyGroup2 = TestDataFactory.createStudyGroup(2, currentTerm);
 
-    persistAndFlush(studyGroup3);
-    persistAndFlush(studyGroup1);
-    persistAndFlush(studyGroup2);
+    studyGroupRepository.save(studyGroup3);
+    studyGroupRepository.save(studyGroup1);
+    studyGroupRepository.save(studyGroup2);
 
     // When
     List<StudyGroup> studyGroups = studyGroupRepository.findAllByAcademicTerm(currentTerm);
@@ -102,10 +101,9 @@ class StudyGroupRepositoryTest extends BaseRepositoryTest {
     // Given
     StudyApplicant applicant =
         TestDataFactory.createStudyApplicant(currentTerm, user1, List.of(user2), List.of(course1));
+    studyApplicantRepository.save(applicant);
     StudyGroup studyGroup = StudyGroup.of(1, currentTerm, List.of(applicant));
-
-    persistAndFlush(applicant);
-    persistAndFlush(studyGroup);
+    studyGroupRepository.save(studyGroup);
 
     // When
     Optional<StudyGroup> result = studyGroupRepository.findByUserAndTerm(user1, currentTerm);
@@ -129,14 +127,14 @@ class StudyGroupRepositoryTest extends BaseRepositoryTest {
   void 빈그룹삭제실행시_빈그룹만삭제성공() {
     // Given - 빈 그룹 생성
     StudyGroup emptyGroup = TestDataFactory.createStudyGroup(1, currentTerm);
-    persistAndFlush(emptyGroup);
+    studyGroupRepository.save(emptyGroup);
 
     // 멤버가 있는 그룹 생성
     StudyApplicant applicant =
         TestDataFactory.createStudyApplicant(currentTerm, user1, List.of(user2), List.of(course1));
+    studyApplicantRepository.save(applicant);
     StudyGroup groupWithMembers = StudyGroup.of(2, currentTerm, List.of(applicant));
-    persistAndFlush(applicant);
-    persistAndFlush(groupWithMembers);
+    studyGroupRepository.save(groupWithMembers);
 
     // When
     studyGroupRepository.deleteEmptyGroup(currentTerm);
@@ -180,8 +178,8 @@ class StudyGroupRepositoryTest extends BaseRepositoryTest {
     StudyGroup currentGroup = TestDataFactory.createStudyGroup(1, currentTerm);
     StudyGroup pastGroup = TestDataFactory.createStudyGroup(1, pastTerm);
 
-    persistAndFlush(currentGroup);
-    persistAndFlush(pastGroup);
+    studyGroupRepository.save(currentGroup);
+    studyGroupRepository.save(pastGroup);
 
     // When
     List<StudyGroup> currentGroups = studyGroupRepository.findAllByAcademicTerm(currentTerm);

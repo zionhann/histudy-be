@@ -41,11 +41,6 @@ public class FakeStudyGroupRepository implements StudyGroupRepository {
   }
 
   @Override
-  public boolean existsById(Long id) {
-    return store.stream().anyMatch(e -> e.getStudyGroupId().equals(id));
-  }
-
-  @Override
   public void deleteById(Long id) {
     store.removeIf(e -> e.getStudyGroupId().equals(id));
   }
@@ -60,6 +55,13 @@ public class FakeStudyGroupRepository implements StudyGroupRepository {
     ReflectionTestUtils.setField(entity, "studyGroupId", sequence++);
     store.add(entity);
     return entity;
+  }
+
+  @Override
+  public List<StudyGroup> saveAll(Iterable<StudyGroup> entities) {
+    List<StudyGroup> saved = new ArrayList<>();
+    entities.forEach(entity -> saved.add(save(entity)));
+    return saved;
   }
 
   @Override
