@@ -3,7 +3,6 @@ package edu.handong.csee.histudy.domain;
 import jakarta.persistence.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -13,6 +12,8 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class StudyGroup extends BaseTime {
+
+  private static final int COMMON_COURSE_THRESHOLD = 2;
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -58,32 +59,6 @@ public class StudyGroup extends BaseTime {
     assignMembers(applicants);
   }
 
-  private List<Course> findCommonCourses(StudyApplicant... applicants) {
-    if (!this.courses.isEmpty()) {
-      this.courses.clear();
-    }
-    Map<Course, Long> courseCountMap =
-        Arrays.stream(applicants)
-            .flatMap(form -> form.getPreferredCourses().stream())
-            .map(PreferredCourse::getCourse)
-            .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
-
-    List<Course> commonCourses =
-        courseCountMap.entrySet().stream()
-            .filter(entry -> entry.getValue() >= 2)
-            .sorted(Map.Entry.<Course, Long>comparingByValue().reversed())
-            .map(Map.Entry::getKey)
-            .toList();
-
-    return (commonCourses.isEmpty())
-        ? Arrays.stream(applicants)
-            .map(StudyApplicant::getPreferredCourses)
-            .flatMap(Collection::stream)
-            .map(PreferredCourse::getCourse)
-            .toList()
-        : commonCourses;
-  }
-
   public StudyGroup assignMembers(StudyApplicant... applicants) {
     Arrays.stream(applicants)
         .forEach(
@@ -95,7 +70,7 @@ public class StudyGroup extends BaseTime {
               }
               applicant.joinStudyGroup(this);
             });
-    assignCommonCourses(applicants);
+    assignGroupCourses();
     return this;
   }
 
@@ -107,27 +82,32 @@ public class StudyGroup extends BaseTime {
     return applicant.getStudyGroup() != null && applicant.getStudyGroup().equals(this);
   }
 
-  protected void assignCommonCourses(StudyApplicant... applicants) {
-    if (isSameMemberExact(applicants)) {
-      return;
+  private void assignGroupCourses() {
+    if (!this.courses.isEmpty()) {
+      this.courses.clear();
     }
-    findCommonCourses(applicants).stream()
-        .filter(this::isNotInGroupCourse)
-        .forEach(course -> new GroupCourse(this, course));
-  }
 
-  private boolean isSameMemberExact(StudyApplicant... applicants) {
-    if (this.courses.isEmpty()) {
-      return false;
-    }
-    Set<User> users =
-        Arrays.stream(applicants).map(StudyApplicant::getUser).collect(Collectors.toSet());
-    Set<User> members =
-        this.members.stream().map(StudyApplicant::getUser).collect(Collectors.toSet());
-    return members.containsAll(users);
-  }
+    Map<Course, Long> courseCounts =
+        this.members.stream()
+            .flatMap(member -> member.getPreferredCourses().stream())
+            .collect(Collectors.groupingBy(PreferredCourse::getCourse, Collectors.counting()));
 
-  private boolean isNotInGroupCourse(Course course) {
-    return this.courses.stream().map(GroupCourse::getCourse).noneMatch(c -> c.equals(course));
+    List<Course> commonCourses =
+        courseCounts.entrySet().stream()
+            .filter(entry -> entry.getValue() >= COMMON_COURSE_THRESHOLD)
+            .map(Map.Entry::getKey)
+            .toList();
+
+    List<Course> courseCandidates =
+        commonCourses.isEmpty() ? new ArrayList<>(courseCounts.keySet()) : commonCourses;
+
+    courseCandidates.forEach(
+        course -> {
+          GroupCourse groupCourse = new GroupCourse(this, course);
+
+          if (!this.courses.contains(groupCourse)) {
+            this.courses.add(groupCourse);
+          }
+        });
   }
 }
