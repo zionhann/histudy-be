@@ -49,14 +49,6 @@ public class TeamService {
         .toList();
   }
 
-  public int deleteTeam(TeamIdDto dto, String email) {
-    if (studyGroupRepository.existsById(dto.getGroupId())) {
-      studyGroupRepository.deleteById(dto.getGroupId());
-      return 1;
-    }
-    return 0;
-  }
-
   public TeamReportDto getTeamReports(long id, String email) {
     StudyGroup studyGroup = studyGroupRepository.findById(id).orElseThrow();
     List<UserDto.UserBasic> users =

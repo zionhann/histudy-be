@@ -4,7 +4,6 @@ import edu.handong.csee.histudy.controller.form.AcademicTermForm;
 import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.dto.AcademicTermDto;
 import edu.handong.csee.histudy.dto.TeamDto;
-import edu.handong.csee.histudy.dto.TeamIdDto;
 import edu.handong.csee.histudy.dto.TeamReportDto;
 import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.exception.ForbiddenException;
@@ -31,16 +30,6 @@ public class AdminController {
     if (Role.isAuthorized(claims, Role.ADMIN)) {
       String email = claims.getSubject();
       return ResponseEntity.ok(teamService.getTeams(email));
-    }
-    throw new ForbiddenException();
-  }
-
-  @Deprecated
-  @DeleteMapping("/group")
-  public ResponseEntity<Integer> deleteTeam(
-      @RequestBody TeamIdDto dto, @RequestAttribute Claims claims) {
-    if (Role.isAuthorized(claims, Role.ADMIN)) {
-      return ResponseEntity.ok(teamService.deleteTeam(dto, claims.getSubject()));
     }
     throw new ForbiddenException();
   }

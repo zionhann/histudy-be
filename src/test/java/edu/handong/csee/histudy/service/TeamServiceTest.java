@@ -68,8 +68,10 @@ public class TeamServiceTest {
     Course course = TestDataFactory.createCourse("Introduction to Test", "ECE00103", "John", term);
     courseRepository.saveAll(List.of(course));
 
-    StudyApplicant studyApplicant1 = TestDataFactory.createStudyApplicant(term, student1, List.of(student2), List.of(course));
-    StudyApplicant studyApplicant2 = TestDataFactory.createStudyApplicant(term, student2, List.of(student1), List.of(course));
+    StudyApplicant studyApplicant1 =
+        TestDataFactory.createStudyApplicant(term, student1, List.of(student2), List.of(course));
+    StudyApplicant studyApplicant2 =
+        TestDataFactory.createStudyApplicant(term, student2, List.of(student1), List.of(course));
 
     studyApplicantRepository.save(studyApplicant1);
     studyApplicantRepository.save(studyApplicant2);
@@ -243,50 +245,6 @@ public class TeamServiceTest {
     assertThat(teams).hasSize(1);
     assertThat(teams.get(0).getGroup()).isEqualTo(studyGroup.getStudyGroupId());
     assertThat(teams.get(0).getTag()).isEqualTo(1);
-  }
-
-  @Test
-  void 유효한팀ID시_삭제성공() {
-    // Given
-    AcademicTerm term =
-        AcademicTerm.builder().academicYear(2025).semester(TermType.SPRING).isCurrent(true).build();
-    academicTermRepository.save(term);
-
-    User student1 =
-        User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
-    userRepository.save(student1);
-
-    Course course = new Course("Introduction to Test", "ECE00103", "John", term);
-    courseRepository.saveAll(List.of(course));
-
-    StudyApplicant studyApplicant1 = StudyApplicant.of(term, student1, List.of(), List.of(course));
-    studyApplicantRepository.save(studyApplicant1);
-
-    StudyGroup studyGroup = StudyGroup.of(1, term, List.of(studyApplicant1));
-    studyGroupRepository.save(studyGroup);
-
-    TeamIdDto dto = new TeamIdDto();
-    dto.setGroupId(studyGroup.getStudyGroupId());
-
-    // When
-    int result = teamService.deleteTeam(dto, "admin@test.com");
-
-    // Then
-    assertThat(result).isEqualTo(1);
-    assertThat(studyGroupRepository.existsById(studyGroup.getStudyGroupId())).isFalse();
-  }
-
-  @Test
-  void 존재하지않는팀ID시_0반환() {
-    // Given
-    TeamIdDto dto = new TeamIdDto();
-    dto.setGroupId(999L);
-
-    // When
-    int result = teamService.deleteTeam(dto, "admin@test.com");
-
-    // Then
-    assertThat(result).isEqualTo(0);
   }
 
   @Test
