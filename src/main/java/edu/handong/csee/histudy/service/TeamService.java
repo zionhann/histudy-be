@@ -3,10 +3,10 @@ package edu.handong.csee.histudy.service;
 import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.dto.*;
 import edu.handong.csee.histudy.exception.NoCurrentTermFoundException;
-import edu.handong.csee.histudy.exception.NoStudyApplicationFound;
 import edu.handong.csee.histudy.exception.UserNotFoundException;
 import edu.handong.csee.histudy.repository.*;
 import edu.handong.csee.histudy.repository.StudyApplicantRepository;
+import edu.handong.csee.histudy.util.DFS;
 import edu.handong.csee.histudy.util.ImagePathMapper;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -135,11 +135,9 @@ public class TeamService {
     int latestGroupTag = studyGroupRepository.countMaxTag(current).orElse(0);
     AtomicInteger tag = new AtomicInteger(latestGroupTag + 1);
 
-    Set<StudyGroup> allMatchedGroups = new HashSet<>();
-
     // First matching - friend-based
-    Set<StudyGroup> friendGroups = matchFriendFirst(allApplicants, tag, current);
-    allMatchedGroups.addAll(friendGroups);
+    List<StudyGroup> friendGroups = matchFriendFirst(allApplicants, tag, current);
+    List<StudyGroup> allMatchedGroups = new ArrayList<>(friendGroups);
 
     // Second matching - course-based with priority (remaining unassigned applicants)
     Set<StudyGroup> courseFirstGroups = matchCourseFirst(allApplicants, tag, current);
@@ -154,26 +152,30 @@ public class TeamService {
     }
   }
 
-  public Set<StudyGroup> matchFriendFirst(
+  public List<StudyGroup> matchFriendFirst(
       List<StudyApplicant> applicants, AtomicInteger tag, AcademicTerm current) {
     if (applicants.isEmpty()) {
-      return new HashSet<>();
+      return new ArrayList<>();
     }
+    return new DFS<>(buildFriendshipMap(applicants))
+        .execute().stream()
+            .map(friends -> StudyGroup.of(tag.getAndIncrement(), current, friends))
+            .toList();
+  }
+
+  private Map<StudyApplicant, List<StudyApplicant>> buildFriendshipMap(
+      List<StudyApplicant> applicants) {
+    Map<User, StudyApplicant> userToApplicant =
+        applicants.stream().collect(Collectors.toMap(StudyApplicant::getUser, Function.identity()));
 
     return applicants.stream()
-        .filter(applicant -> !applicant.hasStudyGroup())
-        .map(StudyApplicant::getPartnerRequests)
-        .flatMap(Collection::stream)
+        .flatMap(applicant -> applicant.getPartnerRequests().stream())
         .filter(StudyPartnerRequest::isAccepted)
-        .map(
-            partnerRequest -> {
-              StudyApplicant receiver =
-                  studyApplicantRepository
-                      .findByUserAndTerm(partnerRequest.getReceiver(), current)
-                      .orElseThrow(NoStudyApplicationFound::new);
-              return StudyGroup.of(tag, current, partnerRequest.getSender(), receiver);
-            })
-        .collect(Collectors.toSet());
+        .collect(
+            Collectors.groupingBy(
+                StudyPartnerRequest::getSender,
+                Collectors.mapping(
+                    r -> userToApplicant.get(r.getReceiver()), Collectors.toList())));
   }
 
   public Set<StudyGroup> matchCourseFirst(
