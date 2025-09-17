@@ -157,7 +157,10 @@ public class TeamService {
     if (applicants.isEmpty()) {
       return new ArrayList<>();
     }
-    return new DFS<>(buildFriendshipMap(applicants))
+    Map<StudyApplicant, List<StudyApplicant>> friendshipMap = buildFriendshipMap(applicants);
+    int minGroupSize = 2;
+
+    return new DFS<>(friendshipMap, minGroupSize)
         .execute().stream()
             .map(friends -> StudyGroup.of(tag.getAndIncrement(), current, friends))
             .toList();

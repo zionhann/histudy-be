@@ -9,9 +9,11 @@ import java.util.Set;
 public class DFS<T> {
   private final Set<T> visited = new HashSet<>();
   private final Map<T, List<T>> graph;
+  private final int minComponentSize;
 
-  public DFS(Map<T, List<T>> graph) {
+  public DFS(Map<T, List<T>> graph, int minComponentSize) {
     this.graph = graph;
+    this.minComponentSize = minComponentSize;
   }
 
   public List<List<T>> execute() {
@@ -22,7 +24,7 @@ public class DFS<T> {
         List<T> component = new ArrayList<>();
         traverse(node, component);
 
-        if (component.size() > 1) {
+        if (component.size() >= minComponentSize) {
           results.add(component);
         }
       }
