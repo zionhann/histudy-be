@@ -67,9 +67,10 @@ public class StudyApplicant extends BaseTime {
   }
 
   public void joinStudyGroup(StudyGroup studyGroup) {
-    if (hasStudyGroup() && !this.studyGroup.equals(studyGroup)) {
-      leaveStudyGroup();
+    if (this.isInSameGroup(studyGroup)) {
+      return;
     }
+    this.leaveStudyGroup();
     this.studyGroup = studyGroup;
 
     if (!studyGroup.getMembers().contains(this)) {
@@ -78,7 +79,7 @@ public class StudyApplicant extends BaseTime {
   }
 
   public void leaveStudyGroup() {
-    if (!hasStudyGroup()) {
+    if (!this.hasStudyGroup()) {
       return;
     }
     this.studyGroup.getMembers().remove(this);
@@ -87,5 +88,9 @@ public class StudyApplicant extends BaseTime {
 
   public boolean hasStudyGroup() {
     return this.studyGroup != null;
+  }
+
+  public boolean isInSameGroup(StudyGroup studyGroup) {
+    return this.hasStudyGroup() && this.studyGroup.equals(studyGroup);
   }
 }

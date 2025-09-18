@@ -136,23 +136,19 @@ public class TeamService {
     AtomicInteger tag = new AtomicInteger(latestGroupTag + 1);
 
     // First matching - friend-based
-    List<StudyGroup> friendGroups = matchFriendFirst(allApplicants, tag, current);
+    List<StudyGroup> friendGroups = groupByFriends(allApplicants, tag, current);
     List<StudyGroup> allMatchedGroups = new ArrayList<>(friendGroups);
 
     // Second matching - course-based with priority (remaining unassigned applicants)
-    Set<StudyGroup> courseFirstGroups = matchCourseFirst(allApplicants, tag, current);
+    List<StudyGroup> courseFirstGroups = groupByCoursePreference(allApplicants, tag, current);
     allMatchedGroups.addAll(courseFirstGroups);
-
-    // Third matching - remaining course-based (final unassigned applicants)
-    Set<StudyGroup> courseSecondGroups = matchCourseSecond(allApplicants, tag, current);
-    allMatchedGroups.addAll(courseSecondGroups);
 
     if (!allMatchedGroups.isEmpty()) {
       studyGroupRepository.saveAll(allMatchedGroups);
     }
   }
 
-  public List<StudyGroup> matchFriendFirst(
+  protected List<StudyGroup> groupByFriends(
       List<StudyApplicant> applicants, AtomicInteger tag, AcademicTerm current) {
     if (applicants.isEmpty()) {
       return new ArrayList<>();
@@ -172,6 +168,7 @@ public class TeamService {
         applicants.stream().collect(Collectors.toMap(StudyApplicant::getUser, Function.identity()));
 
     return applicants.stream()
+        .filter(applicant -> !applicant.hasStudyGroup())
         .flatMap(applicant -> applicant.getPartnerRequests().stream())
         .filter(StudyPartnerRequest::isAccepted)
         .collect(
@@ -181,125 +178,63 @@ public class TeamService {
                     r -> userToApplicant.get(r.getReceiver()), Collectors.toList())));
   }
 
-  public Set<StudyGroup> matchCourseFirst(
+  protected List<StudyGroup> groupByCoursePreference(
       List<StudyApplicant> applicants, AtomicInteger tag, AcademicTerm current) {
     if (applicants.isEmpty()) {
-      return new HashSet<>();
+      return new ArrayList<>();
     }
-
-    Set<StudyGroup> results = new HashSet<>();
+    Map<Course, List<StudyApplicant>> courseToApplicants = new HashMap<>();
 
     List<PreferredCourse> preferredCourses =
         applicants.stream()
             .filter(applicant -> !applicant.hasStudyGroup())
             .flatMap(applicant -> applicant.getPreferredCourses().stream())
-            .sorted(Comparator.comparingInt(PreferredCourse::getPriority))
             .toList();
 
-    List<Integer> sortedKeys =
-        preferredCourses.stream()
-            .collect(Collectors.groupingBy(PreferredCourse::getPriority))
-            .keySet()
-            .stream()
-            .sorted()
-            .toList();
+    PriorityQueue<PreferredCourse> queue =
+        new PriorityQueue<>(Comparator.comparingInt(PreferredCourse::getPriority));
+    queue.addAll(preferredCourses);
 
-    sortedKeys.forEach(
-        priority -> {
-          Map<Course, List<StudyApplicant>> courseToUserMap =
-              preferredCourses.stream()
-                  .filter(
-                      uc -> uc.getPriority().equals(priority) && !uc.getApplicant().hasStudyGroup())
-                  .collect(
-                      Collectors.groupingBy(
-                          PreferredCourse::getCourse,
-                          Collectors.mapping(PreferredCourse::getApplicant, Collectors.toList())));
+    while (!queue.isEmpty()) {
+      PreferredCourse preferredCourse = queue.poll();
+      courseToApplicants
+          .computeIfAbsent(preferredCourse.getCourse(), __ -> new ArrayList<>())
+          .add(preferredCourse.getApplicant());
+    }
+    int minGroupSize = 3;
+    int maxGroupSize = 5;
 
-          courseToUserMap.forEach(
-              (course, _applicants) -> {
-                Set<StudyGroup> matchedGroups = createGroup(_applicants, tag, current);
-                results.addAll(matchedGroups);
-              });
-        });
-    return results;
+    return courseToApplicants.values().stream()
+        .flatMap(
+            _applicants ->
+                groupBySize(_applicants, tag, current, minGroupSize, maxGroupSize).stream())
+        .toList();
   }
 
-  private Set<StudyGroup> createGroup(
-      List<StudyApplicant> applicants, AtomicInteger tag, AcademicTerm current) {
-    Set<StudyGroup> matchedGroups = new HashSet<>();
+  private List<StudyGroup> groupBySize(
+      List<StudyApplicant> applicants,
+      AtomicInteger tag,
+      AcademicTerm current,
+      int minSize,
+      int maxSize) {
+    List<StudyGroup> groups = new ArrayList<>();
 
-    while (applicants.size() >= 5) {
-      // If the group has more than 5 elements, split the group
-      // Split the group into 5 elements
-      // [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] -> [1, 2, 3, 4, 5], [6, 7, 8, 9, 10], [11]
-      List<StudyApplicant> subGroup = List.copyOf(applicants.subList(0, 5));
-
-      // Create a group with only 5 elements
-      StudyGroup studyGroup = StudyGroup.of(tag.getAndIncrement(), current, subGroup);
-      matchedGroups.add(studyGroup);
-
-      // Remove the elements that have already been added to the group
-      applicants.removeAll(subGroup);
+    if (applicants.size() < minSize) {
+      return groups;
     }
-    if (applicants.size() >= 3) {
-      // If the remaining elements are 3 ~ 4
-      // Create a group with 3 ~ 4 elements
+
+    if (applicants.size() <= maxSize) {
       StudyGroup studyGroup = StudyGroup.of(tag.getAndIncrement(), current, applicants);
-      matchedGroups.add(studyGroup);
+      groups.add(studyGroup);
+      return groups;
     }
-    return matchedGroups;
-  }
+    List<StudyApplicant> initialApplicants = applicants.subList(0, maxSize);
+    StudyGroup studyGroup = StudyGroup.of(tag.getAndIncrement(), current, initialApplicants);
+    groups.add(studyGroup);
 
-  private Set<StudyGroup> matchCourseSecond(
-      List<StudyApplicant> applicants, AtomicInteger tag, AcademicTerm current) {
-    if (applicants.isEmpty()) {
-      return new HashSet<>();
-    }
-
-    Set<StudyGroup> matchedGroups = new HashSet<>();
-
-    Map<Course, PriorityQueue<StudyApplicant>> courseToUserByPriority =
-        preparePriorityQueueOfUsers(applicants);
-
-    // Make groups with 3 ~ 5 elements
-    courseToUserByPriority.forEach(
-        (course, queue) -> {
-          List<StudyApplicant> group =
-              queue.stream()
-                  .filter(applicant -> !applicant.hasStudyGroup())
-                  .sorted(queue.comparator())
-                  .collect(Collectors.toList());
-          Set<StudyGroup> groups = createGroup(group, tag, current);
-          matchedGroups.addAll(groups);
-        });
-    return matchedGroups;
-  }
-
-  private Map<Course, PriorityQueue<StudyApplicant>> preparePriorityQueueOfUsers(
-      List<StudyApplicant> applicants) {
-    // Group users by course
-    Map<Course, List<PreferredCourse>> courseToUserCourses =
-        applicants.stream()
-            .flatMap(applicant -> applicant.getPreferredCourses().stream())
-            .collect(
-                Collectors.groupingBy(
-                    PreferredCourse::getCourse,
-                    Collectors.mapping(Function.identity(), Collectors.toList())));
-
-    Map<Course, PriorityQueue<StudyApplicant>> courseToUsersByPriority = new HashMap<>();
-    courseToUserCourses.forEach(
-        (_course, _userCourses) -> {
-          _userCourses.sort(Comparator.comparingInt(PreferredCourse::getPriority));
-          List<StudyApplicant> sortedForms =
-              _userCourses.stream().map(PreferredCourse::getApplicant).toList();
-
-          PriorityQueue<StudyApplicant> userPriorityQueue =
-              new PriorityQueue<>(
-                  sortedForms.size(), Comparator.comparingInt(sortedForms::indexOf));
-
-          userPriorityQueue.addAll(sortedForms);
-          courseToUsersByPriority.put(_course, userPriorityQueue);
-        });
-    return courseToUsersByPriority;
+    List<StudyApplicant> remaining = applicants.subList(maxSize, applicants.size());
+    List<StudyGroup> remainingGroups = groupBySize(remaining, tag, current, minSize, maxSize);
+    groups.addAll(remainingGroups);
+    return groups;
   }
 }

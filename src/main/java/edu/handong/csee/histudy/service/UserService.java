@@ -221,7 +221,7 @@ public class UserService {
               studyGroupRepository
                   .findByTagAndAcademicTerm(tag, currentTerm)
                   .ifPresentOrElse(
-                      existingGroup -> existingGroup.assignMembers(applicant),
+                      existingGroup -> existingGroup.addMember(applicant),
                       () -> {
                         StudyGroup newGroup = StudyGroup.of(tag, currentTerm, List.of(applicant));
                         studyGroupRepository.save(newGroup);
@@ -229,19 +229,21 @@ public class UserService {
             },
             () ->
                 applicantOr.ifPresent(
-                    applicant -> {
-                      StudyGroup studyGroup = applicant.getStudyGroup();
-                      applicant.leaveStudyGroup();
+                    applicant ->
+                        Optional.ofNullable(applicant.getStudyGroup())
+                            .ifPresent(
+                                studyGroup -> {
+                                  applicant.leaveStudyGroup();
 
-                      if (studyGroup != null && studyGroup.getMembers().isEmpty()) {
-                        /*
-                         TODO: Need to check there are associated reports
-                         Currently deleting a group with no members but with reports
-                         will cause FK constraint violation
-                        */
-                        studyGroupRepository.deleteById(studyGroup.getStudyGroupId());
-                      }
-                    }));
+                                  if (studyGroup.getMembers().isEmpty()) {
+                                    /*
+                                     TODO: Need to check there are associated reports
+                                     Currently deleting a group with no members but with reports
+                                     will cause FK constraint violation
+                                    */
+                                    studyGroupRepository.deleteById(studyGroup.getStudyGroupId());
+                                  }
+                                })));
   }
 
   public List<UserDto.UserInfo> getAppliedWithoutGroup() {

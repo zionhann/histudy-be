@@ -2,7 +2,6 @@ package edu.handong.csee.histudy.domain;
 
 import jakarta.persistence.*;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -33,22 +32,6 @@ public class StudyGroup extends BaseTime {
   @OneToMany(mappedBy = "studyGroup", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<GroupCourse> courses = new ArrayList<>();
 
-  public static StudyGroup of(
-      AtomicInteger tag, AcademicTerm current, StudyApplicant sender, StudyApplicant receiver) {
-    if (sender.getStudyGroup() != null && receiver.getStudyGroup() != null) {
-      // a -> b or a <- b
-      assert sender.getStudyGroup().equals(receiver.getStudyGroup());
-      return sender.getStudyGroup();
-    } else if (sender.getStudyGroup() != null) {
-      // (a <-> b) -> c
-      return sender.getStudyGroup().assignMembers(receiver);
-    } else if (receiver.getStudyGroup() != null) {
-      // (a <-> b) <- c
-      return receiver.getStudyGroup().assignMembers(sender);
-    }
-    return new StudyGroup(tag.getAndIncrement(), current, sender, receiver);
-  }
-
   public static StudyGroup of(Integer tag, AcademicTerm current, List<StudyApplicant> applicants) {
     return new StudyGroup(tag, current, applicants.toArray(StudyApplicant[]::new));
   }
@@ -56,39 +39,30 @@ public class StudyGroup extends BaseTime {
   protected StudyGroup(Integer tag, AcademicTerm academicTerm, StudyApplicant... applicants) {
     this.tag = tag;
     this.academicTerm = academicTerm;
-    assignMembers(applicants);
+    addMember(applicants);
   }
 
-  public StudyGroup assignMembers(StudyApplicant... applicants) {
-    Arrays.stream(applicants)
+  public void addMember(StudyApplicant... applicants) {
+    Arrays.stream(applicants).forEach(applicant -> applicant.joinStudyGroup(this));
+    this.addCourse(this.members);
+  }
+
+  protected void addCourse(List<StudyApplicant> members) {
+    this.findCommonCourses(members)
         .forEach(
-            applicant -> {
-              if (isInSameGroup(applicant)) {
-                return;
-              } else if (isAlreadyInOtherGroup(applicant)) {
-                applicant.leaveStudyGroup();
-              }
-              applicant.joinStudyGroup(this);
+            course -> {
+              GroupCourse groupCourse = new GroupCourse(course);
+              groupCourse.assignToStudyGroup(this);
             });
-    assignGroupCourses();
-    return this;
   }
 
-  private boolean isAlreadyInOtherGroup(StudyApplicant applicant) {
-    return applicant.getStudyGroup() != null && !applicant.getStudyGroup().equals(this);
-  }
-
-  public boolean isInSameGroup(StudyApplicant applicant) {
-    return applicant.getStudyGroup() != null && applicant.getStudyGroup().equals(this);
-  }
-
-  private void assignGroupCourses() {
+  protected List<Course> findCommonCourses(List<StudyApplicant> members) {
     if (!this.courses.isEmpty()) {
       this.courses.clear();
     }
 
     Map<Course, Long> courseCounts =
-        this.members.stream()
+        members.stream()
             .flatMap(member -> member.getPreferredCourses().stream())
             .collect(Collectors.groupingBy(PreferredCourse::getCourse, Collectors.counting()));
 
@@ -98,16 +72,6 @@ public class StudyGroup extends BaseTime {
             .map(Map.Entry::getKey)
             .toList();
 
-    List<Course> courseCandidates =
-        commonCourses.isEmpty() ? new ArrayList<>(courseCounts.keySet()) : commonCourses;
-
-    courseCandidates.forEach(
-        course -> {
-          GroupCourse groupCourse = new GroupCourse(this, course);
-
-          if (!this.courses.contains(groupCourse)) {
-            this.courses.add(groupCourse);
-          }
-        });
+    return commonCourses.isEmpty() ? new ArrayList<>(courseCounts.keySet()) : commonCourses;
   }
 }
