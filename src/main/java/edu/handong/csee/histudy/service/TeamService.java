@@ -183,37 +183,36 @@ public class TeamService {
     if (applicants.isEmpty()) {
       return new ArrayList<>();
     }
-    Map<Course, List<StudyApplicant>> courseToApplicants = new HashMap<>();
-
-    List<PreferredCourse> preferredCourses =
+    List<PreferredCourse> coursePreferences =
         applicants.stream()
-            .filter(applicant -> !applicant.hasStudyGroup())
-            .flatMap(applicant -> applicant.getPreferredCourses().stream())
+            .filter(a -> !a.hasStudyGroup())
+            .flatMap(a -> a.getPreferredCourses().stream())
+            .sorted(
+                Comparator.comparingInt(PreferredCourse::getPriority)
+                    .thenComparing(p -> p.getCourse().getCourseId()))
             .toList();
 
-    PriorityQueue<PreferredCourse> queue =
-        new PriorityQueue<>(Comparator.comparingInt(PreferredCourse::getPriority));
-    queue.addAll(preferredCourses);
+    Map<Priority, Map<Course, List<StudyApplicant>>> priorityCourseMap = new LinkedHashMap<>();
 
-    while (!queue.isEmpty()) {
-      PreferredCourse preferredCourse = queue.poll();
-      courseToApplicants
-          .computeIfAbsent(preferredCourse.getCourse(), __ -> new ArrayList<>())
-          .add(preferredCourse.getApplicant());
-    }
-    int startIndex = 0;
+    coursePreferences.forEach(
+        pc -> {
+          Priority priority = Priority.of(pc.getPriority());
+          Course course = pc.getCourse();
+
+          priorityCourseMap
+              .computeIfAbsent(priority, p -> new LinkedHashMap<>())
+              .computeIfAbsent(course, c -> new ArrayList<>())
+              .add(pc.getApplicant());
+        });
+
     int minGroupSize = 3;
     int maxGroupSize = 5;
 
-    return courseToApplicants.values().stream()
-        .flatMap(
-            _applicants -> {
-              // Filter out already assigned applicants before forming groups
-              List<StudyApplicant> remaining =
-                  _applicants.stream().filter(applicant -> !applicant.hasStudyGroup()).toList();
-              return groupBySize(remaining, tag, current, startIndex, minGroupSize, maxGroupSize)
-                  .stream();
-            })
+    return priorityCourseMap.values().stream()
+        .flatMap(courseMap -> courseMap.values().stream())
+        .map(_applicants -> _applicants.stream().filter(a -> !a.hasStudyGroup()).toList())
+        .map(remaining -> groupBySize(remaining, tag, current, 0, minGroupSize, maxGroupSize))
+        .flatMap(Collection::stream)
         .toList();
   }
 
