@@ -48,6 +48,9 @@ public class StudyGroup extends BaseTime {
   }
 
   protected void addCourse(List<StudyApplicant> members) {
+    if (!this.courses.isEmpty()) {
+      this.courses.clear();
+    }
     this.findCommonCourses(members)
         .forEach(
             course -> {
@@ -57,10 +60,6 @@ public class StudyGroup extends BaseTime {
   }
 
   protected List<Course> findCommonCourses(List<StudyApplicant> members) {
-    if (!this.courses.isEmpty()) {
-      this.courses.clear();
-    }
-
     Map<Course, Long> courseCounts =
         members.stream()
             .flatMap(member -> member.getPreferredCourses().stream())
