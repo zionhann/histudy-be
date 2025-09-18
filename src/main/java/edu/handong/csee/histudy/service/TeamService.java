@@ -171,6 +171,7 @@ public class TeamService {
         .filter(applicant -> !applicant.hasStudyGroup())
         .flatMap(applicant -> applicant.getPartnerRequests().stream())
         .filter(StudyPartnerRequest::isAccepted)
+        .filter(request -> userToApplicant.containsKey(request.getReceiver()))
         .collect(
             Collectors.groupingBy(
                 StudyPartnerRequest::getSender,

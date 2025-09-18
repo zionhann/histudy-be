@@ -51,12 +51,7 @@ public class StudyGroup extends BaseTime {
     if (!this.courses.isEmpty()) {
       this.courses.clear();
     }
-    this.findCommonCourses(members)
-        .forEach(
-            course -> {
-              GroupCourse groupCourse = new GroupCourse(course);
-              groupCourse.assignToStudyGroup(this);
-            });
+    this.findCommonCourses(members).forEach(course -> new GroupCourse(course, this));
   }
 
   protected List<Course> findCommonCourses(List<StudyApplicant> members) {

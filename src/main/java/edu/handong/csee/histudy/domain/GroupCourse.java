@@ -22,11 +22,8 @@ public class GroupCourse extends BaseTime {
   @JoinColumn(name = "course_id")
   private Course course;
 
-  public GroupCourse(Course course) {
+  public GroupCourse(Course course, StudyGroup studyGroup) {
     this.course = course;
-  }
-
-  public void assignToStudyGroup(StudyGroup studyGroup) {
     this.studyGroup = studyGroup;
 
     if (!studyGroup.getCourses().contains(this)) {
