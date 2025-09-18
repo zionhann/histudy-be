@@ -51,6 +51,11 @@ public class UserRepositoryImpl implements UserRepository {
   }
 
   @Override
+  public List<User> saveAll(Iterable<User> entities) {
+    return repository.saveAll(entities);
+  }
+
+  @Override
   public long countByRoleNot(Role role) {
     return repository.countByRoleNot(role);
   }

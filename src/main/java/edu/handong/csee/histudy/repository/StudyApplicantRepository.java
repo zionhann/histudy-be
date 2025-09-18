@@ -20,5 +20,7 @@ public interface StudyApplicantRepository {
 
   StudyApplicant save(StudyApplicant entity);
 
+  List<StudyApplicant> saveAll(Iterable<StudyApplicant> entities);
+
   void delete(StudyApplicant applicant);
 }

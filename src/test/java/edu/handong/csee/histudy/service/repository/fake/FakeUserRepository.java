@@ -81,6 +81,13 @@ public class FakeUserRepository implements UserRepository {
   }
 
   @Override
+  public List<User> saveAll(Iterable<User> entities) {
+    List<User> saved = new ArrayList<>();
+    entities.forEach(entity -> saved.add(save(entity)));
+    return saved;
+  }
+
+  @Override
   public long countByRoleNot(Role role) {
     return store.stream().filter(user -> !user.getRole().equals(role)).count();
   }
