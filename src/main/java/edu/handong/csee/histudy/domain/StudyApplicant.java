@@ -67,10 +67,9 @@ public class StudyApplicant extends BaseTime {
   }
 
   public void joinStudyGroup(StudyGroup studyGroup) {
-    if (this.isInSameGroup(studyGroup)) {
+    if (this.hasStudyGroup()) {
       return;
     }
-    this.leaveStudyGroup();
     this.studyGroup = studyGroup;
 
     if (!studyGroup.getMembers().contains(this)) {

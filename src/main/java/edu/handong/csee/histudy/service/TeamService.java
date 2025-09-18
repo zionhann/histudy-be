@@ -201,13 +201,19 @@ public class TeamService {
           .computeIfAbsent(preferredCourse.getCourse(), __ -> new ArrayList<>())
           .add(preferredCourse.getApplicant());
     }
+    int startIndex = 0;
     int minGroupSize = 3;
     int maxGroupSize = 5;
 
     return courseToApplicants.values().stream()
         .flatMap(
-            _applicants ->
-                groupBySize(_applicants, tag, current, minGroupSize, maxGroupSize).stream())
+            _applicants -> {
+              // Filter out already assigned applicants before forming groups
+              List<StudyApplicant> remaining =
+                  _applicants.stream().filter(applicant -> !applicant.hasStudyGroup()).toList();
+              return groupBySize(remaining, tag, current, startIndex, minGroupSize, maxGroupSize)
+                  .stream();
+            })
         .toList();
   }
 
@@ -215,26 +221,25 @@ public class TeamService {
       List<StudyApplicant> applicants,
       AtomicInteger tag,
       AcademicTerm current,
+      int startIndex,
       int minSize,
       int maxSize) {
-    List<StudyGroup> groups = new ArrayList<>();
+    List<StudyGroup> results = new ArrayList<>();
+    int remaining = applicants.size() - startIndex;
 
-    if (applicants.size() < minSize) {
-      return groups;
+    if (remaining < minSize) {
+      return results;
     }
+    int endIndex = startIndex + Math.min(remaining, maxSize);
+    List<StudyApplicant> groupedApplicants = applicants.subList(startIndex, endIndex);
 
-    if (applicants.size() <= maxSize) {
-      StudyGroup studyGroup = StudyGroup.of(tag.getAndIncrement(), current, applicants);
-      groups.add(studyGroup);
-      return groups;
-    }
-    List<StudyApplicant> initialApplicants = applicants.subList(0, maxSize);
-    StudyGroup studyGroup = StudyGroup.of(tag.getAndIncrement(), current, initialApplicants);
-    groups.add(studyGroup);
+    StudyGroup studyGroup = StudyGroup.of(tag.getAndIncrement(), current, groupedApplicants);
+    results.add(studyGroup);
 
-    List<StudyApplicant> remaining = applicants.subList(maxSize, applicants.size());
-    List<StudyGroup> remainingGroups = groupBySize(remaining, tag, current, minSize, maxSize);
-    groups.addAll(remainingGroups);
-    return groups;
+    List<StudyGroup> studyGroups =
+        groupBySize(applicants, tag, current, endIndex, minSize, maxSize);
+    results.addAll(studyGroups);
+
+    return results;
   }
 }
