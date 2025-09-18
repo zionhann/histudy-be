@@ -21,6 +21,8 @@ public interface UserRepository {
 
   User save(User entity);
 
+  List<User> saveAll(Iterable<User> entities);
+
   long countByRoleNot(Role role);
 
   long countByRole(Role role);

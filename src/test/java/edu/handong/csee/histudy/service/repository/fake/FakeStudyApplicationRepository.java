@@ -54,6 +54,13 @@ public class FakeStudyApplicationRepository implements StudyApplicantRepository 
   }
 
   @Override
+  public List<StudyApplicant> saveAll(Iterable<StudyApplicant> entities) {
+    List<StudyApplicant> saved = new ArrayList<>();
+    entities.forEach(entity -> saved.add(save(entity)));
+    return saved;
+  }
+
+  @Override
   public void delete(StudyApplicant applicant) {
     store.remove(applicant);
   }

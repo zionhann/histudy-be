@@ -47,6 +47,11 @@ public class StudyApplicationRepositoryImpl implements StudyApplicantRepository 
   }
 
   @Override
+  public List<StudyApplicant> saveAll(Iterable<StudyApplicant> entities) {
+    return repository.saveAll(entities);
+  }
+
+  @Override
   public void delete(StudyApplicant applicant) {
     repository.delete(applicant);
   }
