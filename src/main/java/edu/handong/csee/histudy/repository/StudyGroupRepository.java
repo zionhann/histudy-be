@@ -26,4 +26,6 @@ public interface StudyGroupRepository {
   long count();
 
   long countByAcademicTerm(AcademicTerm academicTerm);
+
+  List<StudyGroup> findAllEmptyByAcademicTerm(AcademicTerm academicTerm);
 }

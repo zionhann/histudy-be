@@ -67,9 +67,10 @@ public class StudyApplicant extends BaseTime {
   }
 
   public void joinStudyGroup(StudyGroup studyGroup) {
-    if (this.hasStudyGroup()) {
+    if (this.isInSameGroup(studyGroup)) {
       return;
     }
+    this.leaveStudyGroup();
     this.studyGroup = studyGroup;
 
     if (!studyGroup.getMembers().contains(this)) {
@@ -82,6 +83,7 @@ public class StudyApplicant extends BaseTime {
       return;
     }
     this.studyGroup.getMembers().remove(this);
+    this.studyGroup.refreshGroupCourses();
     this.studyGroup = null;
   }
 
