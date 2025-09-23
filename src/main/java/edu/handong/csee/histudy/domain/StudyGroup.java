@@ -44,10 +44,14 @@ public class StudyGroup extends BaseTime {
 
   public void addMember(StudyApplicant... applicants) {
     Arrays.stream(applicants).forEach(applicant -> applicant.joinStudyGroup(this));
-    this.addCourse(this.members);
+    this.refreshGroupCourses();
   }
 
-  protected void addCourse(List<StudyApplicant> members) {
+  public void refreshGroupCourses() {
+    this.refreshGroupCourses(this.members);
+  }
+
+  protected void refreshGroupCourses(List<StudyApplicant> members) {
     this.courses.clear();
     this.findCommonCourses(members).forEach(course -> new GroupCourse(course, this));
   }
