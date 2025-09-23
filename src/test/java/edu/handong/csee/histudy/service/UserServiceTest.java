@@ -445,4 +445,35 @@ public class UserServiceTest {
     assertThatThrownBy(() -> userService.getAppliedUsers())
         .isInstanceOf(NoCurrentTermFoundException.class);
   }
+
+  @Test
+  void 존재하지않는새그룹으로이동시_새그룹생성() {
+    // Given
+    AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
+    academicTermRepository.save(term);
+
+    Course course = new Course("Introduction to Test", "ECE2025", "Bar", term);
+    courseRepository.saveAll(List.of(course));
+
+    User student = TestDataFactory.createUser("1", "22500101", "user1@test.com", "Foo", Role.USER);
+    userRepository.save(student);
+
+    userService.apply(List.of(), List.of(1L), "user1@test.com");
+
+    UserDto.UserEdit editForm =
+        UserDto.UserEdit.builder()
+            .id(student.getUserId())
+            .team(999) // 존재하지 않는 그룹 태그
+            .build();
+
+    // When
+    userService.editUser(editForm);
+
+    // Then
+    StudyGroup newGroup = studyGroupRepository.findByTagAndAcademicTerm(999, term).orElse(null);
+    assertThat(newGroup).isNotNull();
+    assertThat(newGroup.getTag()).isEqualTo(999);
+    assertThat(newGroup.getMembers()).hasSize(1);
+    assertThat(newGroup.getMembers().get(0).getUser()).isEqualTo(student);
+  }
 }

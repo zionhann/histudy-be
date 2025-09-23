@@ -211,20 +211,11 @@ public class UserService {
     Optional.ofNullable(form.getTeam())
         .ifPresentOrElse(
             tag -> {
-              StudyApplicant applicant =
-                  applicantOr.orElseGet(
-                      () -> {
-                        StudyApplicant _applicant =
-                            StudyApplicant.of(currentTerm, user, List.of(), List.of());
-                        return studyApplicantRepository.save(_applicant);
-                      });
+              StudyApplicant applicant = applicantOr.orElseThrow(NoStudyApplicationFound::new);
               studyGroupRepository
                   .findByTagAndAcademicTerm(tag, currentTerm)
                   .ifPresentOrElse(
-                      existingGroup -> {
-                        applicant.leaveStudyGroup();
-                        existingGroup.addMember(applicant);
-                      },
+                      existingGroup -> existingGroup.addMember(applicant),
                       () -> {
                         StudyGroup newGroup = StudyGroup.of(tag, currentTerm, List.of(applicant));
                         studyGroupRepository.save(newGroup);
