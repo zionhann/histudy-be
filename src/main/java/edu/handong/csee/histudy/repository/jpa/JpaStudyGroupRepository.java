@@ -31,4 +31,8 @@ public interface JpaStudyGroupRepository extends JpaRepository<StudyGroup, Long>
       @Param("user") User user, @Param("currentTerm") AcademicTerm currentTerm);
 
   long countByAcademicTerm(AcademicTerm academicTerm);
+
+  @Query(
+      "select s from StudyGroup s " + "where s.academicTerm = :academicTerm and s.members is empty")
+  List<StudyGroup> findAllEmpty(@Param("academicTerm") AcademicTerm academicTerm);
 }

@@ -73,4 +73,12 @@ public class FakeStudyGroupRepository implements StudyGroupRepository {
   public long countByAcademicTerm(AcademicTerm academicTerm) {
     return store.stream().filter(e -> e.getAcademicTerm().equals(academicTerm)).count();
   }
+
+  @Override
+  public List<StudyGroup> findAllEmptyByAcademicTerm(AcademicTerm academicTerm) {
+    return store.stream()
+        .filter(e -> e.getAcademicTerm().equals(academicTerm))
+        .filter(e -> e.getMembers().isEmpty())
+        .toList();
+  }
 }

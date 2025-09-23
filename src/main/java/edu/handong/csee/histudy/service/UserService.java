@@ -208,6 +208,7 @@ public class UserService {
         studyApplicantRepository.findByUserAndTerm(user, currentTerm);
 
     user.edit(form);
+
     Optional.ofNullable(form.getTeam())
         .ifPresentOrElse(
             tag -> {
@@ -221,23 +222,18 @@ public class UserService {
                         studyGroupRepository.save(newGroup);
                       });
             },
-            () ->
-                applicantOr.ifPresent(
-                    applicant ->
-                        Optional.ofNullable(applicant.getStudyGroup())
-                            .ifPresent(
-                                studyGroup -> {
-                                  applicant.leaveStudyGroup();
+            () -> applicantOr.ifPresent(StudyApplicant::leaveStudyGroup));
 
-                                  if (studyGroup.getMembers().isEmpty()) {
-                                    /*
-                                     TODO: Need to check there are associated reports
-                                     Currently deleting a group with no members but with reports
-                                     will cause FK constraint violation
-                                    */
-                                    studyGroupRepository.deleteById(studyGroup.getStudyGroupId());
-                                  }
-                                })));
+    studyGroupRepository
+        .findAllEmptyByAcademicTerm(currentTerm)
+        .forEach(
+            group ->
+                /*
+                 TODO: Need to check there are associated reports
+                 Currently deleting a group with no members but with reports
+                 will cause FK constraint violation
+                */
+                studyGroupRepository.deleteById(group.getStudyGroupId()));
   }
 
   public List<UserDto.UserInfo> getAppliedWithoutGroup() {

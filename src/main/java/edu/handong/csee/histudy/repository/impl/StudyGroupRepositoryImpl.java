@@ -64,4 +64,9 @@ public class StudyGroupRepositoryImpl implements StudyGroupRepository {
   public long countByAcademicTerm(AcademicTerm academicTerm) {
     return repository.countByAcademicTerm(academicTerm);
   }
+
+  @Override
+  public List<StudyGroup> findAllEmptyByAcademicTerm(AcademicTerm academicTerm) {
+    return repository.findAllEmpty(academicTerm);
+  }
 }

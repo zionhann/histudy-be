@@ -476,4 +476,145 @@ public class UserServiceTest {
     assertThat(newGroup.getMembers()).hasSize(1);
     assertThat(newGroup.getMembers().get(0).getUser()).isEqualTo(student);
   }
+
+  @Test
+  void 기존그룹에서_다른그룹으로이동시_빈그룹삭제() {
+    // Given
+    AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
+    academicTermRepository.save(term);
+
+    Course course = new Course("Introduction to Test", "ECE2025", "Bar", term);
+    courseRepository.saveAll(List.of(course));
+
+    User student1 =
+        TestDataFactory.createUser("1", "22500101", "user1@test.com", "Alice", Role.USER);
+    User student2 = TestDataFactory.createUser("2", "22500102", "user2@test.com", "Bob", Role.USER);
+    userRepository.save(student1);
+    userRepository.save(student2);
+
+    StudyApplicant applicant1 = StudyApplicant.of(term, student1, List.of(), List.of(course));
+    StudyApplicant applicant2 = StudyApplicant.of(term, student2, List.of(), List.of(course));
+    studyApplicantRepository.save(applicant1);
+    studyApplicantRepository.save(applicant2);
+
+    // 기존 그룹들 생성
+    StudyGroup group1 = StudyGroup.of(1, term, List.of(applicant1));
+    StudyGroup group2 = StudyGroup.of(2, term, List.of(applicant2));
+    studyGroupRepository.save(group1);
+    studyGroupRepository.save(group2);
+
+    UserDto.UserEdit editForm =
+        UserDto.UserEdit.builder()
+            .id(student1.getUserId())
+            .team(2) // Alice를 Bob의 그룹으로 이동
+            .build();
+
+    // When
+    userService.editUser(editForm);
+
+    // Then
+    // Group1은 비어있으므로 삭제되어야 함
+    assertThat(studyGroupRepository.findByTagAndAcademicTerm(1, term)).isEmpty();
+
+    // Group2는 Alice와 Bob이 모두 있어야 함
+    StudyGroup group2After = studyGroupRepository.findByTagAndAcademicTerm(2, term).orElse(null);
+    assertThat(group2After).isNotNull();
+    assertThat(group2After.getMembers()).hasSize(2);
+    assertThat(group2After.getMembers().stream().map(StudyApplicant::getUser))
+        .containsExactlyInAnyOrder(student1, student2);
+  }
+
+  @Test
+  void 그룹해체시_빈그룹삭제() {
+    // Given
+    AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
+    academicTermRepository.save(term);
+
+    Course course = new Course("Introduction to Test", "ECE2025", "Bar", term);
+    courseRepository.saveAll(List.of(course));
+
+    User student =
+        TestDataFactory.createUser("1", "22500101", "user1@test.com", "Alice", Role.USER);
+    userRepository.save(student);
+
+    StudyApplicant applicant = StudyApplicant.of(term, student, List.of(), List.of(course));
+    studyApplicantRepository.save(applicant);
+
+    StudyGroup group = StudyGroup.of(1, term, List.of(applicant));
+    studyGroupRepository.save(group);
+
+    UserDto.UserEdit editForm =
+        UserDto.UserEdit.builder()
+            .id(student.getUserId())
+            .team(null) // 그룹에서 나가기
+            .build();
+
+    // When
+    userService.editUser(editForm);
+
+    // Then
+    // 그룹이 비어있으므로 삭제되어야 함
+    assertThat(studyGroupRepository.findByTagAndAcademicTerm(1, term)).isEmpty();
+
+    // 사용자는 그룹이 없어야 함
+    Optional<StudyApplicant> applicantAfter =
+        studyApplicantRepository.findByUserAndTerm(student, term);
+    assertThat(applicantAfter).isPresent();
+    assertThat(applicantAfter.get().hasStudyGroup()).isFalse();
+  }
+
+  @Test
+  void 여러명그룹에서_한명이동시_원래그룹유지() {
+    // Given
+    AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
+    academicTermRepository.save(term);
+
+    Course course = new Course("Introduction to Test", "ECE2025", "Bar", term);
+    courseRepository.saveAll(List.of(course));
+
+    User student1 =
+        TestDataFactory.createUser("1", "22500101", "user1@test.com", "Alice", Role.USER);
+    User student2 = TestDataFactory.createUser("2", "22500102", "user2@test.com", "Bob", Role.USER);
+    User student3 =
+        TestDataFactory.createUser("3", "22500103", "user3@test.com", "Charlie", Role.USER);
+    userRepository.save(student1);
+    userRepository.save(student2);
+    userRepository.save(student3);
+
+    StudyApplicant applicant1 = StudyApplicant.of(term, student1, List.of(), List.of(course));
+    StudyApplicant applicant2 = StudyApplicant.of(term, student2, List.of(), List.of(course));
+    StudyApplicant applicant3 = StudyApplicant.of(term, student3, List.of(), List.of(course));
+    studyApplicantRepository.save(applicant1);
+    studyApplicantRepository.save(applicant2);
+    studyApplicantRepository.save(applicant3);
+
+    // Alice와 Bob이 있는 그룹1, Charlie 혼자 있는 그룹2
+    StudyGroup group1 = StudyGroup.of(1, term, List.of(applicant1, applicant2));
+    StudyGroup group2 = StudyGroup.of(2, term, List.of(applicant3));
+    studyGroupRepository.save(group1);
+    studyGroupRepository.save(group2);
+
+    UserDto.UserEdit editForm =
+        UserDto.UserEdit.builder()
+            .id(student1.getUserId())
+            .team(2) // Alice를 Charlie의 그룹으로 이동
+            .build();
+
+    // When
+    userService.editUser(editForm);
+
+    // Then
+    // Group1은 Bob만 남아있으므로 유지되어야 함
+    StudyGroup group1After = studyGroupRepository.findByTagAndAcademicTerm(1, term).orElse(null);
+    assertThat(group1After).isNotNull();
+    assertThat(group1After.getMembers()).hasSize(1);
+    assertThat(group1After.getMembers().get(0).getUser()).isEqualTo(student2);
+
+    // Group2는 Alice와 Charlie가 있어야 함
+    StudyGroup group2After = studyGroupRepository.findByTagAndAcademicTerm(2, term).orElse(null);
+    assertThat(group2After).isNotNull();
+    assertThat(group2After.getMembers()).hasSize(2);
+    assertThat(group2After.getMembers().stream().map(StudyApplicant::getUser))
+        .containsExactlyInAnyOrder(student1, student3);
+  }
 }
