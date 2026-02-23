@@ -75,7 +75,10 @@ public class FakeUserRepository implements UserRepository {
 
   @Override
   public User save(User user) {
-    ReflectionTestUtils.setField(user, "userId", sequence++);
+    if (user.getUserId() == null) {
+      ReflectionTestUtils.setField(user, "userId", sequence++);
+    }
+    store.removeIf(existing -> existing.getUserId().equals(user.getUserId()));
     store.add(user);
     return user;
   }

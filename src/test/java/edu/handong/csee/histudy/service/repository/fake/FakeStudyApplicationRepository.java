@@ -43,12 +43,15 @@ public class FakeStudyApplicationRepository implements StudyApplicantRepository 
 
   @Override
   public List<StudyApplicant> findAllByStudyGroup(StudyGroup group) {
-    return store.stream().filter(e -> e.getStudyGroup().equals(group)).toList();
+    return store.stream().filter(e -> group.equals(e.getStudyGroup())).toList();
   }
 
   @Override
   public StudyApplicant save(StudyApplicant entity) {
-    ReflectionTestUtils.setField(entity, "studyApplicantId", sequence++);
+    if (entity.getStudyApplicantId() == null) {
+      ReflectionTestUtils.setField(entity, "studyApplicantId", sequence++);
+    }
+    store.removeIf(existing -> existing.getStudyApplicantId().equals(entity.getStudyApplicantId()));
     store.add(entity);
     return entity;
   }
