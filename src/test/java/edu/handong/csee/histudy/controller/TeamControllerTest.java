@@ -1,5 +1,7 @@
 package edu.handong.csee.histudy.controller;
 
+import static edu.handong.csee.histudy.support.AuthClaimsFactory.memberClaims;
+import static edu.handong.csee.histudy.support.AuthClaimsFactory.userClaims;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -7,7 +9,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.handong.csee.histudy.controller.form.ReportForm;
-import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.dto.CourseDto;
 import edu.handong.csee.histudy.dto.ReportDto;
 import edu.handong.csee.histudy.dto.UserDto;
@@ -82,9 +83,7 @@ class TeamControllerTest {
 
   @Test
   void 그룹원이_스터디보고서생성시_성공() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("member@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.MEMBER.name());
+    Claims claims = memberClaims("member@test.com");
 
     ReportForm form =
         ReportForm.builder()
@@ -109,9 +108,7 @@ class TeamControllerTest {
 
   @Test
   void 그룹원이_보고서목록조회시_성공() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("member@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.MEMBER.name());
+    Claims claims = memberClaims("member@test.com");
 
     List<ReportDto.ReportInfo> reports = List.of();
     when(reportService.getReports(anyString())).thenReturn(reports);
@@ -124,9 +121,7 @@ class TeamControllerTest {
 
   @Test
   void 그룹원이_특정보고서조회시_성공() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("member@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.MEMBER.name());
+    Claims claims = memberClaims("member@test.com");
 
     ReportDto.ReportInfo reportInfo = mock(ReportDto.ReportInfo.class);
     when(reportService.getReport(anyLong())).thenReturn(Optional.of(reportInfo));
@@ -139,9 +134,7 @@ class TeamControllerTest {
 
   @Test
   void 그룹원이_없는보고서조회시_실패() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("member@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.MEMBER.name());
+    Claims claims = memberClaims("member@test.com");
 
     when(reportService.getReport(anyLong())).thenReturn(Optional.empty());
 
@@ -152,9 +145,7 @@ class TeamControllerTest {
 
   @Test
   void 그룹원이_보고서수정시_성공() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("member@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.MEMBER.name());
+    Claims claims = memberClaims("member@test.com");
 
     ReportForm form =
         ReportForm.builder()
@@ -177,9 +168,7 @@ class TeamControllerTest {
 
   @Test
   void 그룹원이_없는보고서수정시_실패() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("member@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.MEMBER.name());
+    Claims claims = memberClaims("member@test.com");
 
     ReportForm form = ReportForm.builder().build();
     when(reportService.updateReport(anyLong(), any(ReportForm.class))).thenReturn(false);
@@ -195,9 +184,7 @@ class TeamControllerTest {
 
   @Test
   void 그룹원이_보고서삭제시_성공() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("member@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.MEMBER.name());
+    Claims claims = memberClaims("member@test.com");
 
     when(reportService.deleteReport(anyLong())).thenReturn(true);
 
@@ -208,9 +195,7 @@ class TeamControllerTest {
 
   @Test
   void 그룹원이_없는보고서삭제시_실패() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("member@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.MEMBER.name());
+    Claims claims = memberClaims("member@test.com");
 
     when(reportService.deleteReport(anyLong())).thenReturn(false);
 
@@ -221,9 +206,7 @@ class TeamControllerTest {
 
   @Test
   void 그룹원이_선택강의목록조회시_성공() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("member@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.MEMBER.name());
+    Claims claims = memberClaims("member@test.com");
 
     List<CourseDto.CourseInfo> courses = List.of();
     when(courseService.getTeamCourses(anyString())).thenReturn(courses);
@@ -236,9 +219,7 @@ class TeamControllerTest {
 
   @Test
   void 그룹원이_팀원목록조회시_성공() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("member@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.MEMBER.name());
+    Claims claims = memberClaims("member@test.com");
 
     List<UserDto.UserMeWithMasking> users = List.of();
     when(teamService.getTeamUsers(anyString())).thenReturn(users);
@@ -251,9 +232,7 @@ class TeamControllerTest {
 
   @Test
   void 그룹원이_보고서이미지업로드시_성공() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("member@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.MEMBER.name());
+    Claims claims = memberClaims("member@test.com");
 
     MockMultipartFile image =
         new MockMultipartFile("image", "test.jpg", "image/jpeg", "test image content".getBytes());
@@ -270,9 +249,7 @@ class TeamControllerTest {
 
   @Test
   void 그룹원이_특정보고서이미지업로드시_성공() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("member@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.MEMBER.name());
+    Claims claims = memberClaims("member@test.com");
 
     MockMultipartFile image =
         new MockMultipartFile("image", "test.jpg", "image/jpeg", "test image content".getBytes());
@@ -289,9 +266,7 @@ class TeamControllerTest {
 
   @Test
   void 권한없는사용자가_보고서작성시_실패() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("user@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.USER.name());
+    Claims claims = userClaims("user@test.com");
 
     ReportForm form = ReportForm.builder().build();
 

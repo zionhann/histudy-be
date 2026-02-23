@@ -1,5 +1,7 @@
 package edu.handong.csee.histudy.controller;
 
+import static edu.handong.csee.histudy.support.AuthClaimsFactory.claims;
+import static edu.handong.csee.histudy.support.AuthClaimsFactory.userClaims;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -76,8 +78,7 @@ class UserControllerTest {
   @Test
   void 사용자가_유저검색시_성공_V1() throws Exception {
     String token = "Bearer access-token";
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("user@test.com");
+    Claims claims = userClaims("user@test.com");
 
     User user = mock(User.class);
     when(user.getEmail()).thenReturn("friend@test.com");
@@ -98,8 +99,7 @@ class UserControllerTest {
   @Test
   void 사용자가_유저검색시_성공_V2() throws Exception {
     String token = "Bearer access-token";
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("user@test.com");
+    Claims claims = userClaims("user@test.com");
 
     User user = mock(User.class);
     when(user.getEmail()).thenReturn("friend@test.com");
@@ -119,9 +119,7 @@ class UserControllerTest {
 
   @Test
   void 사용자가_내정보조회시_성공() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("user@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.USER.name());
+    Claims claims = userClaims("user@test.com");
 
     UserDto.UserMe userMe = mock(UserDto.UserMe.class);
     when(userService.getUserMe(any(Optional.class))).thenReturn(userMe);
@@ -134,9 +132,7 @@ class UserControllerTest {
 
   @Test
   void 사용자가_신청정보조회시_성공_V1() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("user@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.USER.name());
+    Claims claims = userClaims("user@test.com");
 
     StudyApplicant applicant = mock(StudyApplicant.class);
     when(applicant.getPartnerRequests()).thenReturn(List.of());
@@ -151,10 +147,8 @@ class UserControllerTest {
   }
 
   @Test
-  void 사용자가_없는신청정보조회시_실패_V1() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("user@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.USER.name());
+  void 사용자가_신청정보없어도_조회성공_V1() throws Exception {
+    Claims claims = userClaims("user@test.com");
 
     when(userService.getUserInfo(anyString())).thenReturn(Optional.empty());
 
@@ -166,9 +160,7 @@ class UserControllerTest {
 
   @Test
   void 사용자가_신청정보조회시_성공_V2() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("user@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.USER.name());
+    Claims claims = userClaims("user@test.com");
 
     StudyApplicant applicant = mock(StudyApplicant.class);
     when(applicant.getPartnerRequests()).thenReturn(List.of());
@@ -183,10 +175,8 @@ class UserControllerTest {
   }
 
   @Test
-  void 사용자가_없는신청정보조회시_실패_V2() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("user@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.USER.name());
+  void 사용자가_신청정보없어도_조회성공_V2() throws Exception {
+    Claims claims = userClaims("user@test.com");
 
     when(userService.getUserInfo(anyString())).thenReturn(Optional.empty());
 
@@ -198,8 +188,7 @@ class UserControllerTest {
 
   @Test
   void 권한없는사용자가_접근시_실패() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("user@test.com");
+    Claims claims = claims("user@test.com", Role.USER);
     when(claims.get("rol", String.class)).thenReturn("INVALID_ROLE");
 
     mockMvc
@@ -210,8 +199,7 @@ class UserControllerTest {
   @Test
   void 사용자가_키워드없이유저검색시_성공() throws Exception {
     String token = "Bearer access-token";
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("user@test.com");
+    Claims claims = userClaims("user@test.com");
 
     when(jwtService.extractToken(any(Optional.class))).thenReturn("access-token");
     when(jwtService.validate(anyString())).thenReturn(claims);
