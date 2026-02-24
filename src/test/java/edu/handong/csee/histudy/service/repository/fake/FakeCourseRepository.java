@@ -28,8 +28,14 @@ public class FakeCourseRepository implements CourseRepository {
 
   @Override
   public List<Course> saveAll(List<Course> entities) {
-    entities.forEach(course -> ReflectionTestUtils.setField(course, "courseId", sequence++));
-    store.addAll(entities);
+    entities.forEach(
+        course -> {
+          if (course.getCourseId() == null) {
+            ReflectionTestUtils.setField(course, "courseId", sequence++);
+          }
+          store.removeIf(existing -> existing.getCourseId().equals(course.getCourseId()));
+          store.add(course);
+        });
     return entities;
   }
 

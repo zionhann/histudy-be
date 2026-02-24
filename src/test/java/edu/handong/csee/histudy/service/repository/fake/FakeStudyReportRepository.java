@@ -36,8 +36,11 @@ public class FakeStudyReportRepository implements StudyReportRepository {
 
   @Override
   public StudyReport save(StudyReport report) {
-    ReflectionTestUtils.setField(report, "studyReportId", sequence++);
+    if (report.getStudyReportId() == null) {
+      ReflectionTestUtils.setField(report, "studyReportId", sequence++);
+    }
     ReflectionTestUtils.setField(report, "lastModifiedDate", LocalDateTime.now());
+    store.removeIf(existing -> existing.getStudyReportId().equals(report.getStudyReportId()));
     store.add(report);
     return report;
   }

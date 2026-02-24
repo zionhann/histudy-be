@@ -52,7 +52,10 @@ public class FakeStudyGroupRepository implements StudyGroupRepository {
 
   @Override
   public StudyGroup save(StudyGroup entity) {
-    ReflectionTestUtils.setField(entity, "studyGroupId", sequence++);
+    if (entity.getStudyGroupId() == null) {
+      ReflectionTestUtils.setField(entity, "studyGroupId", sequence++);
+    }
+    store.removeIf(existing -> existing.getStudyGroupId().equals(entity.getStudyGroupId()));
     store.add(entity);
     return entity;
   }
