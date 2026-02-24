@@ -50,6 +50,9 @@ tasks.named('test') {
 }
 
 tasks.register('perfTest', Test) {
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    shouldRunAfter('test')
     useJUnitPlatform {
         includeTags 'perf'
     }

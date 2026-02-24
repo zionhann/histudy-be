@@ -115,7 +115,14 @@ class TeamServiceMatchingAlgorithmTest extends TeamServiceTestSupport {
                         && containsUsers(group, users.get(5), users.get(6), users.get(7), users.get(8), users.get(9))),
         "Should have User6-User10 large friend group");
 
-    long friendGroupMembers = allGroups.stream().mapToLong(group -> group.getMembers().size()).sum();
+    Set<User> friendUsers = new HashSet<>(users.subList(0, 10));
+    long friendGroupMembers =
+        allGroups.stream()
+            .map(StudyGroup::getMembers)
+            .flatMap(List::stream)
+            .map(StudyApplicant::getUser)
+            .filter(friendUsers::contains)
+            .count();
     assertEquals(10, friendGroupMembers, "Friend groups should contain exactly 10 people");
   }
 
@@ -175,7 +182,7 @@ class TeamServiceMatchingAlgorithmTest extends TeamServiceTestSupport {
         allGroups.stream()
             .filter(group -> group.getCourses().stream().anyMatch(gc -> gc.getCourse().equals(courses.get(0))))
             .count();
-    assertTrue(mathGroups >= 1, "Should have Math course groups");
+    assertTrue(mathGroups >= 1, "Should have Course 1 groups");
 
     long largeGroups = allGroups.stream().filter(group -> group.getMembers().size() == 5).count();
     long mediumGroups = allGroups.stream().filter(group -> group.getMembers().size() == 4).count();

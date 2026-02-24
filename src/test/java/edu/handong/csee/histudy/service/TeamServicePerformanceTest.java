@@ -315,7 +315,7 @@ public class TeamServicePerformanceTest {
     String[] courseNames = {
       "Mathematics", "Physics", "Chemistry", "Computer Science", "Biology",
       "History", "Literature", "Psychology", "Economics", "Philosophy",
-      "Engineering", "Statistics", "Philosophy", "Art", "Music"
+      "Engineering", "Statistics", "Sociology", "Art", "Music"
     };
 
     for (int i = 0; i < 15; i++) {
@@ -418,7 +418,8 @@ public class TeamServicePerformanceTest {
     System.out.println("   📊 생성된 총 그룹 수: " + allGroups.size());
     System.out.println("   👥 매칭된 학생 수: " + totalGroupMembers + "/500명");
     System.out.println("   📈 매칭률: " + String.format("%.1f%%", (totalGroupMembers * 100.0 / 500)));
-    System.out.println("   ⚡ 처리량: " + String.format("%.1f", 500.0 * 1000 / executionTimeMs) + " 학생/초");
+    double throughput = executionTimeMs > 0 ? 500.0 * 1000 / executionTimeMs : 0.0;
+    System.out.println("   ⚡ 처리량: " + String.format("%.1f", throughput) + " 학생/초");
 
     // Performance assertions for large scale
     assertThat(executionTimeMs).isGreaterThanOrEqualTo(0);

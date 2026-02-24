@@ -17,8 +17,6 @@ import edu.handong.csee.histudy.service.repository.fake.FakeStudyReportRepositor
 import edu.handong.csee.histudy.service.repository.fake.FakeUserRepository;
 import edu.handong.csee.histudy.util.ImagePathMapper;
 import java.util.Arrays;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -56,8 +54,27 @@ abstract class TeamServiceTestSupport {
   }
 
   protected boolean containsUsers(StudyGroup group, User... expectedUsers) {
-    Set<User> groupUsers =
-        group.getMembers().stream().map(StudyApplicant::getUser).collect(Collectors.toSet());
-    return Arrays.stream(expectedUsers).allMatch(groupUsers::contains);
+    return Arrays.stream(expectedUsers)
+        .allMatch(
+            expected ->
+                group.getMembers().stream()
+                    .map(StudyApplicant::getUser)
+                    .anyMatch(actual -> isSameUser(actual, expected)));
+  }
+
+  private boolean isSameUser(User actual, User expected) {
+    if (actual.getUserId() != null && expected.getUserId() != null) {
+      return actual.getUserId().equals(expected.getUserId());
+    }
+    if (actual.getSub() != null && expected.getSub() != null) {
+      return actual.getSub().equals(expected.getSub());
+    }
+    if (actual.getEmail() != null && expected.getEmail() != null) {
+      return actual.getEmail().equals(expected.getEmail());
+    }
+    if (actual.getSid() != null && expected.getSid() != null) {
+      return actual.getSid().equals(expected.getSid());
+    }
+    return actual == expected;
   }
 }

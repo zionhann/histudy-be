@@ -28,4 +28,11 @@ public final class AuthClaimsFactory {
     when(claims.get("rol", String.class)).thenReturn(role.name());
     return claims;
   }
+
+  public static Claims invalidRoleClaims(String email) {
+    Claims claims = mock(Claims.class);
+    when(claims.getSubject()).thenReturn(email);
+    when(claims.get("rol", String.class)).thenReturn("INVALID_ROLE");
+    return claims;
+  }
 }

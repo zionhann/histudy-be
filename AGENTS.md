@@ -20,10 +20,11 @@
 
 ## Build, Test, and Development Commands
 - `./gradlew bootRun`: run the API server locally (default `http://localhost:8080`).
-- `./gradlew clean test`: run all unit/integration tests on JUnit Platform.
+- `./gradlew clean test`: run all unit/integration tests on JUnit Platform (excludes `perf`-tagged tests).
+- `./gradlew perfTest`: run performance tests tagged with `perf`.
 - `./gradlew jacocoTestReport`: generate test coverage HTML report in `build/reports/jacoco/test/html/index.html`.
 - `./gradlew build`: compile, test, and package the application.
-- `./gradlew test --tests "*TeamServiceTest"`: run a focused test class during development.
+- `./gradlew test --tests "*TeamServiceMatchingAlgorithmTest"`: run a focused test class during development.
 
 ## Coding Style & Naming Conventions
 - Target Java 17 and Spring Boot 3.x.

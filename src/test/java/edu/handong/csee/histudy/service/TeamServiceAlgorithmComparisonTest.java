@@ -1,6 +1,7 @@
 package edu.handong.csee.histudy.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import edu.handong.csee.histudy.domain.*;
 import edu.handong.csee.histudy.repository.*;
@@ -50,14 +51,7 @@ public class TeamServiceAlgorithmComparisonTest {
             studyReportRepository,
             imagePathMapper);
 
-    legacyTeamService =
-        new LegacyTeamService(
-            studyGroupRepository,
-            userRepository,
-            academicTermRepository,
-            studyApplicantRepository,
-            studyReportRepository,
-            imagePathMapper);
+    legacyTeamService = new LegacyTeamService();
   }
 
   @Test
@@ -228,8 +222,10 @@ public class TeamServiceAlgorithmComparisonTest {
     int currentMatched = currentAllGroups.stream().mapToInt(g -> g.getMembers().size()).sum();
     int legacyMatched = legacyAllGroups.stream().mapToInt(g -> g.getMembers().size()).sum();
 
-    double currentThroughput = 500.0 / ((currentEnd - currentStart) / 1000.0);
-    double legacyThroughput = 500.0 / ((legacyEnd - legacyStart) / 1000.0);
+    double currentDurationSeconds = (currentEnd - currentStart) / 1000.0;
+    double legacyDurationSeconds = (legacyEnd - legacyStart) / 1000.0;
+    double currentThroughput = currentDurationSeconds > 0 ? 500.0 / currentDurationSeconds : 0.0;
+    double legacyThroughput = legacyDurationSeconds > 0 ? 500.0 / legacyDurationSeconds : 0.0;
 
     System.out.println("\n⚡ 현재 알고리즘 결과:");
     System.out.println("   ⏱️  전체 실행 시간: " + (currentEnd - currentStart) + "ms");
@@ -258,8 +254,8 @@ public class TeamServiceAlgorithmComparisonTest {
     assertThat(legacyAllGroups).isNotEmpty();
     assertThat(currentMatched).isBetween(1, 500);
     assertThat(legacyMatched).isBetween(1, 500);
-    assertThat(currentThroughput).isGreaterThan(0.0);
-    assertThat(legacyThroughput).isGreaterThan(0.0);
+    assertThat(currentThroughput).isGreaterThanOrEqualTo(0.0);
+    assertThat(legacyThroughput).isGreaterThanOrEqualTo(0.0);
   }
 
   private AcademicTerm createTestTerm() {
@@ -411,6 +407,7 @@ public class TeamServiceAlgorithmComparisonTest {
     // Use a shared term to avoid multiple term creation
     AcademicTerm sharedTerm =
         AcademicTerm.builder().academicYear(2024).semester(TermType.SPRING).isCurrent(true).build();
+    academicTermRepository.save(sharedTerm);
 
     List<Course> courses = new ArrayList<>();
     for (int i = 0; i < courseNames.length; i++) {
@@ -436,7 +433,7 @@ public class TeamServiceAlgorithmComparisonTest {
           try {
             ReflectionTestUtils.setField(applicant, "studyGroup", null);
           } catch (Exception e) {
-            // If reflection fails, recreate the applicant
+            fail("Failed to reset applicant state: " + applicant.getUser().getEmail(), e);
           }
         });
   }

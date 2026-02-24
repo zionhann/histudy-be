@@ -1,13 +1,6 @@
 package edu.handong.csee.histudy.service;
 
 import edu.handong.csee.histudy.domain.*;
-import edu.handong.csee.histudy.dto.*;
-import edu.handong.csee.histudy.exception.NoCurrentTermFoundException;
-import edu.handong.csee.histudy.exception.NoStudyApplicationFound;
-import edu.handong.csee.histudy.exception.UserNotFoundException;
-import edu.handong.csee.histudy.repository.*;
-import edu.handong.csee.histudy.repository.StudyApplicantRepository;
-import edu.handong.csee.histudy.util.ImagePathMapper;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -17,27 +10,7 @@ import java.util.stream.Collectors;
  * Used for performance comparison testing
  */
 public class LegacyTeamService {
-  private final StudyGroupRepository studyGroupRepository;
-  private final UserRepository userRepository;
-  private final AcademicTermRepository academicTermRepository;
-  private final StudyApplicantRepository studyApplicantRepository;
-  private final StudyReportRepository studyReportRepository;
-  private final ImagePathMapper imagePathMapper;
-
-  public LegacyTeamService(
-      StudyGroupRepository studyGroupRepository,
-      UserRepository userRepository,
-      AcademicTermRepository academicTermRepository,
-      StudyApplicantRepository studyApplicantRepository,
-      StudyReportRepository studyReportRepository,
-      ImagePathMapper imagePathMapper) {
-    this.studyGroupRepository = studyGroupRepository;
-    this.userRepository = userRepository;
-    this.academicTermRepository = academicTermRepository;
-    this.studyApplicantRepository = studyApplicantRepository;
-    this.studyReportRepository = studyReportRepository;
-    this.imagePathMapper = imagePathMapper;
-  }
+  public LegacyTeamService() {}
 
   public Set<StudyGroup> matchFriendFirst(
       List<StudyApplicant> applicants, AtomicInteger tag, AcademicTerm current) {
@@ -50,6 +23,7 @@ public class LegacyTeamService {
         .map(StudyApplicant::getPartnerRequests)
         .flatMap(Collection::stream)
         .filter(StudyPartnerRequest::isAccepted)
+        // Keep original legacy behavior for fair algorithm comparison.
         .map(
             partnerRequest -> {
               StudyApplicant receiver = applicants.stream()

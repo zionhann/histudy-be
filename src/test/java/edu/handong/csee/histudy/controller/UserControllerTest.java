@@ -1,6 +1,6 @@
 package edu.handong.csee.histudy.controller;
 
-import static edu.handong.csee.histudy.support.AuthClaimsFactory.claims;
+import static edu.handong.csee.histudy.support.AuthClaimsFactory.invalidRoleClaims;
 import static edu.handong.csee.histudy.support.AuthClaimsFactory.userClaims;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -188,8 +188,7 @@ class UserControllerTest {
 
   @Test
   void 권한없는사용자가_접근시_실패() throws Exception {
-    Claims claims = claims("user@test.com", Role.USER);
-    when(claims.get("rol", String.class)).thenReturn("INVALID_ROLE");
+    Claims claims = invalidRoleClaims("user@test.com");
 
     mockMvc
         .perform(get("/api/users/me").requestAttr("claims", claims))
