@@ -36,6 +36,8 @@ public class ReportServiceTest {
     StudyReportRepository studyReportRepository = new FakeStudyReportRepository();
     CourseRepository courseRepository = new FakeCourseRepository();
     ImagePathMapper imagePathMapper = new ImagePathMapper();
+    ReflectionTestUtils.setField(imagePathMapper, "origin", "http://localhost:8080");
+    ReflectionTestUtils.setField(imagePathMapper, "imageBasePath", "/images/");
 
     reportService =
         new ReportService(
@@ -302,6 +304,8 @@ public class ReportServiceTest {
     StudyReportRepository studyReportRepository = new FakeStudyReportRepository();
     CourseRepository courseRepository = new FakeCourseRepository();
     ImagePathMapper imagePathMapper = new ImagePathMapper();
+    ReflectionTestUtils.setField(imagePathMapper, "origin", "http://localhost:8080");
+    ReflectionTestUtils.setField(imagePathMapper, "imageBasePath", "/images/");
 
     User student1 = TestDataFactory.createUser("1", "22500101", "user1@test.com", "Foo", Role.USER);
     userRepository.save(student1);

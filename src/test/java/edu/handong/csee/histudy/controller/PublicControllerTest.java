@@ -6,9 +6,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import edu.handong.csee.histudy.dto.ActivityMetricsDto;
 import edu.handong.csee.histudy.dto.ActivityTerm;
+import edu.handong.csee.histudy.dto.BannerDto;
 import edu.handong.csee.histudy.dto.TeamRankDto;
 import edu.handong.csee.histudy.jwt.JwtProperties;
 import edu.handong.csee.histudy.service.ActivityMetricsService;
+import edu.handong.csee.histudy.service.BannerService;
 import edu.handong.csee.histudy.service.DiscordService;
 import edu.handong.csee.histudy.service.JwtService;
 import edu.handong.csee.histudy.service.TeamService;
@@ -27,6 +29,8 @@ class PublicControllerTest {
   @MockitoBean private TeamService teamService;
 
   @MockitoBean private ActivityMetricsService activityMetricsService;
+
+  @MockitoBean private BannerService bannerService;
 
   @MockitoBean private JwtService jwtService;
 
@@ -85,5 +89,16 @@ class PublicControllerTest {
         .andExpect(jsonPath("$.studyGroups").value(10))
         .andExpect(jsonPath("$.studyHours").value(50))
         .andExpect(jsonPath("$.reports").value(80));
+  }
+
+  @Test
+  void 공개배너목록조회시_성공() throws Exception {
+    BannerDto.PublicBannerInfo bannerInfo = mock(BannerDto.PublicBannerInfo.class);
+    when(bannerService.getPublicBanners()).thenReturn(List.of(bannerInfo));
+
+    mockMvc
+        .perform(get("/api/public/banners"))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType("application/json;charset=UTF-8"));
   }
 }

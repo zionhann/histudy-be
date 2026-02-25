@@ -49,6 +49,22 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ActivityMetricsDto'
+  /api/public/banners:
+    get:
+      security: [ ]
+      tags:
+        - 공개 API
+      summary: 홈 배너 목록 조회
+      operationId: getPublicBanners
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PublicBannerInfo'
 
   # ===================
   # Authentication APIs
@@ -490,6 +506,133 @@ paths:
   # ===================
   # Admin APIs
   # ===================
+  /api/admin/banners:
+    get:
+      tags:
+        - 관리자 API
+      summary: 배너 목록 조회
+      operationId: getAdminBanners
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminBannerInfo'
+    post:
+      tags:
+        - 관리자 API
+      summary: 배너 생성
+      operationId: createBanner
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+                - label
+                - image
+              type: object
+              properties:
+                label:
+                  type: string
+                  description: 관리자 식별용 라벨
+                redirectUrl:
+                  type: string
+                  nullable: true
+                  description: 클릭 시 이동할 URL (optional)
+                active:
+                  type: boolean
+                  description: 노출 여부 (기본 true)
+                image:
+                  type: string
+                  format: binary
+                  description: 이미지 파일 (최대 5MB)
+      responses:
+        '201':
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AdminBannerInfo'
+        '400':
+          description: 잘못된 요청(필수값 누락/파일 형식/파일 크기)
+  /api/admin/banners/{bannerId}:
+    patch:
+      tags:
+        - 관리자 API
+      summary: 배너 수정
+      operationId: updateBanner
+      parameters:
+        - name: bannerId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                label:
+                  type: string
+                  description: 관리자 식별용 라벨
+                redirectUrl:
+                  type: string
+                  nullable: true
+                active:
+                  type: boolean
+                  description: 노출 여부
+                image:
+                  type: string
+                  format: binary
+                  description: 이미지 파일 (최대 5MB)
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AdminBannerInfo'
+        '404':
+          description: 배너를 찾을 수 없습니다.
+    delete:
+      tags:
+        - 관리자 API
+      summary: 배너 삭제
+      operationId: deleteBanner
+      parameters:
+        - name: bannerId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: 배너를 찾을 수 없습니다.
+  /api/admin/banners/reorder:
+    patch:
+      tags:
+        - 관리자 API
+      summary: 배너 순서 일괄 변경
+      operationId: reorderBanners
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BannerReorderForm'
+        required: true
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: 유효하지 않은 순서 목록
   /api/admin/allUsers:
     get:
       tags:
@@ -695,6 +838,62 @@ components:
           description: List of course added to apply form
           items:
             $ref: '#/components/schemas/CourseInfo'
+    BannerReorderForm:
+      type: object
+      required:
+        - orderedIds
+      properties:
+        orderedIds:
+          type: array
+          description: 모든 배너 ID를 포함한 최종 순서 목록
+          items:
+            type: integer
+            format: int64
+    AdminBannerInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        label:
+          type: string
+          description: 관리자 식별용 라벨
+          example: Spring Enrollment Promo
+        imageUrl:
+          type: string
+          description: 배너 이미지 URL
+          example: http://localhost:8080/images/banner/spring-enrollment-promo_20260224_101010_xxx.png
+        redirectUrl:
+          type: string
+          nullable: true
+          description: 클릭 시 이동할 URL
+          example: https://example.com/promo
+        active:
+          type: boolean
+          description: 배너 노출 여부
+          example: true
+        displayOrder:
+          type: integer
+          format: int32
+          description: 표시 순서 (오름차순 노출)
+          example: 1
+    PublicBannerInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        imageUrl:
+          type: string
+          description: 배너 이미지 URL
+          example: http://localhost:8080/images/banner/spring-enrollment-promo_20260224_101010_xxx.png
+        redirectUrl:
+          type: string
+          nullable: true
+          description: 클릭 시 이동할 URL
+          example: https://example.com/promo
     CourseInfo:
       type: object
       properties:

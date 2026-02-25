@@ -54,7 +54,7 @@ public class TeamServiceTest {
     imagePathMapper = new ImagePathMapper();
 
     ReflectionTestUtils.setField(imagePathMapper, "origin", "http://localhost:8080");
-    ReflectionTestUtils.setField(imagePathMapper, "imageBasePath", "/reports/images/");
+    ReflectionTestUtils.setField(imagePathMapper, "imageBasePath", "/images/");
 
     teamService =
         new TeamService(

@@ -1,5 +1,6 @@
 package edu.handong.csee.histudy.service;
 
+import static edu.handong.csee.histudy.util.ImageDirectories.REPORTS;
 import static org.springframework.util.ResourceUtils.isUrl;
 
 import edu.handong.csee.histudy.domain.AcademicTerm;
@@ -73,8 +74,12 @@ public class ImageService {
     // e.g. 2023-2-group1-report_20230923_123456.jpg
     String pathname =
         String.format(
-            "%d-%d-group%02d-report_%s%s",
-            year, semester, studyGroup.getTag(), formattedDateTime, extension);
+            REPORTS + "%d-%d-group%02d-report_%s%s",
+            year,
+            semester,
+            studyGroup.getTag(),
+            formattedDateTime,
+            extension);
     String savedImagePath = saveImage(imageAsFormData, pathname);
 
     return imagePathMapper.getFullPath(savedImagePath);
