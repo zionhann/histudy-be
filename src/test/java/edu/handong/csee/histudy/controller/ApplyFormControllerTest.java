@@ -1,5 +1,7 @@
 package edu.handong.csee.histudy.controller;
 
+import static edu.handong.csee.histudy.support.AuthClaimsFactory.memberClaims;
+import static edu.handong.csee.histudy.support.AuthClaimsFactory.userClaims;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -10,7 +12,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.handong.csee.histudy.controller.form.ApplyForm;
 import edu.handong.csee.histudy.controller.form.ApplyFormV2;
-import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.domain.StudyApplicant;
 import edu.handong.csee.histudy.dto.ApplyFormDto;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
@@ -56,9 +57,7 @@ class ApplyFormControllerTest {
 
   @Test
   void 사용자가_스터디신청시_성공_V1() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("user@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.USER.name());
+    Claims claims = userClaims("user@test.com");
 
     ApplyForm form =
         ApplyForm.builder().friendIds(List.of("22500101")).courseIds(List.of(1L)).build();
@@ -78,9 +77,7 @@ class ApplyFormControllerTest {
 
   @Test
   void 사용자가_스터디신청시_성공_V2() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("user@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.USER.name());
+    Claims claims = userClaims("user@test.com");
 
     ApplyFormV2 form =
         ApplyFormV2.builder().friendIds(List.of(1L, 2L)).courseIds(List.of(1L, 2L)).build();
@@ -103,9 +100,7 @@ class ApplyFormControllerTest {
 
   @Test
   void 권한없는사용자가_스터디신청시_실패_V1() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("user@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.MEMBER.name());
+    Claims claims = memberClaims("user@test.com");
 
     ApplyForm form = ApplyForm.builder().friendIds(List.of()).courseIds(List.of()).build();
 
@@ -120,9 +115,7 @@ class ApplyFormControllerTest {
 
   @Test
   void 권한없는사용자가_스터디신청시_실패_V2() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("user@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.MEMBER.name());
+    Claims claims = memberClaims("user@test.com");
 
     ApplyFormV2 form = ApplyFormV2.builder().friendIds(List.of()).courseIds(List.of()).build();
 

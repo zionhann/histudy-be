@@ -51,6 +51,9 @@ public class ImagePathMapper {
   }
 
   private String extractFilename(String pathname) {
+    if (pathname == null) {
+      return null;
+    }
     if (pathname.startsWith(FIREBASE_STORAGE_PREFIX)) {
       return pathname;
     }

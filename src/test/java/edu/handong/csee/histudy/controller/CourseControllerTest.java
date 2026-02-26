@@ -1,12 +1,14 @@
 package edu.handong.csee.histudy.controller;
 
+import static edu.handong.csee.histudy.support.AuthClaimsFactory.adminClaims;
+import static edu.handong.csee.histudy.support.AuthClaimsFactory.memberClaims;
+import static edu.handong.csee.histudy.support.AuthClaimsFactory.userClaims;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.dto.CourseDto;
 import edu.handong.csee.histudy.dto.CourseIdDto;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
@@ -53,9 +55,7 @@ class CourseControllerTest {
 
   @Test
   void 관리자가_강의목록업로드시_성공() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("admin@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.ADMIN.name());
+    Claims claims = adminClaims("admin@test.com");
 
     MockMultipartFile file =
         new MockMultipartFile("file", "courses.csv", "text/csv", "course content".getBytes());
@@ -69,9 +69,7 @@ class CourseControllerTest {
 
   @Test
   void 관리자가_빈파일업로드시_실패() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("admin@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.ADMIN.name());
+    Claims claims = adminClaims("admin@test.com");
 
     MockMultipartFile file =
         new MockMultipartFile("file", "courses.csv", "text/csv", "".getBytes());
@@ -83,9 +81,7 @@ class CourseControllerTest {
 
   @Test
   void 관리자가_강의삭제시_성공() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("admin@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.ADMIN.name());
+    Claims claims = adminClaims("admin@test.com");
 
     CourseIdDto dto = mock(CourseIdDto.class);
     when(courseService.deleteCourse(any(CourseIdDto.class))).thenReturn(1);
@@ -102,9 +98,7 @@ class CourseControllerTest {
 
   @Test
   void 사용자가_강의목록전체조회시_성공() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("user@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.USER.name());
+    Claims claims = userClaims("user@test.com");
 
     List<CourseDto.CourseInfo> courses = List.of();
     when(courseService.getCurrentCourses()).thenReturn(courses);
@@ -117,9 +111,7 @@ class CourseControllerTest {
 
   @Test
   void 사용자가_강의목록검색시_성공() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("user@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.USER.name());
+    Claims claims = userClaims("user@test.com");
 
     List<CourseDto.CourseInfo> courses = List.of();
     when(courseService.search(anyString())).thenReturn(courses);
@@ -132,9 +124,7 @@ class CourseControllerTest {
 
   @Test
   void 사용자가_빈검색어로_강의목록조회시_현재강의목록_반환() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("user@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.USER.name());
+    Claims claims = userClaims("user@test.com");
 
     List<CourseDto.CourseInfo> currentCourses = List.of();
     when(courseService.getCurrentCourses()).thenReturn(currentCourses);
@@ -150,9 +140,7 @@ class CourseControllerTest {
 
   @Test
   void 사용자가_앞뒤공백포함_검색어로_강의목록조회시_트림처리후_검색() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("user@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.USER.name());
+    Claims claims = userClaims("user@test.com");
 
     List<CourseDto.CourseInfo> courses = List.of();
     when(courseService.search(anyString())).thenReturn(courses);
@@ -168,9 +156,7 @@ class CourseControllerTest {
 
   @Test
   void 권한없는사용자가_강의업로드시_실패() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("user@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.USER.name());
+    Claims claims = userClaims("user@test.com");
 
     MockMultipartFile file =
         new MockMultipartFile("file", "courses.csv", "text/csv", "course content".getBytes());
@@ -182,9 +168,7 @@ class CourseControllerTest {
 
   @Test
   void 권한없는사용자가_강의삭제시_실패() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("user@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.USER.name());
+    Claims claims = userClaims("user@test.com");
 
     CourseIdDto dto = mock(CourseIdDto.class);
 
@@ -199,9 +183,7 @@ class CourseControllerTest {
 
   @Test
   void 권한없는사용자가_강의조회시_실패() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("member@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.MEMBER.name());
+    Claims claims = memberClaims("member@test.com");
 
     mockMvc
         .perform(get("/api/courses").requestAttr("claims", claims))

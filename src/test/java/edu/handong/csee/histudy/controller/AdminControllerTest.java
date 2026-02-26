@@ -1,6 +1,8 @@
 package edu.handong.csee.histudy.controller;
 
 import static edu.handong.csee.histudy.dto.AcademicTermDto.*;
+import static edu.handong.csee.histudy.support.AuthClaimsFactory.adminClaims;
+import static edu.handong.csee.histudy.support.AuthClaimsFactory.userClaims;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -8,7 +10,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.handong.csee.histudy.controller.form.AcademicTermForm;
-import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.domain.TermType;
 import edu.handong.csee.histudy.dto.AcademicTermDto;
 import edu.handong.csee.histudy.dto.TeamDto;
@@ -65,9 +66,7 @@ class AdminControllerTest {
 
   @Test
   void 관리자가_그룹활동조회시_성공() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("admin@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.ADMIN.name());
+    Claims claims = adminClaims("admin@test.com");
 
     List<TeamDto> teams = List.of();
     when(teamService.getTeams(anyString())).thenReturn(teams);
@@ -80,9 +79,7 @@ class AdminControllerTest {
 
   @Test
   void 관리자가_그룹보고서조회시_성공() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("admin@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.ADMIN.name());
+    Claims claims = adminClaims("admin@test.com");
 
     TeamReportDto reportDto = mock(TeamReportDto.class);
     when(teamService.getTeamReports(anyLong(), anyString())).thenReturn(reportDto);
@@ -95,9 +92,7 @@ class AdminControllerTest {
 
   @Test
   void 관리자가_신청유저목록조회시_성공() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("admin@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.ADMIN.name());
+    Claims claims = adminClaims("admin@test.com");
 
     List<UserDto.UserInfo> users = List.of();
     when(userService.getAppliedUsers()).thenReturn(users);
@@ -110,9 +105,7 @@ class AdminControllerTest {
 
   @Test
   void 관리자가_그룹매칭실행시_성공() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("admin@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.ADMIN.name());
+    Claims claims = adminClaims("admin@test.com");
 
     doNothing().when(teamService).matchTeam();
 
@@ -123,9 +116,7 @@ class AdminControllerTest {
 
   @Test
   void 관리자가_미매칭유저조회시_성공() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("admin@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.ADMIN.name());
+    Claims claims = adminClaims("admin@test.com");
 
     List<UserDto.UserInfo> users = List.of();
     when(userService.getUnmatchedUsers()).thenReturn(users);
@@ -138,9 +129,7 @@ class AdminControllerTest {
 
   @Test
   void 관리자가_유저지원폼삭제시_성공() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("admin@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.ADMIN.name());
+    Claims claims = adminClaims("admin@test.com");
 
     doNothing().when(userService).deleteUserForm(anyString());
 
@@ -151,9 +140,7 @@ class AdminControllerTest {
 
   @Test
   void 관리자가_유저정보수정시_성공() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("admin@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.ADMIN.name());
+    Claims claims = adminClaims("admin@test.com");
 
     UserDto.UserEdit form = mock(UserDto.UserEdit.class);
     doNothing().when(userService).editUser(any(UserDto.UserEdit.class));
@@ -169,9 +156,7 @@ class AdminControllerTest {
 
   @Test
   void 관리자가_미배정유저목록조회시_성공() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("admin@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.ADMIN.name());
+    Claims claims = adminClaims("admin@test.com");
 
     List<UserDto.UserInfo> users = List.of();
     when(userService.getAppliedWithoutGroup()).thenReturn(users);
@@ -184,9 +169,7 @@ class AdminControllerTest {
 
   @Test
   void 일반유저가_관리자API접근시_실패() throws Exception {
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("user@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.USER.name());
+    Claims claims = userClaims("user@test.com");
 
     mockMvc
         .perform(get("/api/admin/manageGroup").requestAttr("claims", claims))
@@ -196,9 +179,7 @@ class AdminControllerTest {
   @Test
   void 관리자가_학기생성시_성공() throws Exception {
     // Given
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("admin@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.ADMIN.name());
+    Claims claims = adminClaims("admin@test.com");
 
     AcademicTermForm form = new AcademicTermForm(2025, TermType.SPRING);
     doNothing().when(academicTermService).createAcademicTerm(any(AcademicTermForm.class));
@@ -218,9 +199,7 @@ class AdminControllerTest {
   @Test
   void 비관리자가_학기생성시_실패() throws Exception {
     // Given
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("user@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.USER.name());
+    Claims claims = userClaims("user@test.com");
 
     AcademicTermForm form = new AcademicTermForm(2025, TermType.SPRING);
 
@@ -239,9 +218,7 @@ class AdminControllerTest {
   @Test
   void 관리자가_학기목록조회시_성공() throws Exception {
     // Given
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("admin@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.ADMIN.name());
+    Claims claims = adminClaims("admin@test.com");
 
     List<AcademicTermItem> termItems =
         List.of(
@@ -265,9 +242,7 @@ class AdminControllerTest {
   @Test
   void 비관리자가_학기목록조회시_실패() throws Exception {
     // Given
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("user@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.USER.name());
+    Claims claims = userClaims("user@test.com");
 
     // When & Then
     mockMvc
@@ -280,9 +255,7 @@ class AdminControllerTest {
   @Test
   void 관리자가_현재학기설정시_성공() throws Exception {
     // Given
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("admin@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.ADMIN.name());
+    Claims claims = adminClaims("admin@test.com");
 
     Long termId = 1L;
     doNothing().when(academicTermService).setCurrentTerm(termId);
@@ -299,9 +272,7 @@ class AdminControllerTest {
   @Test
   void 비관리자가_현재학기설정시_실패() throws Exception {
     // Given
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("user@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.USER.name());
+    Claims claims = userClaims("user@test.com");
 
     Long termId = 1L;
 
@@ -317,9 +288,7 @@ class AdminControllerTest {
   @Test
   void 학기생성시_잘못된_JSON형식일때_실패() throws Exception {
     // Given
-    Claims claims = mock(Claims.class);
-    when(claims.getSubject()).thenReturn("admin@test.com");
-    when(claims.get("rol", String.class)).thenReturn(Role.ADMIN.name());
+    Claims claims = adminClaims("admin@test.com");
 
     String invalidJson = "{\"year\": \"invalid\", \"term\": \"SPRING\"}";
 

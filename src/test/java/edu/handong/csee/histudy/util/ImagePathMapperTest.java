@@ -2,6 +2,7 @@ package edu.handong.csee.histudy.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,5 +39,12 @@ class ImagePathMapperTest {
     String fullPath = mapper.getFullPath("legacy-report.png");
 
     assertThat(fullPath).isEqualTo("http://localhost:8080/images/legacy-report.png");
+  }
+
+  @Test
+  void 경로목록에_null요소가_있어도_NPE가발생하지않는다() {
+    List<String> normalized = mapper.extractFilename(Arrays.asList("banner/main.png", null));
+
+    assertThat(normalized).containsExactly("banner/main.png", null);
   }
 }

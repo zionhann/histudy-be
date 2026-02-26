@@ -13,10 +13,12 @@ import edu.handong.csee.histudy.exception.MissingParameterException;
 import edu.handong.csee.histudy.repository.BannerRepository;
 import edu.handong.csee.histudy.util.ImagePathMapper;
 import edu.handong.csee.histudy.util.Utils;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,10 +27,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import javax.imageio.ImageIO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -79,6 +85,7 @@ public class BannerService {
     validateImage(image);
 
     String imagePath = saveImage(image, form.getLabel());
+    scheduleImageDeletionAfterRollback(imagePath);
     int nextOrder =
         bannerRepository.findTopByOrderByDisplayOrderDesc().map(Banner::getDisplayOrder).orElse(0)
             + 1;
@@ -116,7 +123,7 @@ public class BannerService {
   public void deleteBanner(Long bannerId) {
     Banner banner = findBanner(bannerId);
     bannerRepository.delete(banner);
-    deleteImage(banner.getImagePath());
+    scheduleImageDeletionAfterCommit(banner.getImagePath());
     normalizeDisplayOrder();
   }
 
@@ -180,6 +187,15 @@ public class BannerService {
     if (contentType == null || !contentType.startsWith("image/")) {
       throw new MissingParameterException(MESSAGE_IMAGE_ONLY);
     }
+
+    try (var inputStream = image.getInputStream()) {
+      BufferedImage decodedImage = ImageIO.read(inputStream);
+      if (decodedImage == null) {
+        throw new MissingParameterException(MESSAGE_IMAGE_ONLY);
+      }
+    } catch (IOException e) {
+      throw new MissingParameterException(MESSAGE_IMAGE_ONLY);
+    }
   }
 
   private void validateReorderPayload(List<Long> orderedIds, List<Banner> banners) {
@@ -187,13 +203,16 @@ public class BannerService {
       throw new MissingParameterException(MESSAGE_REORDER_REQUIRES_ALL);
     }
 
+    if (orderedIds.stream().anyMatch(id -> id == null)) {
+      throw new MissingParameterException(MESSAGE_REORDER_INVALID_IDS);
+    }
+
     Set<Long> deduplicated = new HashSet<>(orderedIds);
     if (deduplicated.size() != orderedIds.size()) {
       throw new MissingParameterException(MESSAGE_REORDER_DUPLICATED);
     }
 
-    Set<Long> existingIds =
-        banners.stream().map(Banner::getBannerId).collect(HashSet::new, Set::add, Set::addAll);
+    Set<Long> existingIds = banners.stream().map(Banner::getBannerId).collect(Collectors.toSet());
     if (!existingIds.equals(deduplicated)) {
       throw new MissingParameterException(MESSAGE_REORDER_INVALID_IDS);
     }
@@ -253,12 +272,19 @@ public class BannerService {
       return ".img";
     }
 
-    int extensionStart = originalFilename.lastIndexOf('.');
-    if (extensionStart < 0 || extensionStart == originalFilename.length() - 1) {
+    String normalizedFilename = originalFilename.replace("\\", "/");
+    String sanitizedFilename = normalizedFilename.substring(normalizedFilename.lastIndexOf('/') + 1);
+    int extensionStart = sanitizedFilename.lastIndexOf('.');
+    if (extensionStart < 0 || extensionStart == sanitizedFilename.length() - 1) {
       return ".img";
     }
 
-    return originalFilename.substring(extensionStart);
+    String extension = sanitizedFilename.substring(extensionStart + 1).toLowerCase(Locale.ROOT);
+    if (!extension.matches("[a-z0-9]{1,10}")) {
+      return ".img";
+    }
+
+    return "." + extension;
   }
 
   private void deleteImage(String imagePath) {
@@ -311,13 +337,75 @@ public class BannerService {
     validateImage(image);
     String oldImagePath = banner.getImagePath();
     String newImagePath = saveImage(image, banner.getLabel());
+    scheduleImageDeletionAfterRollback(newImagePath);
     banner.updateImagePath(newImagePath);
-    deleteImage(oldImagePath);
+    scheduleImageDeletionAfterCommit(oldImagePath);
     return true;
   }
 
   private File resolveStorageFile(String relativePath) {
-    return new File(imageBaseLocation + relativePath);
+    Path basePath = Path.of(imageBaseLocation).toAbsolutePath().normalize();
+    Path resolvedPath =
+        basePath.resolve(stripLeadingPathSeparator(relativePath)).normalize();
+    if (!resolvedPath.startsWith(basePath)) {
+      throw new FileTransferException();
+    }
+    return resolvedPath.toFile();
+  }
+
+  private String stripLeadingPathSeparator(String path) {
+    if (path == null) {
+      return "";
+    }
+    if (path.startsWith("/") || path.startsWith("\\")) {
+      return path.substring(1);
+    }
+    return path;
+  }
+
+  private void scheduleImageDeletionAfterCommit(String imagePath) {
+    runAfterCommit(() -> deleteImageQuietly(imagePath));
+  }
+
+  private void scheduleImageDeletionAfterRollback(String imagePath) {
+    runAfterRollback(() -> deleteImageQuietly(imagePath));
+  }
+
+  private void runAfterCommit(Runnable task) {
+    if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+      task.run();
+      return;
+    }
+    TransactionSynchronizationManager.registerSynchronization(
+        new TransactionSynchronization() {
+          @Override
+          public void afterCommit() {
+            task.run();
+          }
+        });
+  }
+
+  private void runAfterRollback(Runnable task) {
+    if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+      return;
+    }
+    TransactionSynchronizationManager.registerSynchronization(
+        new TransactionSynchronization() {
+          @Override
+          public void afterCompletion(int status) {
+            if (status == TransactionSynchronization.STATUS_ROLLED_BACK) {
+              task.run();
+            }
+          }
+        });
+  }
+
+  private void deleteImageQuietly(String imagePath) {
+    try {
+      deleteImage(imagePath);
+    } catch (RuntimeException ignored) {
+      // Intentionally ignore cleanup failures to avoid masking transaction completion.
+    }
   }
 
   private String normalizeLabelForFilename(String label) {

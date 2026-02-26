@@ -12,15 +12,19 @@ import edu.handong.csee.histudy.dto.BannerDto;
 import edu.handong.csee.histudy.exception.MissingParameterException;
 import edu.handong.csee.histudy.repository.BannerRepository;
 import edu.handong.csee.histudy.util.ImagePathMapper;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
+import javax.imageio.ImageIO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
@@ -50,7 +54,7 @@ class BannerServiceTest {
   void 배너생성시_이미지저장하고_응답반환() {
     // Given
     MockMultipartFile image =
-        new MockMultipartFile("image", "banner.png", "image/png", "banner-content".getBytes());
+        new MockMultipartFile("image", "banner.png", "image/png", createValidPngBytes());
     BannerForm form = new BannerForm("Main Banner", "https://example.com", true, image);
 
     when(bannerRepository.findTopByOrderByDisplayOrderDesc()).thenReturn(Optional.empty());
@@ -83,6 +87,30 @@ class BannerServiceTest {
     assertThatThrownBy(() -> bannerService.createBanner(form))
         .isInstanceOf(MissingParameterException.class)
         .hasMessageContaining("이미지 파일만 업로드할 수 있습니다.");
+  }
+
+  @Test
+  void 파일명에_경로문자포함시_확장자는_안전하게정규화된다() {
+    MockMultipartFile image =
+        new MockMultipartFile(
+            "image", "banner.png/../../outside", "image/png", createValidPngBytes());
+    BannerForm form = new BannerForm("Main Banner", "https://example.com", true, image);
+
+    when(bannerRepository.findTopByOrderByDisplayOrderDesc()).thenReturn(Optional.empty());
+    when(bannerRepository.save(any(Banner.class)))
+        .thenAnswer(
+            invocation -> {
+              Banner banner = invocation.getArgument(0);
+              ReflectionTestUtils.setField(banner, "bannerId", 1L);
+              return banner;
+            });
+
+    bannerService.createBanner(form);
+
+    ArgumentCaptor<Banner> captor = ArgumentCaptor.forClass(Banner.class);
+    verify(bannerRepository).save(captor.capture());
+    assertThat(captor.getValue().getImagePath()).startsWith("banner/").endsWith(".img");
+    assertThat(captor.getValue().getImagePath()).doesNotContain("..");
   }
 
   @Test
@@ -179,5 +207,16 @@ class BannerServiceTest {
 
     ReflectionTestUtils.setField(banner, "bannerId", id);
     return banner;
+  }
+
+  private byte[] createValidPngBytes() {
+    try {
+      BufferedImage image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
+      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+      ImageIO.write(image, "png", outputStream);
+      return outputStream.toByteArray();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 }
