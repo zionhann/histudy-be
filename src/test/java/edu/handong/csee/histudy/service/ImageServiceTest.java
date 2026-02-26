@@ -34,7 +34,7 @@ public class ImageServiceTest {
   private ImageService imageService;
 
   private final String origin = "http://localhost:8080";
-  private final String imageBasePath = "/reports/images/";
+  private final String imageBasePath = "/images/";
 
   @TempDir private File tempDir;
 
@@ -116,6 +116,7 @@ public class ImageServiceTest {
 
     // Then
     assertThat(imagePath).contains(origin, imageBasePath);
+    assertThat(imagePath).contains("/images/reports/");
   }
 
   @Test
@@ -130,6 +131,7 @@ public class ImageServiceTest {
       String imagePath = imageService.getImagePaths("user1@test.com", data, Optional.of(1L));
 
       assertThat(imagePath).contains(origin, imageBasePath);
+      assertThat(imagePath).contains("/images/reports/");
     }
   }
 
@@ -145,6 +147,7 @@ public class ImageServiceTest {
 
     // Then
     assertThat(imagePath).contains(origin, imageBasePath);
+    assertThat(imagePath).contains("/images/reports/");
     assertThat(imagePath).contains(".jpg");
   }
 

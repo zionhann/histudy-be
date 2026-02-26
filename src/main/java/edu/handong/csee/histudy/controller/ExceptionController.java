@@ -3,6 +3,7 @@ package edu.handong.csee.histudy.controller;
 import edu.handong.csee.histudy.dto.ExceptionResponse;
 import edu.handong.csee.histudy.dto.UserDto;
 import edu.handong.csee.histudy.exception.AcademicTermNotFoundException;
+import edu.handong.csee.histudy.exception.BannerNotFoundException;
 import edu.handong.csee.histudy.exception.CourseNotFoundException;
 import edu.handong.csee.histudy.exception.DuplicateAcademicTermException;
 import edu.handong.csee.histudy.exception.ForbiddenException;
@@ -66,6 +67,7 @@ public class ExceptionController {
 
   @ExceptionHandler({
     AcademicTermNotFoundException.class,
+    BannerNotFoundException.class,
     CourseNotFoundException.class,
     StudyGroupNotFoundException.class,
     ReportNotFoundException.class,

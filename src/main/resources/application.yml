@@ -52,13 +52,13 @@ custom:
     exclude: /api/public/**, /api/auth/**, /api/users
     include: /api/**
   resource:
-    # Define the location of the resource files. Commonly used for storing study report images.
+    # Define the location and URL base for image resources (reports, banner, etc).
     ## - location: The location of the resource files to be stored.
     ## - path-pattern: The path pattern to access the resource files.
     ## - path: The base path for the resource files.
     location: classpath:path/to/images/
-    path-pattern: /reports/images/**
-    path: /reports/images/
+    path-pattern: /images/**
+    path: /images/
   origin:
     # Define the allowed origins for CORS.
     ## - allowed: The comma-separated list of allowed origins.
