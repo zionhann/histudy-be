@@ -102,9 +102,7 @@ class StudyApplicantRepositoryTest extends BaseRepositoryTest {
     StudyApplicant pastAssigned =
         TestDataFactory.createStudyApplicant(pastTerm, user3, List.of(), List.of(course2));
 
-    studyApplicantRepository.save(currentAssigned);
-    studyApplicantRepository.save(currentUnassigned);
-    studyApplicantRepository.save(pastAssigned);
+    studyApplicantRepository.saveAll(List.of(currentAssigned, currentUnassigned, pastAssigned));
 
     studyGroupRepository.save(StudyGroup.of(1, currentTerm, List.of(currentAssigned)));
     studyGroupRepository.save(StudyGroup.of(2, pastTerm, List.of(pastAssigned)));

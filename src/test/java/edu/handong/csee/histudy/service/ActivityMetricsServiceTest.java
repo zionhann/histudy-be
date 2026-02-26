@@ -15,9 +15,9 @@ import edu.handong.csee.histudy.repository.StudyGroupRepository;
 import edu.handong.csee.histudy.repository.StudyReportRepository;
 import edu.handong.csee.histudy.repository.UserRepository;
 import java.util.Optional;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -30,18 +30,7 @@ class ActivityMetricsServiceTest {
   @Mock private StudyReportRepository studyReportRepository;
   @Mock private AcademicTermRepository academicTermRepository;
 
-  private ActivityMetricsService activityMetricsService;
-
-  @BeforeEach
-  void setUp() {
-    activityMetricsService =
-        new ActivityMetricsService(
-            userRepository,
-            studyApplicantRepository,
-            studyGroupRepository,
-            studyReportRepository,
-            academicTermRepository);
-  }
+  @InjectMocks private ActivityMetricsService activityMetricsService;
 
   @Test
   void 전체학기지표조회시_관리자제외전체기준으로반환() {
