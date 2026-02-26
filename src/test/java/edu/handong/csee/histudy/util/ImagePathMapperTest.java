@@ -42,9 +42,9 @@ class ImagePathMapperTest {
   }
 
   @Test
-  void 경로목록에_null요소가_있어도_NPE가발생하지않는다() {
+  void 경로목록의_null요소는_정규화대상에서_제외된다() {
     List<String> normalized = mapper.extractFilename(Arrays.asList("banner/main.png", null));
 
-    assertThat(normalized).containsExactly("banner/main.png", null);
+    assertThat(normalized).containsExactly("banner/main.png");
   }
 }
