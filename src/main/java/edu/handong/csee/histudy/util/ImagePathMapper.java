@@ -8,6 +8,7 @@ import edu.handong.csee.histudy.domain.ReportImage;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -25,6 +26,7 @@ public class ImagePathMapper {
 
   public Map<Long, String> parseImageToMapWithFullPath(List<ReportImage> reportImages) {
     return reportImages.stream()
+        .filter(img -> img.getPath() != null)
         .collect(
             Collectors.toUnmodifiableMap(
                 ReportImage::getReportImageId, img -> getFullPath(img.getPath())));
@@ -34,7 +36,11 @@ public class ImagePathMapper {
     if (pathname == null) {
       return null;
     }
-    return pathname.stream().map(this::extractFilename).toList();
+    return pathname.stream()
+        .filter(Objects::nonNull)
+        .map(this::extractFilename)
+        .filter(Objects::nonNull)
+        .toList();
   }
 
   public String getFullPath(String pathname) {
