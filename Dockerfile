@@ -16,10 +16,15 @@ FROM amazoncorretto:17
 
 WORKDIR /webapp
 
-RUN mkdir -p image log
+RUN groupadd -r app && \
+    useradd -r -g app -d /webapp -s /sbin/nologin app && \
+    mkdir -p image log && \
+    chown -R app:app /webapp
 
-COPY --from=builder /project/build/libs/*.jar app.jar
+COPY --from=builder --chown=app:app /project/build/libs/*.jar app.jar
 
 EXPOSE 8080
+
+USER app
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

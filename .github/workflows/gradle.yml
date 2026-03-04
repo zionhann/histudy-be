@@ -90,15 +90,16 @@ jobs:
     name: Trigger Jenkins Deploy (main only, non-blocking)
     runs-on: ubuntu-latest
     needs: docker
+    env:
+      JENKINS_WEBHOOK_URL: ${{ secrets.JENKINS_WEBHOOK_URL }}
 
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
       - name: Trigger Jenkins webhook
-        if: secrets.JENKINS_WEBHOOK_URL != ''
+        if: env.JENKINS_WEBHOOK_URL != ''
         continue-on-error: true
         env:
-          JENKINS_WEBHOOK_URL: ${{ secrets.JENKINS_WEBHOOK_URL }}
           BRANCH: ${{ github.ref_name }}
           SHA: ${{ github.sha }}
           SHA_REF: ${{ needs.docker.outputs.sha_ref }}
