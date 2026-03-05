@@ -79,6 +79,7 @@ jobs:
         with:
           context: .
           push: true
+          platforms: linux/amd64,linux/arm64
           tags: |
             ${{ steps.image.outputs.sha_ref }}
             ${{ steps.image.outputs.dev_ref }}
