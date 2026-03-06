@@ -10,7 +10,6 @@
 
 ## 문맥 지도
 
-- `docs/principles.md`: 제품 의도, 핵심 원칙, 행위 경계, 비목표
 - `docs/domain.md`: 용어, 엔티티, 불변 조건, 매칭 규칙, 프라이버시 규칙, 리포트/이미지 의미론
 - `docs/architecture.md`: 패키지 책임, 요청 흐름, 인증 모델, API 표면, 테스트 구조
 - `docs/workflows.md`: 반복 작업 절차, 설정 경로, 운영 가드레일, 하니스 갱신 조건
