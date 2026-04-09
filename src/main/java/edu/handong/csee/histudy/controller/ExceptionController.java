@@ -27,11 +27,15 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 
 @Slf4j
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class ExceptionController {
+
+  private static final String EXCEED_MAX_FILE_SIZE = "EXCEED_MAX_FILE_SIZE";
 
   private final DiscordService discordService;
 
@@ -53,6 +57,20 @@ public class ExceptionController {
   public ResponseEntity<ExceptionResponse> handleHttpMessageNotReadable(
       HttpMessageNotReadableException e) {
     return createErrorResponse(HttpStatus.BAD_REQUEST, "Invalid request format");
+  }
+
+  @ExceptionHandler(MaxUploadSizeExceededException.class)
+  public ResponseEntity<ExceptionResponse> handleMaxUploadSizeExceeded(
+      MaxUploadSizeExceededException e) {
+    return createErrorResponse(HttpStatus.PAYLOAD_TOO_LARGE, EXCEED_MAX_FILE_SIZE);
+  }
+
+  @ExceptionHandler(MultipartException.class)
+  public ResponseEntity<ExceptionResponse> handleMultipartException(MultipartException e) {
+    if (isSizeLimitExceeded(e)) {
+      return createErrorResponse(HttpStatus.PAYLOAD_TOO_LARGE, EXCEED_MAX_FILE_SIZE);
+    }
+    return createErrorResponse(HttpStatus.BAD_REQUEST, "Invalid multipart request");
   }
 
   @ExceptionHandler({JwtException.class, MissingTokenException.class})
@@ -87,6 +105,27 @@ public class ExceptionController {
   @ExceptionHandler({DuplicateAcademicTermException.class, UserAlreadyExistsException.class})
   public ResponseEntity<ExceptionResponse> handleConflict(Exception e) {
     return createErrorResponse(HttpStatus.CONFLICT, e.getMessage());
+  }
+
+  private boolean isSizeLimitExceeded(Throwable throwable) {
+    Throwable current = throwable;
+    while (current != null) {
+      if (current instanceof MaxUploadSizeExceededException) {
+        return true;
+      }
+      String message = current.getMessage();
+      if (message != null) {
+        String normalized = message.toLowerCase();
+        if (normalized.contains("maximum upload size")
+            || normalized.contains("maxuploadsizeexceeded")
+            || normalized.contains("size limit exceeded")
+            || normalized.contains("exceeds its maximum permitted size")) {
+          return true;
+        }
+      }
+      current = current.getCause();
+    }
+    return false;
   }
 
   @ExceptionHandler(RuntimeException.class)
