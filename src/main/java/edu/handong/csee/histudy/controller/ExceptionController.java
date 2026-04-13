@@ -27,6 +27,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @Slf4j
 @RestControllerAdvice
@@ -53,6 +54,13 @@ public class ExceptionController {
   public ResponseEntity<ExceptionResponse> handleHttpMessageNotReadable(
       HttpMessageNotReadableException e) {
     return createErrorResponse(HttpStatus.BAD_REQUEST, "Invalid request format");
+  }
+
+  @ExceptionHandler(MaxUploadSizeExceededException.class)
+  public ResponseEntity<ExceptionResponse> handleMaxUploadSizeExceeded(
+      MaxUploadSizeExceededException e) {
+    return createErrorResponse(
+        HttpStatus.PAYLOAD_TOO_LARGE, "업로드 가능한 파일 용량을 초과했습니다.");
   }
 
   @ExceptionHandler({JwtException.class, MissingTokenException.class})
