@@ -5,36 +5,136 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import edu.handong.csee.histudy.controller.form.ApplyForm;
 import edu.handong.csee.histudy.controller.form.UserForm;
-import edu.handong.csee.histudy.domain.*;
+import edu.handong.csee.histudy.domain.AcademicTerm;
+import edu.handong.csee.histudy.domain.Course;
+import edu.handong.csee.histudy.domain.RequestStatus;
+import edu.handong.csee.histudy.domain.Role;
+import edu.handong.csee.histudy.domain.StudyApplicant;
+import edu.handong.csee.histudy.domain.StudyGroup;
+import edu.handong.csee.histudy.domain.TermType;
+import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.ApplyFormDto;
 import edu.handong.csee.histudy.dto.UserDto;
-import edu.handong.csee.histudy.exception.*;
-import edu.handong.csee.histudy.repository.*;
-import edu.handong.csee.histudy.service.repository.fake.*;
-import edu.handong.csee.histudy.support.TestDataFactory;
+import edu.handong.csee.histudy.exception.NoCurrentTermFoundException;
+import edu.handong.csee.histudy.exception.UserAlreadyExistsException;
+import edu.handong.csee.histudy.service.repository.fake.FakeAcademicTermRepository;
+import edu.handong.csee.histudy.service.repository.fake.FakeCourseRepository;
+import edu.handong.csee.histudy.service.repository.fake.FakeStudyApplicationRepository;
+import edu.handong.csee.histudy.service.repository.fake.FakeStudyGroupRepository;
+import edu.handong.csee.histudy.service.repository.fake.FakeUserRepository;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Sort;
 
-public class UserServiceTest {
+class UserServiceTest {
 
+  private final AcademicTerm currentTerm =
+      AcademicTerm.builder().academicYear(2025).semester(TermType.SPRING).isCurrent(true).build();
+  private final User applicantUser =
+      User.builder()
+          .sub("sub-1")
+          .sid("22230001")
+          .email("applicant@histudy.com")
+          .name("Applicant")
+          .role(Role.USER)
+          .build();
+  private final User partnerUser =
+      User.builder()
+          .sub("sub-2")
+          .sid("22230002")
+          .email("partner@histudy.com")
+          .name("Partner")
+          .role(Role.USER)
+          .build();
+  private final User firstPartnerUser =
+      User.builder()
+          .sub("sub-3")
+          .sid("22230002")
+          .email("first@histudy.com")
+          .name("First")
+          .role(Role.USER)
+          .build();
+  private final User secondPartnerUser =
+      User.builder()
+          .sub("sub-4")
+          .sid("22230003")
+          .email("second@histudy.com")
+          .name("Second")
+          .role(Role.USER)
+          .build();
+  private final User meUser =
+      User.builder()
+          .sub("sub-5")
+          .sid("22230001")
+          .email("me@histudy.com")
+          .name("Me")
+          .role(Role.USER)
+          .build();
+  private final User groupedUser =
+      User.builder()
+          .sub("sub-6")
+          .sid("22230006")
+          .email("grouped@histudy.com")
+          .name("Grouped")
+          .role(Role.USER)
+          .build();
+  private final User applicantOnlyUser =
+      User.builder()
+          .sub("sub-7")
+          .sid("22230007")
+          .email("applicant-only@histudy.com")
+          .name("ApplicantOnly")
+          .role(Role.USER)
+          .build();
+  private final User noFormUser =
+      User.builder()
+          .sub("sub-8")
+          .sid("22230008")
+          .email("plain@histudy.com")
+          .name("Plain")
+          .role(Role.USER)
+          .build();
+  private final User ungroupedUser =
+      User.builder()
+          .sub("sub-9")
+          .sid("22230009")
+          .email("ungrouped@histudy.com")
+          .name("Ungrouped")
+          .role(Role.USER)
+          .build();
+  private final Course primaryCourse =
+      Course.builder()
+          .name("자료구조")
+          .code("CSEE201")
+          .professor("Kim")
+          .academicTerm(currentTerm)
+          .build();
+  private final Course secondaryCourse =
+      Course.builder()
+          .name("운영체제")
+          .code("CSEE301")
+          .professor("Lee")
+          .academicTerm(currentTerm)
+          .build();
+  private final UserForm signUpForm =
+      new UserForm("sub-10", "Alice", "alice@histudy.com", "22230010");
+
+  private FakeUserRepository userRepository;
+  private FakeCourseRepository courseRepository;
+  private FakeStudyGroupRepository studyGroupRepository;
+  private FakeAcademicTermRepository academicTermRepository;
+  private FakeStudyApplicationRepository studyApplicantRepository;
   private UserService userService;
 
-  private UserRepository userRepository;
-  private CourseRepository courseRepository;
-  private StudyGroupRepository studyGroupRepository;
-  private AcademicTermRepository academicTermRepository;
-  private StudyApplicantRepository studyApplicantRepository;
-
   @BeforeEach
-  void init() {
+  void setUp() {
     userRepository = new FakeUserRepository();
     courseRepository = new FakeCourseRepository();
     studyGroupRepository = new FakeStudyGroupRepository();
     academicTermRepository = new FakeAcademicTermRepository();
     studyApplicantRepository = new FakeStudyApplicationRepository();
-
     userService =
         new UserService(
             userRepository,
@@ -45,576 +145,284 @@ public class UserServiceTest {
   }
 
   @Test
-  void 키워드없을시_전체학생조회() {
+  void 검색어_없이_같이할_사람을_검색하면_전체를_학번순으로_조회한다() {
     // Given
-    User student1 = TestDataFactory.createUser("1", "22500101", "user1@test.com", "Foo", Role.USER);
-    User student2 = TestDataFactory.createUser("2", "22500102", "user2@test.com", "Bar", Role.USER);
-
-    userRepository.save(student1);
-    userRepository.save(student2);
+    userRepository.save(
+        User.builder()
+            .sub("sub-2")
+            .sid("22230002")
+            .email("second@histudy.com")
+            .name("Second")
+            .role(Role.USER)
+            .build());
+    userRepository.save(
+        User.builder()
+            .sub("sub-1")
+            .sid("22230001")
+            .email("first@histudy.com")
+            .name("First")
+            .role(Role.USER)
+            .build());
 
     // When
-    List<User> results = userService.search(Optional.empty());
+    List<User> result = userService.search(Optional.of(" "));
 
     // Then
-    assertThat(results.size()).isEqualTo(2);
+    assertThat(result).extracting(User::getSid).containsExactly("22230001", "22230002");
+    assertThat(result).isEqualTo(userRepository.findAll(Sort.by(Sort.Direction.ASC, "sid")));
   }
 
   @Test
-  void 키워드제공시_매칭학생조회() {
+  void 회원가입하면_USER_권한으로_저장된다() {
     // Given
-    User student1 =
-        User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
-
-    User student2 =
-        User.builder().sub("2").sid("22500102").email("user2@test.com").name("Bar").build();
-
-    userRepository.save(student1);
-    userRepository.save(student2);
-
     // When
-    List<User> results = userService.search(Optional.of("22500101"));
+    userService.signUp(signUpForm);
 
     // Then
-    assertThat(results.size()).isEqualTo(1);
-  }
-
-  @Test
-  void 최초신청시_요청대기중() {
-    // Given
-    AcademicTerm term = TestDataFactory.createCurrentTerm();
-    academicTermRepository.save(term);
-
-    Course course = TestDataFactory.createCourse("Introduction to Test", "ECE2025", "Bar", term);
-    courseRepository.saveAll(List.of(course));
-
-    User student1 = TestDataFactory.createUser("1", "22500101", "user1@test.com", "Foo", Role.USER);
-    User student2 = TestDataFactory.createUser("2", "22500102", "user2@test.com", "Bar", Role.USER);
-
-    userRepository.save(student1);
-    User bar = userRepository.save(student2);
-
-    // When
-    StudyApplicant applicant =
-        userService.apply(List.of(bar.getUserId()), List.of(1L), "user1@test.com");
-
-    // Then
-    assertThat(applicant.getPartnerRequests().size()).isEqualTo(1);
-    assertThat(applicant.getPartnerRequests().get(0).getRequestStatus())
-        .isEqualTo(RequestStatus.PENDING);
-  }
-
-  @Test
-  void 상호요청시_서로승인() {
-    // Given
-    AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
-    academicTermRepository.save(term);
-
-    Course course = new Course("Introduction to Test", "ECE2025", "Bar", term);
-    courseRepository.saveAll(List.of(course));
-
-    User student1 =
-        User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
-
-    User student2 =
-        User.builder().sub("2").sid("22500102").email("user2@test.com").name("Bar").build();
-
-    userRepository.save(student1);
-    User bar = userRepository.save(student2);
-
-    StudyApplicant applicant2 =
-        StudyApplicant.of(term, student2, List.of(student1), List.of(course));
-    studyApplicantRepository.save(applicant2);
-
-    // When
-    StudyApplicant applicant =
-        userService.apply(List.of(bar.getUserId()), List.of(1L), "user1@test.com");
-
-    // Then
-    assertThat(applicant.getPartnerRequests().get(0).getRequestStatus())
-        .isEqualTo(RequestStatus.ACCEPTED);
-    assertThat(applicant2.getPartnerRequests().get(0).getRequestStatus())
-        .isEqualTo(RequestStatus.ACCEPTED);
-  }
-
-  @Test
-  void 신청안했을시_정보없음() {
-    // Given
-    AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
-    academicTermRepository.save(term);
-
-    User student1 =
-        User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
-
-    userRepository.save(student1);
-
-    // When
-    Optional<StudyApplicant> res = userService.getUserInfo("user1@test.com");
-
-    // Then
-    assertThat(res.isEmpty()).isTrue();
-  }
-
-  @Test
-  void 신청했을시_정보있음() {
-    // Given
-    AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
-    academicTermRepository.save(term);
-
-    Course course = new Course("Introduction to Test", "ECE2025", "Bar", term);
-    courseRepository.saveAll(List.of(course));
-
-    User student1 =
-        User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
-
-    User student2 =
-        User.builder().sub("2").sid("22500102").email("user2@test.com").name("Bar").build();
-
-    userRepository.save(student1);
-    User bar = userRepository.save(student2);
-
-    userService.apply(List.of(bar.getUserId()), List.of(1L), "user1@test.com");
-
-    // When
-    Optional<StudyApplicant> res = userService.getUserInfo("user1@test.com");
-
-    // Then
-    assertThat(res.isPresent()).isTrue();
-  }
-
-  @Test
-  void 새사용자정보시_회원가입성공() {
-    // Given
-    UserForm userForm = new UserForm("google-sub-123", "New User", "newuser@test.com", "22500103");
-
-    // When
-    userService.signUp(userForm);
-
-    // Then
-    User savedUser = userRepository.findUserBySub("google-sub-123").orElse(null);
-    assertThat(savedUser).isNotNull();
-    assertThat(savedUser.getEmail()).isEqualTo("newuser@test.com");
-    assertThat(savedUser.getName()).isEqualTo("New User");
+    User savedUser = userRepository.findUserBySub("sub-10").orElseThrow();
+    assertThat(savedUser.getEmail()).isEqualTo("alice@histudy.com");
     assertThat(savedUser.getRole()).isEqualTo(Role.USER);
   }
 
   @Test
-  void 이미존재하는사용자시_예외발생() {
+  void 이미_존재하는_유저로_회원가입하면_예외가_발생한다() {
     // Given
-    User existingUser =
+    userRepository.save(
         User.builder()
-            .sub("google-sub-123")
-            .sid("22500103")
-            .email("existing@test.com")
-            .name("Existing User")
-            .build();
-    userRepository.save(existingUser);
+            .sub("sub-10")
+            .sid("22230010")
+            .email("alice@histudy.com")
+            .name("Alice")
+            .role(Role.USER)
+            .build());
 
-    UserForm userForm = new UserForm("google-sub-123", "New User", "newuser@test.com", "22500104");
-
-    // When & Then
-    assertThatThrownBy(() -> userService.signUp(userForm))
+    // When Then
+    assertThatThrownBy(() -> userService.signUp(signUpForm))
         .isInstanceOf(UserAlreadyExistsException.class);
   }
 
   @Test
-  void sub제공시_사용자정보반환() {
+  void 서로_신청한_친구로_스터디를_신청하면_친구요청이_수락상태가_된다() {
     // Given
-    User user =
-        User.builder()
-            .sub("google-sub-123")
-            .sid("22500103")
-            .email("user@test.com")
-            .name("Test User")
-            .build();
-    userRepository.save(user);
+    academicTermRepository.save(currentTerm);
+    User applicant = userRepository.save(applicantUser);
+    User partner = userRepository.save(partnerUser);
+    Course course = courseRepository.saveAll(List.of(primaryCourse)).get(0);
+    userService.apply(
+        ApplyForm.builder()
+            .friendIds(List.of("22230001"))
+            .courseIds(List.of(course.getCourseId()))
+            .build(),
+        "partner@histudy.com");
 
     // When
-    User foundUser = userService.getUser(Optional.of("google-sub-123"));
+    ApplyFormDto result =
+        userService.apply(
+            ApplyForm.builder()
+                .friendIds(List.of("22230002"))
+                .courseIds(List.of(course.getCourseId()))
+                .build(),
+            "applicant@histudy.com");
 
     // Then
-    assertThat(foundUser.getEmail()).isEqualTo("user@test.com");
-    assertThat(foundUser.getName()).isEqualTo("Test User");
-  }
-
-  @Test
-  void sub없을시_예외발생() {
-    // When & Then
-    assertThatThrownBy(() -> userService.getUser(Optional.empty()))
-        .isInstanceOf(MissingSubException.class);
-  }
-
-  @Test
-  void 존재하지않는sub시_예외발생() {
-    // When & Then
-    assertThatThrownBy(() -> userService.getUser(Optional.of("nonexistent-sub")))
-        .isInstanceOf(UserNotFoundException.class);
-  }
-
-  @Test
-  void 이메일제공시_내정보반환() {
-    // Given
-    User user =
-        User.builder()
-            .sub("1")
-            .sid("22500101")
-            .email("user1@test.com")
-            .name("Foo")
-            .role(Role.USER)
-            .build();
-    userRepository.save(user);
-
-    // When
-    UserDto.UserMe userMe = userService.getUserMe(Optional.of("user1@test.com"));
-
-    // Then
-    assertThat(userMe.getEmail()).isEqualTo("user1@test.com");
-    assertThat(userMe.getName()).isEqualTo("Foo");
-  }
-
-  @Test
-  void 이메일없을시_예외발생() {
-    // When & Then
-    assertThatThrownBy(() -> userService.getUserMe(Optional.empty()))
-        .isInstanceOf(MissingEmailException.class);
-  }
-
-  @Test
-  void 신청폼제공시_신청성공() {
-    // Given
-    AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
-    academicTermRepository.save(term);
-
-    Course course = new Course("Introduction to Test", "ECE2025", "Bar", term);
-    courseRepository.saveAll(List.of(course));
-
-    User student1 =
-        User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
-    User student2 =
-        User.builder().sub("2").sid("22500102").email("user2@test.com").name("Bar").build();
-
-    userRepository.save(student1);
-    userRepository.save(student2);
-
-    ApplyForm form =
-        ApplyForm.builder().friendIds(List.of("22500102")).courseIds(List.of(1L)).build();
-
-    // When
-    ApplyFormDto result = userService.apply(form, "user1@test.com");
-
-    // Then
-    assertThat(result).isNotNull();
+    StudyApplicant applicantForm =
+        studyApplicantRepository.findByUserAndTerm(applicant, currentTerm).orElseThrow();
+    StudyApplicant partnerForm =
+        studyApplicantRepository.findByUserAndTerm(partner, currentTerm).orElseThrow();
+    assertThat(applicantForm.getPartnerRequests())
+        .singleElement()
+        .extracting(request -> request.getRequestStatus())
+        .isEqualTo(RequestStatus.ACCEPTED);
+    assertThat(partnerForm.getPartnerRequests())
+        .singleElement()
+        .extracting(request -> request.getRequestStatus())
+        .isEqualTo(RequestStatus.ACCEPTED);
     assertThat(result.getFriends()).hasSize(1);
+    assertThat(result.getCourses()).hasSize(1);
   }
 
   @Test
-  void 존재하지않는사용자신청시_예외발생() {
+  void 스터디_신청을_수정하면_기존_신청을_교체한다() {
     // Given
-    AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
-    academicTermRepository.save(term);
+    academicTermRepository.save(currentTerm);
+    User applicant = userRepository.save(applicantUser);
+    User firstPartner = userRepository.save(firstPartnerUser);
+    User secondPartner = userRepository.save(secondPartnerUser);
+    Course firstCourse = courseRepository.saveAll(List.of(primaryCourse, secondaryCourse)).get(0);
+    Course secondCourse = courseRepository.findAll().get(1);
+    userService.apply(
+        ApplyForm.builder()
+            .friendIds(List.of("22230002"))
+            .courseIds(List.of(firstCourse.getCourseId()))
+            .build(),
+        "applicant@histudy.com");
 
-    // When & Then
-    assertThatThrownBy(() -> userService.apply(List.of(1L), List.of(1L), "nonexistent@test.com"))
-        .isInstanceOf(UserNotFoundException.class);
+    // When
+    userService.apply(
+        ApplyForm.builder()
+            .friendIds(List.of("22230003"))
+            .courseIds(List.of(secondCourse.getCourseId()))
+            .build(),
+        "applicant@histudy.com");
+
+    // Then
+    StudyApplicant applicantForm =
+        studyApplicantRepository.findByUserAndTerm(applicant, currentTerm).orElseThrow();
+    assertThat(studyApplicantRepository.findAllByTerm(currentTerm)).hasSize(1);
+    assertThat(applicantForm.getRequestedUsers()).containsExactly(secondPartner);
+    assertThat(applicantForm.getPreferredCourses())
+        .extracting(preferred -> preferred.getCourse())
+        .containsExactly(secondCourse);
+    assertThat(applicantForm.getRequestedUsers()).doesNotContain(firstPartner);
   }
 
   @Test
-  void 현재학기없이신청시_예외발생() {
+  void 그룹이_배정된_스터디_신청을_수정하면_예외가_발생한다() {
     // Given
-    User student =
-        User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
-    userRepository.save(student);
+    academicTermRepository.save(currentTerm);
+    User applicant = userRepository.save(applicantUser);
+    Course course = courseRepository.saveAll(List.of(primaryCourse)).get(0);
+    StudyApplicant applicantForm =
+        studyApplicantRepository.save(
+            StudyApplicant.of(currentTerm, applicant, List.of(), List.of(course)));
+    studyGroupRepository.save(StudyGroup.of(1, currentTerm, List.of(applicantForm)));
 
-    // When & Then
-    assertThatThrownBy(() -> userService.apply(List.of(), List.of(), "user1@test.com"))
+    // When Then
+    assertThatThrownBy(
+            () ->
+                userService.apply(
+                    ApplyForm.builder()
+                        .friendIds(List.of())
+                        .courseIds(List.of(course.getCourseId()))
+                        .build(),
+                    "applicant@histudy.com"))
+        .isInstanceOf(IllegalStateException.class);
+  }
+
+  @Test
+  void 현재_학기_없이_스터디를_신청하면_예외가_발생한다() {
+    // Given
+    userRepository.save(applicantUser);
+    ApplyForm form = ApplyForm.builder().friendIds(List.of()).courseIds(List.of()).build();
+
+    // When Then
+    assertThatThrownBy(() -> userService.apply(form, "applicant@histudy.com"))
         .isInstanceOf(NoCurrentTermFoundException.class);
   }
 
   @Test
-  void 존재하지않는친구신청시_예외발생() {
+  void 내_정보를_조회하면_기본_정보를_반환한다() {
     // Given
-    AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
-    academicTermRepository.save(term);
-
-    User student =
-        User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
-    userRepository.save(student);
-
-    // When & Then
-    assertThatThrownBy(() -> userService.apply(List.of(999L), List.of(), "user1@test.com"))
-        .isInstanceOf(UserNotFoundException.class);
-  }
-
-  @Test
-  void 존재하지않는과목신청시_예외발생() {
-    // Given
-    AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
-    academicTermRepository.save(term);
-
-    User student =
-        User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
-    userRepository.save(student);
-
-    // When & Then
-    assertThatThrownBy(() -> userService.apply(List.of(), List.of(999L), "user1@test.com"))
-        .isInstanceOf(CourseNotFoundException.class);
-  }
-
-  @Test
-  void 신청폼에존재하지않는친구시_예외발생() {
-    // Given
-    AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
-    academicTermRepository.save(term);
-
-    User student =
-        User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
-    userRepository.save(student);
-
-    ApplyForm form =
-        ApplyForm.builder().friendIds(List.of("nonexistent")).courseIds(List.of()).build();
-
-    // When & Then
-    assertThatThrownBy(() -> userService.apply(form, "user1@test.com"))
-        .isInstanceOf(UserNotFoundException.class);
-  }
-
-  @Test
-  void 신청서있을시_삭제성공() {
-    // Given
-    AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
-    academicTermRepository.save(term);
-
-    Course course = new Course("Introduction to Test", "ECE2025", "Bar", term);
-    courseRepository.saveAll(List.of(course));
-
-    User student =
-        User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
-    userRepository.save(student);
-
-    userService.apply(List.of(), List.of(1L), "user1@test.com");
+    userRepository.save(meUser);
 
     // When
-    userService.deleteUserForm("22500101");
+    UserDto.UserMe result = userService.getUserMe(Optional.of("me@histudy.com"));
 
     // Then
-    Optional<StudyApplicant> result = userService.getUserInfo("user1@test.com");
+    assertThat(result.getName()).isEqualTo("Me");
+    assertThat(result.getEmail()).isEqualTo("me@histudy.com");
+    assertThat(result.getSid()).isEqualTo("22230001");
+  }
+
+  @Test
+  void 내가_제출한_스터디_신청_내역을_조회하면_친구와_과목정보를_반환한다() {
+    // Given
+    academicTermRepository.save(currentTerm);
+    User applicant = userRepository.save(applicantUser);
+    User partner = userRepository.save(partnerUser);
+    List<Course> courses = courseRepository.saveAll(List.of(primaryCourse, secondaryCourse));
+    studyApplicantRepository.save(
+        StudyApplicant.of(currentTerm, applicant, List.of(partner), courses));
+
+    // When
+    StudyApplicant result = userService.getUserInfo("applicant@histudy.com").orElseThrow();
+
+    // Then
+    assertThat(result.getRequestedUsers()).containsExactly(partner);
+    assertThat(result.getPreferredCourses())
+        .extracting(preferred -> preferred.getCourse())
+        .containsExactlyInAnyOrderElementsOf(courses);
+  }
+
+  @Test
+  void 내가_제출한_스터디_신청_내역이_없으면_빈_값을_반환한다() {
+    // Given
+    academicTermRepository.save(currentTerm);
+    userRepository.save(applicantUser);
+
+    // When
+    Optional<StudyApplicant> result = userService.getUserInfo("applicant@histudy.com");
+
+    // Then
     assertThat(result).isEmpty();
   }
 
   @Test
-  void 존재하지않는사용자삭제시_예외발생() {
+  void 그룹이_배정되지_않은_전체_유저_목록을_조회하면_미배정_유저를_반환한다() {
     // Given
-    AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
-    academicTermRepository.save(term);
-
-    // When & Then
-    assertThatThrownBy(() -> userService.deleteUserForm("nonexistent"))
-        .isInstanceOf(UserNotFoundException.class);
-  }
-
-  @Test
-  void 신청한사용자있을시_목록반환() {
-    // Given
-    AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
-    academicTermRepository.save(term);
-
-    Course course = new Course("Introduction to Test", "ECE2025", "Bar", term);
-    courseRepository.saveAll(List.of(course));
-
-    User student1 =
-        User.builder().sub("1").sid("22500101").email("user1@test.com").name("Foo").build();
-    User student2 =
-        User.builder().sub("2").sid("22500102").email("user2@test.com").name("Bar").build();
-
-    userRepository.save(student1);
-    userRepository.save(student2);
-
-    userService.apply(List.of(), List.of(1L), "user1@test.com");
+    academicTermRepository.save(currentTerm);
+    User savedGroupedUser = userRepository.save(groupedUser);
+    User savedApplicantOnlyUser = userRepository.save(applicantOnlyUser);
+    User savedNoFormUser = userRepository.save(noFormUser);
+    Course course = courseRepository.saveAll(List.of(primaryCourse)).get(0);
+    StudyApplicant groupedApplicant =
+        StudyApplicant.of(currentTerm, savedGroupedUser, List.of(), List.of(course));
+    StudyApplicant applicantOnly =
+        StudyApplicant.of(currentTerm, savedApplicantOnlyUser, List.of(), List.of(course));
+    studyApplicantRepository.save(groupedApplicant);
+    studyApplicantRepository.save(applicantOnly);
+    studyGroupRepository.save(StudyGroup.of(1, currentTerm, List.of(groupedApplicant)));
 
     // When
-    List<UserDto.UserInfo> appliedUsers = userService.getAppliedUsers();
+    List<UserDto.UserInfo> result = userService.getUnmatchedUsers();
 
     // Then
-    assertThat(appliedUsers).hasSize(1);
-    assertThat(appliedUsers.get(0).getEmail()).isEqualTo("user1@test.com");
+    assertThat(result)
+        .extracting(UserDto.UserInfo::getEmail)
+        .containsExactly("applicant-only@histudy.com", "plain@histudy.com");
+    assertThat(result)
+        .filteredOn(user -> user.getEmail().equals(savedNoFormUser.getEmail()))
+        .singleElement()
+        .extracting(UserDto.UserInfo::getGroup)
+        .isNull();
   }
 
   @Test
-  void 현재학기없이신청자조회시_예외발생() {
-    // When & Then
-    assertThatThrownBy(() -> userService.getAppliedUsers())
-        .isInstanceOf(NoCurrentTermFoundException.class);
-  }
-
-  @Test
-  void 존재하지않는새그룹으로이동시_새그룹생성() {
+  void 특정_유저의_스터디_신청을_삭제하면_현재_학기_신청이_제거된다() {
     // Given
-    AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
-    academicTermRepository.save(term);
-
-    Course course = new Course("Introduction to Test", "ECE2025", "Bar", term);
-    courseRepository.saveAll(List.of(course));
-
-    User student = TestDataFactory.createUser("1", "22500101", "user1@test.com", "Foo", Role.USER);
-    userRepository.save(student);
-
-    userService.apply(List.of(), List.of(1L), "user1@test.com");
-
-    UserDto.UserEdit editForm =
-        UserDto.UserEdit.builder()
-            .id(student.getUserId())
-            .team(999) // 존재하지 않는 그룹 태그
-            .build();
+    academicTermRepository.save(currentTerm);
+    User applicant = userRepository.save(applicantUser);
+    Course course = courseRepository.saveAll(List.of(primaryCourse)).get(0);
+    studyApplicantRepository.save(
+        StudyApplicant.of(currentTerm, applicant, List.of(), List.of(course)));
 
     // When
-    userService.editUser(editForm);
+    userService.deleteUserForm("22230001");
 
     // Then
-    StudyGroup newGroup = studyGroupRepository.findByTagAndAcademicTerm(999, term).orElse(null);
-    assertThat(newGroup).isNotNull();
-    assertThat(newGroup.getTag()).isEqualTo(999);
-    assertThat(newGroup.getMembers()).hasSize(1);
-    assertThat(newGroup.getMembers().get(0).getUser()).isEqualTo(student);
+    assertThat(studyApplicantRepository.findAllByTerm(currentTerm)).isEmpty();
   }
 
   @Test
-  void 기존그룹에서_다른그룹으로이동시_빈그룹삭제() {
+  void 신청했지만_아직_그룹이_배정되지_않은_유저_목록을_조회하면_미배정_신청자만_반환한다() {
     // Given
-    AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
-    academicTermRepository.save(term);
-
-    Course course = new Course("Introduction to Test", "ECE2025", "Bar", term);
-    courseRepository.saveAll(List.of(course));
-
-    User student1 =
-        TestDataFactory.createUser("1", "22500101", "user1@test.com", "Alice", Role.USER);
-    User student2 = TestDataFactory.createUser("2", "22500102", "user2@test.com", "Bob", Role.USER);
-    userRepository.save(student1);
-    userRepository.save(student2);
-
-    StudyApplicant applicant1 = StudyApplicant.of(term, student1, List.of(), List.of(course));
-    StudyApplicant applicant2 = StudyApplicant.of(term, student2, List.of(), List.of(course));
-    studyApplicantRepository.save(applicant1);
-    studyApplicantRepository.save(applicant2);
-
-    // 기존 그룹들 생성
-    StudyGroup group1 = StudyGroup.of(1, term, List.of(applicant1));
-    StudyGroup group2 = StudyGroup.of(2, term, List.of(applicant2));
-    studyGroupRepository.save(group1);
-    studyGroupRepository.save(group2);
-
-    UserDto.UserEdit editForm =
-        UserDto.UserEdit.builder()
-            .id(student1.getUserId())
-            .team(2) // Alice를 Bob의 그룹으로 이동
-            .build();
+    academicTermRepository.save(currentTerm);
+    User savedGroupedUser = userRepository.save(groupedUser);
+    User savedUngroupedUser = userRepository.save(ungroupedUser);
+    Course course = courseRepository.saveAll(List.of(primaryCourse)).get(0);
+    StudyApplicant groupedApplicant =
+        StudyApplicant.of(currentTerm, savedGroupedUser, List.of(), List.of(course));
+    StudyApplicant ungroupedApplicant =
+        StudyApplicant.of(currentTerm, savedUngroupedUser, List.of(), List.of(course));
+    studyApplicantRepository.save(groupedApplicant);
+    studyApplicantRepository.save(ungroupedApplicant);
+    studyGroupRepository.save(StudyGroup.of(1, currentTerm, List.of(groupedApplicant)));
 
     // When
-    userService.editUser(editForm);
+    List<UserDto.UserInfo> result = userService.getAppliedWithoutGroup();
 
     // Then
-    // Group1은 비어있으므로 삭제되어야 함
-    assertThat(studyGroupRepository.findByTagAndAcademicTerm(1, term)).isEmpty();
-
-    // Group2는 Alice와 Bob이 모두 있어야 함
-    StudyGroup group2After = studyGroupRepository.findByTagAndAcademicTerm(2, term).orElse(null);
-    assertThat(group2After).isNotNull();
-    assertThat(group2After.getMembers()).hasSize(2);
-    assertThat(group2After.getMembers().stream().map(StudyApplicant::getUser))
-        .containsExactlyInAnyOrder(student1, student2);
-  }
-
-  @Test
-  void 그룹해체시_빈그룹삭제() {
-    // Given
-    AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
-    academicTermRepository.save(term);
-
-    Course course = new Course("Introduction to Test", "ECE2025", "Bar", term);
-    courseRepository.saveAll(List.of(course));
-
-    User student =
-        TestDataFactory.createUser("1", "22500101", "user1@test.com", "Alice", Role.USER);
-    userRepository.save(student);
-
-    StudyApplicant applicant = StudyApplicant.of(term, student, List.of(), List.of(course));
-    studyApplicantRepository.save(applicant);
-
-    StudyGroup group = StudyGroup.of(1, term, List.of(applicant));
-    studyGroupRepository.save(group);
-
-    UserDto.UserEdit editForm =
-        UserDto.UserEdit.builder()
-            .id(student.getUserId())
-            .team(null) // 그룹에서 나가기
-            .build();
-
-    // When
-    userService.editUser(editForm);
-
-    // Then
-    // 그룹이 비어있으므로 삭제되어야 함
-    assertThat(studyGroupRepository.findByTagAndAcademicTerm(1, term)).isEmpty();
-
-    // 사용자는 그룹이 없어야 함
-    Optional<StudyApplicant> applicantAfter =
-        studyApplicantRepository.findByUserAndTerm(student, term);
-    assertThat(applicantAfter).isPresent();
-    assertThat(applicantAfter.get().hasStudyGroup()).isFalse();
-  }
-
-  @Test
-  void 여러명그룹에서_한명이동시_원래그룹유지() {
-    // Given
-    AcademicTerm term = new AcademicTerm(1L, 2025, TermType.SPRING, true);
-    academicTermRepository.save(term);
-
-    Course course = new Course("Introduction to Test", "ECE2025", "Bar", term);
-    courseRepository.saveAll(List.of(course));
-
-    User student1 =
-        TestDataFactory.createUser("1", "22500101", "user1@test.com", "Alice", Role.USER);
-    User student2 = TestDataFactory.createUser("2", "22500102", "user2@test.com", "Bob", Role.USER);
-    User student3 =
-        TestDataFactory.createUser("3", "22500103", "user3@test.com", "Charlie", Role.USER);
-    userRepository.save(student1);
-    userRepository.save(student2);
-    userRepository.save(student3);
-
-    StudyApplicant applicant1 = StudyApplicant.of(term, student1, List.of(), List.of(course));
-    StudyApplicant applicant2 = StudyApplicant.of(term, student2, List.of(), List.of(course));
-    StudyApplicant applicant3 = StudyApplicant.of(term, student3, List.of(), List.of(course));
-    studyApplicantRepository.save(applicant1);
-    studyApplicantRepository.save(applicant2);
-    studyApplicantRepository.save(applicant3);
-
-    // Alice와 Bob이 있는 그룹1, Charlie 혼자 있는 그룹2
-    StudyGroup group1 = StudyGroup.of(1, term, List.of(applicant1, applicant2));
-    StudyGroup group2 = StudyGroup.of(2, term, List.of(applicant3));
-    studyGroupRepository.save(group1);
-    studyGroupRepository.save(group2);
-
-    UserDto.UserEdit editForm =
-        UserDto.UserEdit.builder()
-            .id(student1.getUserId())
-            .team(2) // Alice를 Charlie의 그룹으로 이동
-            .build();
-
-    // When
-    userService.editUser(editForm);
-
-    // Then
-    // Group1은 Bob만 남아있으므로 유지되어야 함
-    StudyGroup group1After = studyGroupRepository.findByTagAndAcademicTerm(1, term).orElse(null);
-    assertThat(group1After).isNotNull();
-    assertThat(group1After.getMembers()).hasSize(1);
-    assertThat(group1After.getMembers().get(0).getUser()).isEqualTo(student2);
-
-    // Group2는 Alice와 Charlie가 있어야 함
-    StudyGroup group2After = studyGroupRepository.findByTagAndAcademicTerm(2, term).orElse(null);
-    assertThat(group2After).isNotNull();
-    assertThat(group2After.getMembers()).hasSize(2);
-    assertThat(group2After.getMembers().stream().map(StudyApplicant::getUser))
-        .containsExactlyInAnyOrder(student1, student3);
+    assertThat(result).hasSize(1);
+    assertThat(result.get(0).getEmail()).isEqualTo(savedUngroupedUser.getEmail());
   }
 }

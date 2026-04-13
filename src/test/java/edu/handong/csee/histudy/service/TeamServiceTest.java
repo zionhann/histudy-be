@@ -1,0 +1,411 @@
+package edu.handong.csee.histudy.service;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import edu.handong.csee.histudy.domain.AcademicTerm;
+import edu.handong.csee.histudy.domain.Course;
+import edu.handong.csee.histudy.domain.Role;
+import edu.handong.csee.histudy.domain.StudyApplicant;
+import edu.handong.csee.histudy.domain.StudyGroup;
+import edu.handong.csee.histudy.domain.StudyPartnerRequest;
+import edu.handong.csee.histudy.domain.StudyReport;
+import edu.handong.csee.histudy.domain.TermType;
+import edu.handong.csee.histudy.domain.User;
+import edu.handong.csee.histudy.dto.ReportDto;
+import edu.handong.csee.histudy.dto.TeamDto;
+import edu.handong.csee.histudy.dto.TeamRankDto;
+import edu.handong.csee.histudy.dto.TeamReportDto;
+import edu.handong.csee.histudy.dto.UserDto;
+import edu.handong.csee.histudy.exception.NoCurrentTermFoundException;
+import edu.handong.csee.histudy.service.repository.fake.FakeAcademicTermRepository;
+import edu.handong.csee.histudy.service.repository.fake.FakeStudyApplicationRepository;
+import edu.handong.csee.histudy.service.repository.fake.FakeStudyGroupRepository;
+import edu.handong.csee.histudy.service.repository.fake.FakeStudyReportRepository;
+import edu.handong.csee.histudy.service.repository.fake.FakeUserRepository;
+import edu.handong.csee.histudy.util.ImagePathMapper;
+import java.time.LocalDateTime;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
+
+class TeamServiceTest {
+
+  private final AcademicTerm currentTerm =
+      AcademicTerm.builder().academicYear(2025).semester(TermType.SPRING).isCurrent(true).build();
+  private final Course commonCourse = createCourse(1L, "자료구조", "CSEE201", "Kim", currentTerm);
+  private final Course secondaryCourse = createCourse(2L, "운영체제", "CSEE301", "Lee", currentTerm);
+  private final User memberUser =
+      User.builder()
+          .sub("sub-1")
+          .sid("22230001")
+          .email("member@histudy.com")
+          .name("Member")
+          .role(Role.USER)
+          .build();
+  private final User memberOneUser =
+      User.builder()
+          .sub("sub-1")
+          .sid("22230001")
+          .email("member1@histudy.com")
+          .name("Member1")
+          .role(Role.USER)
+          .build();
+  private final User memberTwoUser =
+      User.builder()
+          .sub("sub-2")
+          .sid("22230002")
+          .email("member2@histudy.com")
+          .name("Member2")
+          .role(Role.USER)
+          .build();
+  private final User teamOneUser =
+      User.builder()
+          .sub("sub-1")
+          .sid("22230001")
+          .email("team1@histudy.com")
+          .name("Team1")
+          .role(Role.USER)
+          .build();
+  private final User teamTwoUser =
+      User.builder()
+          .sub("sub-2")
+          .sid("22230002")
+          .email("team2@histudy.com")
+          .name("Team2")
+          .role(Role.USER)
+          .build();
+
+  private FakeStudyGroupRepository studyGroupRepository;
+  private FakeUserRepository userRepository;
+  private FakeAcademicTermRepository academicTermRepository;
+  private FakeStudyApplicationRepository studyApplicantRepository;
+  private FakeStudyReportRepository studyReportRepository;
+  private TeamService teamService;
+
+  @BeforeEach
+  void setUp() {
+    studyGroupRepository = new FakeStudyGroupRepository();
+    userRepository = new FakeUserRepository();
+    academicTermRepository = new FakeAcademicTermRepository();
+    studyApplicantRepository = new FakeStudyApplicationRepository();
+    studyReportRepository = new FakeStudyReportRepository();
+    ImagePathMapper imagePathMapper = new ImagePathMapper();
+    ReflectionTestUtils.setField(imagePathMapper, "origin", "https://histudy.handong.edu");
+    ReflectionTestUtils.setField(imagePathMapper, "imageBasePath", "/images");
+    teamService =
+        new TeamService(
+            studyGroupRepository,
+            userRepository,
+            academicTermRepository,
+            studyApplicantRepository,
+            studyReportRepository,
+            imagePathMapper);
+  }
+
+  @Test
+  void 그룹을_자동_배정하면_친구_우선과_과목_우선_규칙으로_배정한다() {
+    // Given
+    academicTermRepository.save(currentTerm);
+    Course leftoverCourse = secondaryCourse;
+
+    User friendOne =
+        userRepository.save(
+            User.builder()
+                .sub("sub-1")
+                .sid("22230001")
+                .email("friend1@histudy.com")
+                .name("Friend1")
+                .role(Role.USER)
+                .build());
+    User friendTwo =
+        userRepository.save(
+            User.builder()
+                .sub("sub-2")
+                .sid("22230002")
+                .email("friend2@histudy.com")
+                .name("Friend2")
+                .role(Role.USER)
+                .build());
+    User courseOne =
+        userRepository.save(
+            User.builder()
+                .sub("sub-3")
+                .sid("22230003")
+                .email("course1@histudy.com")
+                .name("Course1")
+                .role(Role.USER)
+                .build());
+    User courseTwo =
+        userRepository.save(
+            User.builder()
+                .sub("sub-4")
+                .sid("22230004")
+                .email("course2@histudy.com")
+                .name("Course2")
+                .role(Role.USER)
+                .build());
+    User courseThree =
+        userRepository.save(
+            User.builder()
+                .sub("sub-5")
+                .sid("22230005")
+                .email("course3@histudy.com")
+                .name("Course3")
+                .role(Role.USER)
+                .build());
+    User leftoverOne =
+        userRepository.save(
+            User.builder()
+                .sub("sub-6")
+                .sid("22230006")
+                .email("left1@histudy.com")
+                .name("Left1")
+                .role(Role.USER)
+                .build());
+    User leftoverTwo =
+        userRepository.save(
+            User.builder()
+                .sub("sub-7")
+                .sid("22230007")
+                .email("left2@histudy.com")
+                .name("Left2")
+                .role(Role.USER)
+                .build());
+
+    StudyApplicant friendOneApplicant =
+        StudyApplicant.of(currentTerm, friendOne, List.of(friendTwo), List.of(commonCourse));
+    StudyApplicant friendTwoApplicant =
+        StudyApplicant.of(currentTerm, friendTwo, List.of(friendOne), List.of(commonCourse));
+    friendOneApplicant.changeStatusIfReceivedBy(friendTwo, StudyPartnerRequest::accept);
+    friendTwoApplicant.changeStatusIfReceivedBy(friendOne, StudyPartnerRequest::accept);
+
+    StudyApplicant courseOneApplicant =
+        StudyApplicant.of(currentTerm, courseOne, List.of(), List.of(commonCourse));
+    StudyApplicant courseTwoApplicant =
+        StudyApplicant.of(currentTerm, courseTwo, List.of(), List.of(commonCourse));
+    StudyApplicant courseThreeApplicant =
+        StudyApplicant.of(currentTerm, courseThree, List.of(), List.of(commonCourse));
+    StudyApplicant leftoverOneApplicant =
+        StudyApplicant.of(currentTerm, leftoverOne, List.of(), List.of(leftoverCourse));
+    StudyApplicant leftoverTwoApplicant =
+        StudyApplicant.of(currentTerm, leftoverTwo, List.of(), List.of(leftoverCourse));
+
+    studyApplicantRepository.saveAll(
+        List.of(
+            friendOneApplicant,
+            friendTwoApplicant,
+            courseOneApplicant,
+            courseTwoApplicant,
+            courseThreeApplicant,
+            leftoverOneApplicant,
+            leftoverTwoApplicant));
+
+    // When
+    teamService.matchTeam();
+
+    // Then
+    assertThat(studyGroupRepository.findAllByAcademicTerm(currentTerm)).hasSize(2);
+    assertThat(studyGroupRepository.findAllByAcademicTerm(currentTerm))
+        .extracting(group -> group.getMembers().size())
+        .containsExactlyInAnyOrder(2, 3);
+    assertThat(studyApplicantRepository.findUnassignedApplicants(currentTerm))
+        .extracting(applicant -> applicant.getUser().getEmail())
+        .containsExactlyInAnyOrder("left1@histudy.com", "left2@histudy.com");
+  }
+
+  @Test
+  void 배정된_그룹_목록을_조회하면_보고서수와_누적시간을_함께_반환한다() {
+    // Given
+    academicTermRepository.save(currentTerm);
+    User member = userRepository.save(memberUser);
+    Course course = commonCourse;
+    StudyApplicant applicant = StudyApplicant.of(currentTerm, member, List.of(), List.of(course));
+    studyApplicantRepository.save(applicant);
+    StudyGroup group = studyGroupRepository.save(StudyGroup.of(7, currentTerm, List.of(applicant)));
+    studyReportRepository.save(
+        StudyReport.builder()
+            .title("1주차")
+            .content("첫 모임")
+            .totalMinutes(90)
+            .studyGroup(group)
+            .participants(List.of(member))
+            .images(List.of("reports/report1.png"))
+            .courses(List.of(course))
+            .build());
+    studyReportRepository.save(
+        StudyReport.builder()
+            .title("2주차")
+            .content("둘째 모임")
+            .totalMinutes(120)
+            .studyGroup(group)
+            .participants(List.of(member))
+            .images(List.of("reports/report2.png"))
+            .courses(List.of(course))
+            .build());
+
+    // When
+    List<TeamDto> result = teamService.getTeams("member@histudy.com");
+
+    // Then
+    assertThat(result).hasSize(1);
+    assertThat(result.get(0).getTag()).isEqualTo(7);
+    assertThat(result.get(0).getReports()).isEqualTo(2);
+    assertThat(result.get(0).getTimes()).isEqualTo(210);
+  }
+
+  @Test
+  void 같은_그룹의_멤버_정보를_조회하면_마스킹된_멤버정보를_반환한다() {
+    // Given
+    academicTermRepository.save(currentTerm);
+    Course course = commonCourse;
+    User memberOne = userRepository.save(memberOneUser);
+    User memberTwo = userRepository.save(memberTwoUser);
+    StudyApplicant applicantOne =
+        StudyApplicant.of(currentTerm, memberOne, List.of(), List.of(course));
+    StudyApplicant applicantTwo =
+        StudyApplicant.of(currentTerm, memberTwo, List.of(), List.of(course));
+    studyApplicantRepository.saveAll(List.of(applicantOne, applicantTwo));
+    studyGroupRepository.save(StudyGroup.of(3, currentTerm, List.of(applicantOne, applicantTwo)));
+
+    // When
+    List<UserDto.UserMeWithMasking> result = teamService.getTeamUsers("member1@histudy.com");
+
+    // Then
+    assertThat(result).hasSize(2);
+    assertThat(result)
+        .extracting(UserDto.UserMeWithMasking::getSid)
+        .containsExactlyInAnyOrder("222****1", "222****2");
+    assertThat(result).allMatch(user -> user.getTag().equals(3));
+  }
+
+  @Test
+  void 그룹_랭킹을_조회하면_누적시간_내림차순으로_반환한다() {
+    // Given
+    academicTermRepository.save(currentTerm);
+    Course course = commonCourse;
+    User savedTeamOneUser = userRepository.save(teamOneUser);
+    User savedTeamTwoUser = userRepository.save(teamTwoUser);
+    StudyApplicant applicantOne =
+        StudyApplicant.of(currentTerm, savedTeamOneUser, List.of(), List.of(course));
+    StudyApplicant applicantTwo =
+        StudyApplicant.of(currentTerm, savedTeamTwoUser, List.of(), List.of(course));
+    studyApplicantRepository.saveAll(List.of(applicantOne, applicantTwo));
+    StudyGroup groupOne =
+        studyGroupRepository.save(StudyGroup.of(1, currentTerm, List.of(applicantOne)));
+    StudyGroup groupTwo =
+        studyGroupRepository.save(StudyGroup.of(2, currentTerm, List.of(applicantTwo)));
+    StudyReport firstReport =
+        studyReportRepository.save(
+            StudyReport.builder()
+                .title("A")
+                .content("A")
+                .totalMinutes(60)
+                .studyGroup(groupOne)
+                .participants(List.of(savedTeamOneUser))
+                .images(List.of("reports/one.png"))
+                .courses(List.of(course))
+                .build());
+    StudyReport secondReport =
+        studyReportRepository.save(
+            StudyReport.builder()
+                .title("B")
+                .content("B")
+                .totalMinutes(180)
+                .studyGroup(groupTwo)
+                .participants(List.of(savedTeamTwoUser))
+                .images(List.of("reports/two.png"))
+                .courses(List.of(course))
+                .build());
+    ReflectionTestUtils.setField(
+        firstReport.getImages().get(0), "createdDate", LocalDateTime.now().minusDays(1));
+    ReflectionTestUtils.setField(
+        secondReport.getImages().get(0), "createdDate", LocalDateTime.now());
+
+    // When
+    TeamRankDto result = teamService.getAllTeams();
+
+    // Then
+    assertThat(result.getTeams()).hasSize(2);
+    assertThat(result.getTeams().get(0).getId()).isEqualTo(2);
+    assertThat(result.getTeams().get(0).getTotalMinutes()).isEqualTo(180);
+    assertThat(result.getTeams().get(0).getThumbnail())
+        .isEqualTo("https://histudy.handong.edu/images/reports/two.png");
+  }
+
+  @Test
+  void 그룹의_활동_보고서_목록을_조회하면_총시간과_보고서목록을_반환한다() {
+    // Given
+    academicTermRepository.save(currentTerm);
+    Course course = commonCourse;
+    User member = userRepository.save(memberUser);
+    StudyApplicant applicant = StudyApplicant.of(currentTerm, member, List.of(), List.of(course));
+    studyApplicantRepository.save(applicant);
+    StudyGroup group = studyGroupRepository.save(StudyGroup.of(8, currentTerm, List.of(applicant)));
+    studyReportRepository.save(
+        StudyReport.builder()
+            .title("1주차")
+            .content("스터디")
+            .totalMinutes(75)
+            .studyGroup(group)
+            .participants(List.of(member))
+            .images(List.of("reports/one.png"))
+            .courses(List.of(course))
+            .build());
+    studyReportRepository.save(
+        StudyReport.builder()
+            .title("2주차")
+            .content("스터디")
+            .totalMinutes(45)
+            .studyGroup(group)
+            .participants(List.of(member))
+            .images(List.of("reports/two.png"))
+            .courses(List.of(course))
+            .build());
+
+    // When
+    TeamReportDto result =
+        teamService.getTeamReports(group.getStudyGroupId(), "member@histudy.com");
+
+    // Then
+    assertThat(result.getTag()).isEqualTo(8);
+    assertThat(result.getMembers()).hasSize(1);
+    assertThat(result.getTotalTime()).isEqualTo(120);
+    assertThat(result.getReports()).hasSize(2);
+    assertThat(result.getReports())
+        .extracting(ReportDto.ReportBasic::getTitle)
+        .containsExactly("2주차", "1주차");
+  }
+
+  @Test
+  void 현재_학기_없이_그룹을_자동_배정하면_예외가_발생한다() {
+    // Given
+
+    // When Then
+    assertThatThrownBy(() -> teamService.matchTeam())
+        .isInstanceOf(NoCurrentTermFoundException.class);
+  }
+
+  @Test
+  void 현재_학기_없이_그룹_랭킹을_조회하면_예외가_발생한다() {
+    // Given
+
+    // When Then
+    assertThatThrownBy(() -> teamService.getAllTeams())
+        .isInstanceOf(NoCurrentTermFoundException.class);
+  }
+
+  private Course createCourse(
+      Long courseId, String name, String code, String professor, AcademicTerm academicTerm) {
+    Course course =
+        Course.builder()
+            .name(name)
+            .code(code)
+            .professor(professor)
+            .academicTerm(academicTerm)
+            .build();
+    ReflectionTestUtils.setField(course, "courseId", courseId);
+    return course;
+  }
+}
