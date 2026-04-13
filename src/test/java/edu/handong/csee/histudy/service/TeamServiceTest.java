@@ -47,32 +47,32 @@ class TeamServiceTest {
           .build();
   private final User memberOneUser =
       User.builder()
-          .sub("sub-1")
-          .sid("22230001")
+          .sub("sub-2")
+          .sid("22230002")
           .email("member1@histudy.com")
           .name("Member1")
           .role(Role.USER)
           .build();
   private final User memberTwoUser =
       User.builder()
-          .sub("sub-2")
-          .sid("22230002")
+          .sub("sub-3")
+          .sid("22230003")
           .email("member2@histudy.com")
           .name("Member2")
           .role(Role.USER)
           .build();
   private final User teamOneUser =
       User.builder()
-          .sub("sub-1")
-          .sid("22230001")
+          .sub("sub-4")
+          .sid("22230004")
           .email("team1@histudy.com")
           .name("Team1")
           .role(Role.USER)
           .build();
   private final User teamTwoUser =
       User.builder()
-          .sub("sub-2")
-          .sid("22230002")
+          .sub("sub-5")
+          .sid("22230005")
           .email("team2@histudy.com")
           .name("Team2")
           .role(Role.USER)
@@ -303,7 +303,7 @@ class TeamServiceTest {
     assertThat(result).hasSize(2);
     assertThat(result)
         .extracting(UserDto.UserMeWithMasking::getSid)
-        .containsExactlyInAnyOrder("222****1", "222****2");
+        .containsExactlyInAnyOrder("222****2", "222****3");
     assertThat(result).allMatch(user -> user.getTag().equals(3));
   }
 
