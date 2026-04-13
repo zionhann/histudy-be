@@ -4,8 +4,8 @@
 
 ## 파일 위치
 
-- 파일 생성 위치: 대상 파일의 `src/main/java/**` 하위 패키지 구조를 그대로 반영
-- 파일명: `<대상 파일 이름>Test.java` (e.g. `AbcService.java` -> `AbcServiceTest.java`
+- 파일 생성 위치: 대상 파일의 `src/test/java/**` 하위 패키지 구조를 그대로 반영
+- 파일명: `<대상 파일 이름>Test.java` (e.g. `AbcService.java` -> `AbcServiceTest.java`)
 
 ## 프로퍼티
 

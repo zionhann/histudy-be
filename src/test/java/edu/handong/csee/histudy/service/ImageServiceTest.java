@@ -99,7 +99,9 @@ class ImageServiceTest {
 
     // Then
     assertThat(result).startsWith("https://histudy.handong.edu/images/reports/");
-    assertThat(Files.list(tempDir.resolve("reports"))).hasSize(1);
+    try (var reportFiles = Files.list(tempDir.resolve("reports"))) {
+      assertThat(reportFiles.toList()).hasSize(1);
+    }
   }
 
   @Test
@@ -133,7 +135,9 @@ class ImageServiceTest {
 
     // Then
     assertThat(result).isEqualTo("https://histudy.handong.edu/images/reports/existing.png");
-    assertThat(Files.list(tempDir.resolve("reports"))).hasSize(1);
+    try (var reportFiles = Files.list(tempDir.resolve("reports"))) {
+      assertThat(reportFiles.toList()).hasSize(1);
+    }
   }
 
   @Test

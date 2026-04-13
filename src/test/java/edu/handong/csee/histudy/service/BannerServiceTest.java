@@ -130,7 +130,8 @@ class BannerServiceTest {
     assertThat(result.getLabel()).isEqualTo("Spring Banner");
     assertThat(result.getDisplayOrder()).isEqualTo(2);
     assertThat(bannerRepository.findAll()).hasSize(2);
-    assertThat(Files.exists(tempDir.resolve("banner"))).isTrue();
+    Path storedImage = tempDir.resolve(result.getImageUrl().replace("https://histudy.handong.edu/images/", ""));
+    assertThat(Files.exists(storedImage)).isTrue();
   }
 
   @Test
@@ -165,6 +166,15 @@ class BannerServiceTest {
     assertThat(updated.isActive()).isFalse();
     assertThat(updated.getRedirectUrl()).isEqualTo("https://example.com/updated");
     assertThat(updated.getImageUrl()).isEqualTo(originalImageUrl);
+    Banner persisted =
+        bannerRepository
+            .findById(created.getId())
+            .orElseThrow(() -> new AssertionError("updated banner should remain in repository"));
+    assertThat(persisted.getLabel()).isEqualTo("Updated");
+    assertThat(persisted.isActive()).isFalse();
+    assertThat(persisted.getRedirectUrl()).isEqualTo("https://example.com/updated");
+    assertThat(persisted.getImagePath())
+        .isEqualTo(originalImageUrl.replace("https://histudy.handong.edu/images/", ""));
   }
 
   @Test

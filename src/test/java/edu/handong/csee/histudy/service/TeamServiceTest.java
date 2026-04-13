@@ -26,6 +26,7 @@ import edu.handong.csee.histudy.service.repository.fake.FakeUserRepository;
 import edu.handong.csee.histudy.util.ImagePathMapper;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -206,10 +207,36 @@ class TeamServiceTest {
     teamService.matchTeam();
 
     // Then
-    assertThat(studyGroupRepository.findAllByAcademicTerm(currentTerm)).hasSize(2);
-    assertThat(studyGroupRepository.findAllByAcademicTerm(currentTerm))
+    List<StudyGroup> createdGroups = studyGroupRepository.findAllByAcademicTerm(currentTerm);
+    assertThat(createdGroups).hasSize(2);
+    assertThat(createdGroups)
         .extracting(group -> group.getMembers().size())
         .containsExactlyInAnyOrder(2, 3);
+    StudyGroup friendGroup =
+        createdGroups.stream()
+            .filter(
+                group ->
+                    group.getMembers().stream()
+                        .anyMatch(
+                            applicant ->
+                                applicant.getUser().getEmail().equals(friendOne.getEmail())))
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("friendOne should belong to a matched group"));
+    assertThat(friendGroup.getMembers())
+        .extracting(applicant -> applicant.getUser().getEmail())
+        .contains(friendTwo.getEmail());
+    assertThat(createdGroups)
+        .anySatisfy(
+            group ->
+                assertThat(
+                        group.getMembers().stream()
+                            .map(applicant -> applicant.getUser().getEmail())
+                            .collect(java.util.stream.Collectors.toSet()))
+                    .containsAll(
+                        Set.of(
+                            courseOne.getEmail(),
+                            courseTwo.getEmail(),
+                            courseThree.getEmail())));
     assertThat(studyApplicantRepository.findUnassignedApplicants(currentTerm))
         .extracting(applicant -> applicant.getUser().getEmail())
         .containsExactlyInAnyOrder("left1@histudy.com", "left2@histudy.com");
@@ -343,26 +370,30 @@ class TeamServiceTest {
     StudyApplicant applicant = StudyApplicant.of(currentTerm, member, List.of(), List.of(course));
     studyApplicantRepository.save(applicant);
     StudyGroup group = studyGroupRepository.save(StudyGroup.of(8, currentTerm, List.of(applicant)));
-    studyReportRepository.save(
-        StudyReport.builder()
-            .title("1주차")
-            .content("스터디")
-            .totalMinutes(75)
-            .studyGroup(group)
-            .participants(List.of(member))
-            .images(List.of("reports/one.png"))
-            .courses(List.of(course))
-            .build());
-    studyReportRepository.save(
-        StudyReport.builder()
-            .title("2주차")
-            .content("스터디")
-            .totalMinutes(45)
-            .studyGroup(group)
-            .participants(List.of(member))
-            .images(List.of("reports/two.png"))
-            .courses(List.of(course))
-            .build());
+    StudyReport firstReport =
+        studyReportRepository.save(
+            StudyReport.builder()
+                .title("1주차")
+                .content("스터디")
+                .totalMinutes(75)
+                .studyGroup(group)
+                .participants(List.of(member))
+                .images(List.of("reports/one.png"))
+                .courses(List.of(course))
+                .build());
+    StudyReport secondReport =
+        studyReportRepository.save(
+            StudyReport.builder()
+                .title("2주차")
+                .content("스터디")
+                .totalMinutes(45)
+                .studyGroup(group)
+                .participants(List.of(member))
+                .images(List.of("reports/two.png"))
+                .courses(List.of(course))
+                .build());
+    ReflectionTestUtils.setField(firstReport, "createdDate", LocalDateTime.of(2025, 3, 10, 9, 0));
+    ReflectionTestUtils.setField(secondReport, "createdDate", LocalDateTime.of(2025, 3, 17, 9, 0));
 
     // When
     TeamReportDto result =

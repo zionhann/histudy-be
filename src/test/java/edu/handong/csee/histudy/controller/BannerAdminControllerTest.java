@@ -191,6 +191,8 @@ class BannerAdminControllerTest {
     mockMvc
         .perform(delete("/api/admin/banners/{bannerId}", 2L).requestAttr("claims", claims))
         .andExpect(status().isForbidden());
+
+    verifyNoInteractions(bannerService);
   }
 
   private BannerDto.AdminBannerInfo createAdminBannerInfo(Long bannerId) {
