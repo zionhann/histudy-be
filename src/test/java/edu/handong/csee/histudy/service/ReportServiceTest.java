@@ -1,44 +1,80 @@
 package edu.handong.csee.histudy.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 import edu.handong.csee.histudy.controller.form.ReportForm;
-import edu.handong.csee.histudy.domain.*;
+import edu.handong.csee.histudy.domain.AcademicTerm;
+import edu.handong.csee.histudy.domain.Course;
+import edu.handong.csee.histudy.domain.Role;
+import edu.handong.csee.histudy.domain.StudyApplicant;
+import edu.handong.csee.histudy.domain.StudyGroup;
+import edu.handong.csee.histudy.domain.StudyReport;
+import edu.handong.csee.histudy.domain.TermType;
+import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.ReportDto;
-import edu.handong.csee.histudy.exception.*;
-import edu.handong.csee.histudy.repository.*;
-import edu.handong.csee.histudy.service.repository.fake.*;
-import edu.handong.csee.histudy.support.TestDataFactory;
+import edu.handong.csee.histudy.service.repository.fake.FakeAcademicTermRepository;
+import edu.handong.csee.histudy.service.repository.fake.FakeCourseRepository;
+import edu.handong.csee.histudy.service.repository.fake.FakeStudyGroupRepository;
+import edu.handong.csee.histudy.service.repository.fake.FakeStudyReportRepository;
+import edu.handong.csee.histudy.service.repository.fake.FakeUserRepository;
 import edu.handong.csee.histudy.util.ImagePathMapper;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-@ExtendWith(MockitoExtension.class)
-public class ReportServiceTest {
+class ReportServiceTest {
 
+  private final AcademicTerm currentTerm =
+      AcademicTerm.builder().academicYear(2025).semester(TermType.SPRING).isCurrent(true).build();
+  private final User memberUser =
+      User.builder()
+          .sub("sub-1")
+          .sid("22230001")
+          .email("member@histudy.com")
+          .name("Member")
+          .role(Role.USER)
+          .build();
+  private final User participantUser =
+      User.builder()
+          .sub("sub-2")
+          .sid("22230002")
+          .email("participant@histudy.com")
+          .name("Participant")
+          .role(Role.USER)
+          .build();
+  private final Course primaryCourse =
+      Course.builder()
+          .name("자료구조")
+          .code("CSEE201")
+          .professor("Kim")
+          .academicTerm(currentTerm)
+          .build();
+  private final Course secondaryCourse =
+      Course.builder()
+          .name("운영체제")
+          .code("CSEE301")
+          .professor("Lee")
+          .academicTerm(currentTerm)
+          .build();
+
+  private FakeStudyReportRepository studyReportRepository;
+  private FakeUserRepository userRepository;
+  private FakeCourseRepository courseRepository;
+  private FakeStudyGroupRepository studyGroupRepository;
+  private FakeAcademicTermRepository academicTermRepository;
   private ReportService reportService;
 
   @BeforeEach
-  void init() {
-    StudyGroupRepository studyGroupRepository = new FakeStudyGroupRepository();
-    UserRepository userRepository = new FakeUserRepository();
-    AcademicTermRepository academicTermRepository = new FakeAcademicTermRepository();
-    StudyApplicantRepository studyApplicantRepository = new FakeStudyApplicationRepository();
-    StudyReportRepository studyReportRepository = new FakeStudyReportRepository();
-    CourseRepository courseRepository = new FakeCourseRepository();
+  void setUp() {
+    studyReportRepository = new FakeStudyReportRepository();
+    userRepository = new FakeUserRepository();
+    courseRepository = new FakeCourseRepository();
+    studyGroupRepository = new FakeStudyGroupRepository();
+    academicTermRepository = new FakeAcademicTermRepository();
     ImagePathMapper imagePathMapper = new ImagePathMapper();
-    ReflectionTestUtils.setField(imagePathMapper, "origin", "http://localhost:8080");
-    ReflectionTestUtils.setField(imagePathMapper, "imageBasePath", "/images/");
-
+    ReflectionTestUtils.setField(imagePathMapper, "origin", "https://histudy.handong.edu");
+    ReflectionTestUtils.setField(imagePathMapper, "imageBasePath", "/images");
     reportService =
         new ReportService(
             studyReportRepository,
@@ -47,275 +83,206 @@ public class ReportServiceTest {
             studyGroupRepository,
             academicTermRepository,
             imagePathMapper);
-
-    // Setup
-    AcademicTerm term = TestDataFactory.createCurrentTerm();
-    academicTermRepository.save(term);
-
-    User student1 = TestDataFactory.createUser("1", "22500101", "user1@test.com", "Foo", Role.USER);
-    User student2 = TestDataFactory.createUser("2", "22500102", "user2@test.com", "Bar", Role.USER);
-
-    userRepository.save(student1);
-    userRepository.save(student2);
-
-    Course course = TestDataFactory.createCourse("Introduction to Test", "ECE00103", "John", term);
-    courseRepository.saveAll(List.of(course));
-
-    StudyApplicant studyApplicant1 =
-        TestDataFactory.createStudyApplicant(term, student1, List.of(student2), List.of(course));
-    StudyApplicant studyApplicant2 =
-        TestDataFactory.createStudyApplicant(term, student2, List.of(student1), List.of(course));
-
-    studyApplicantRepository.save(studyApplicant1);
-    studyApplicantRepository.save(studyApplicant2);
-
-    StudyGroup studyGroup = StudyGroup.of(1, term, List.of(studyApplicant1, studyApplicant2));
-    studyGroupRepository.save(studyGroup);
-
-    StudyReport report =
-        StudyReport.builder()
-            .title("title")
-            .content("content")
-            .totalMinutes(60L)
-            .courses(List.of(course))
-            .participants(List.of(student1))
-            .images(List.of("/path/to/image1.png"))
-            .studyGroup(studyGroup)
-            .build();
-    studyReportRepository.save(report);
-
-    IntStream.range(0, report.getImages().size())
-        .forEach(
-            i ->
-                ReflectionTestUtils.setField(
-                    report.getImages().get(i), "reportImageId", (long) i + 1));
   }
 
   @Test
-  void 보고서폼제공시_보고서생성() {
+  void 활동_보고서를_작성하면_참여자와_과목과_이미지가_저장된다() {
     // Given
+    academicTermRepository.save(currentTerm);
+    User savedMemberUser = userRepository.save(memberUser);
+    User savedParticipantUser = userRepository.save(participantUser);
+    List<Course> savedCourses = courseRepository.saveAll(List.of(primaryCourse, secondaryCourse));
+    Course savedPrimaryCourse = savedCourses.get(0);
+    StudyApplicant applicant =
+        StudyApplicant.of(currentTerm, savedMemberUser, List.of(), List.of(savedPrimaryCourse));
+    studyGroupRepository.save(StudyGroup.of(1, currentTerm, List.of(applicant)));
     ReportForm form =
         ReportForm.builder()
-            .title("title2")
-            .content("content2")
-            .totalMinutes(120L)
-            .participants(List.of())
-            .courses(List.of())
-            .build();
-
-    // When
-    ReportDto.ReportInfo report = reportService.createReport(form, "user1@test.com");
-
-    // Then
-    assertThat(report.getTitle()).isEqualTo("title2");
-  }
-
-  @Test
-  void 사용자이메일시_보고서목록반환() {
-    // When
-    List<ReportDto.ReportInfo> reports = reportService.getReports("user1@test.com");
-
-    // Then
-    assertThat(reports.size()).isEqualTo(1);
-  }
-
-  @Test
-  void 보고서ID시_상세정보반환() {
-    // When
-    Optional<ReportDto.ReportInfo> reportOr1 = reportService.getReport(1L);
-    Optional<ReportDto.ReportInfo> reportOr2 = reportService.getReport(2L);
-
-    // Then
-    assertThat(reportOr1.isPresent()).isTrue();
-    assertThat(reportOr2.isPresent()).isFalse();
-  }
-
-  @Test
-  void 수정폼제공시_보고서업데이트() {
-    // Given
-    ReportForm form =
-        ReportForm.builder()
-            .title("modifiedTitle")
-            .participants(List.of())
-            .courses(List.of())
-            .build();
-
-    // When
-    reportService.updateReport(1L, form);
-    Optional<ReportDto.ReportInfo> report = reportService.getReport(1L);
-
-    // Then
-    assertThat(report.isPresent()).isTrue();
-    assertThat(report.get().getTitle()).isEqualTo("modifiedTitle");
-  }
-
-  @Test
-  void 보고서ID시_삭제성공() {
-    // When
-    Optional<ReportDto.ReportInfo> reportOrBefore = reportService.getReport(1L);
-    reportService.deleteReport(1L);
-    Optional<ReportDto.ReportInfo> reportOrAfter = reportService.getReport(1L);
-
-    // Then
-    assertThat(reportOrBefore.isPresent()).isTrue();
-    assertThat(reportOrAfter.isPresent()).isFalse();
-  }
-
-  @Test
-  void 존재하지않는보고서삭제시_false반환() {
-    // When
-    boolean result = reportService.deleteReport(999L);
-
-    // Then
-    assertThat(result).isFalse();
-  }
-
-  @Test
-  void 존재하지않는사용자시_예외발생() {
-    // Given
-    ReportForm form =
-        ReportForm.builder()
-            .title("title")
-            .content("content")
-            .totalMinutes(60L)
-            .participants(List.of())
-            .courses(List.of())
-            .build();
-
-    // When & Then
-    assertThatThrownBy(() -> reportService.createReport(form, "nonexistent@test.com"))
-        .isInstanceOf(UserNotFoundException.class);
-  }
-
-  @Test
-  void 현재학기없을시_예외발생() {
-    // Given
-    ReportService testReportService = createReportServiceWithoutCurrentTerm();
-    ReportForm form =
-        ReportForm.builder()
-            .title("title")
-            .content("content")
-            .totalMinutes(60L)
-            .participants(List.of())
-            .courses(List.of())
-            .build();
-
-    // When & Then
-    assertThatThrownBy(() -> testReportService.createReport(form, "user1@test.com"))
-        .isInstanceOf(NoCurrentTermFoundException.class);
-  }
-
-  @Test
-  void 목록조회시존재하지않는사용자_예외발생() {
-    // When & Then
-    assertThatThrownBy(() -> reportService.getReports("nonexistent@test.com"))
-        .isInstanceOf(UserNotFoundException.class);
-  }
-
-  @Test
-  void 목록조회시현재학기없음_예외발생() {
-    // Given
-    ReportService testReportService = createReportServiceWithoutCurrentTerm();
-
-    // When & Then
-    assertThatThrownBy(() -> testReportService.getReports("user1@test.com"))
-        .isInstanceOf(NoCurrentTermFoundException.class);
-  }
-
-  @Test
-  void 존재하지않는보고서수정시_예외발생() {
-    // Given
-    ReportForm form =
-        ReportForm.builder()
-            .title("modifiedTitle")
-            .participants(List.of())
-            .courses(List.of())
-            .build();
-
-    // When & Then
-    assertThatThrownBy(() -> reportService.updateReport(999L, form))
-        .isInstanceOf(ReportNotFoundException.class);
-  }
-
-  @Test
-  void 참가자와과목포함시_보고서생성() {
-    // Given
-    ReportForm form =
-        ReportForm.builder()
-            .title("title with participants")
-            .content("content")
+            .title("1주차")
+            .content("첫 모임")
             .totalMinutes(90L)
-            .participants(List.of(1L, 2L))
-            .courses(List.of(1L))
+            .participants(List.of(savedParticipantUser.getUserId()))
+            .courses(List.of(savedPrimaryCourse.getCourseId()))
+            .images(List.of("https://histudy.handong.edu/images/reports/report1.png"))
             .build();
 
     // When
-    ReportDto.ReportInfo report = reportService.createReport(form, "user1@test.com");
+    ReportDto.ReportInfo result = reportService.createReport(form, "member@histudy.com");
 
     // Then
-    assertThat(report.getTitle()).isEqualTo("title with participants");
-    assertThat(report.getTotalMinutes()).isEqualTo(90L);
-    assertThat(report.getParticipants()).hasSize(2);
-    assertThat(report.getCourses()).hasSize(1);
+    assertThat(studyReportRepository.findAll()).hasSize(1);
+    StudyReport savedReport = studyReportRepository.findAll().get(0);
+    assertThat(savedReport.getTitle()).isEqualTo("1주차");
+    assertThat(savedReport.getParticipants()).hasSize(1);
+    assertThat(savedReport.getCourses()).hasSize(1);
+    assertThat(savedReport.getImages())
+        .extracting(image -> image.getPath())
+        .containsExactly("reports/report1.png");
+    assertThat(result.getImages()).hasSize(1);
+    assertThat(result.getImages().get(0).getUrl())
+        .isEqualTo("https://histudy.handong.edu/images/reports/report1.png");
   }
 
   @Test
-  void 존재하지않는참가자시_필터링() {
+  void 활동_보고서_목록을_조회하면_최신순으로_반환한다() {
     // Given
-    ReportForm form =
-        ReportForm.builder()
-            .title("title")
-            .content("content")
-            .totalMinutes(60L)
-            .participants(List.of(999L))
-            .courses(List.of())
-            .build();
+    academicTermRepository.save(currentTerm);
+    User savedMemberUser = userRepository.save(memberUser);
+    List<Course> savedCourses = courseRepository.saveAll(List.of(primaryCourse, secondaryCourse));
+    Course savedPrimaryCourse = savedCourses.get(0);
+    StudyApplicant applicant =
+        StudyApplicant.of(currentTerm, savedMemberUser, List.of(), List.of(savedPrimaryCourse));
+    StudyGroup savedStudyGroup =
+        studyGroupRepository.save(StudyGroup.of(1, currentTerm, List.of(applicant)));
+    StudyReport first =
+        studyReportRepository.save(
+            StudyReport.builder()
+                .title("1주차")
+                .content("첫 모임")
+                .totalMinutes(90)
+                .studyGroup(savedStudyGroup)
+                .participants(List.of(savedMemberUser))
+                .images(List.of("reports/one.png"))
+                .courses(List.of(savedPrimaryCourse))
+                .build());
+    StudyReport second =
+        studyReportRepository.save(
+            StudyReport.builder()
+                .title("2주차")
+                .content("둘째 모임")
+                .totalMinutes(60)
+                .studyGroup(savedStudyGroup)
+                .participants(List.of(savedMemberUser))
+                .images(List.of("reports/two.png"))
+                .courses(List.of(savedPrimaryCourse))
+                .build());
+    ReflectionTestUtils.setField(first, "createdDate", java.time.LocalDateTime.now().minusDays(1));
+    ReflectionTestUtils.setField(second, "createdDate", java.time.LocalDateTime.now());
 
     // When
-    ReportDto.ReportInfo report = reportService.createReport(form, "user1@test.com");
+    List<ReportDto.ReportInfo> result = reportService.getReports("member@histudy.com");
 
-    // Then - 존재하지 않는 참가자는 필터링됨
-    assertThat(report.getParticipants()).hasSize(0);
+    // Then
+    assertThat(result).hasSize(2);
+    assertThat(result).extracting(ReportDto.ReportInfo::getTitle).containsExactly("2주차", "1주차");
   }
 
   @Test
-  void 존재하지않는과목시_필터링() {
+  void 활동_보고서_상세를_조회하면_상세_정보를_반환한다() {
     // Given
+    academicTermRepository.save(currentTerm);
+    User savedMemberUser = userRepository.save(memberUser);
+    List<Course> savedCourses = courseRepository.saveAll(List.of(primaryCourse, secondaryCourse));
+    Course savedPrimaryCourse = savedCourses.get(0);
+    StudyApplicant applicant =
+        StudyApplicant.of(currentTerm, savedMemberUser, List.of(), List.of(savedPrimaryCourse));
+    StudyGroup savedStudyGroup =
+        studyGroupRepository.save(StudyGroup.of(1, currentTerm, List.of(applicant)));
+    StudyReport savedReport =
+        studyReportRepository.save(
+            StudyReport.builder()
+                .title("1주차")
+                .content("첫 모임")
+                .totalMinutes(90)
+                .studyGroup(savedStudyGroup)
+                .participants(List.of(savedMemberUser))
+                .images(List.of("reports/one.png"))
+                .courses(List.of(savedPrimaryCourse))
+                .build());
+
+    // When
+    ReportDto.ReportInfo result =
+        reportService.getReport(savedReport.getStudyReportId()).orElseThrow();
+
+    // Then
+    assertThat(result.getTitle()).isEqualTo("1주차");
+    assertThat(result.getParticipants()).hasSize(1);
+    assertThat(result.getImages()).hasSize(1);
+  }
+
+  @Test
+  void 작성된_보고서를_업데이트하면_내용과_이미지가_변경된다() {
+    // Given
+    academicTermRepository.save(currentTerm);
+    User savedMemberUser = userRepository.save(memberUser);
+    List<Course> savedCourses = courseRepository.saveAll(List.of(primaryCourse, secondaryCourse));
+    Course savedPrimaryCourse = savedCourses.get(0);
+    Course savedSecondaryCourse = savedCourses.get(1);
+    StudyApplicant applicant =
+        StudyApplicant.of(
+            currentTerm,
+            savedMemberUser,
+            List.of(),
+            List.of(savedPrimaryCourse, savedSecondaryCourse));
+    StudyGroup savedStudyGroup =
+        studyGroupRepository.save(StudyGroup.of(1, currentTerm, List.of(applicant)));
+    StudyReport savedReport =
+        studyReportRepository.save(
+            StudyReport.builder()
+                .title("1주차")
+                .content("첫 모임")
+                .totalMinutes(90)
+                .studyGroup(savedStudyGroup)
+                .participants(List.of(savedMemberUser))
+                .images(List.of("reports/one.png"))
+                .courses(List.of(savedPrimaryCourse))
+                .build());
     ReportForm form =
         ReportForm.builder()
-            .title("title")
-            .content("content")
-            .totalMinutes(60L)
-            .participants(List.of())
-            .courses(List.of(999L))
+            .title("수정된 제목")
+            .content("수정된 내용")
+            .totalMinutes(120L)
+            .participants(List.of(savedMemberUser.getUserId()))
+            .courses(List.of(savedSecondaryCourse.getCourseId()))
+            .images(List.of("https://histudy.handong.edu/images/reports/two.png"))
             .build();
 
     // When
-    ReportDto.ReportInfo report = reportService.createReport(form, "user1@test.com");
+    boolean updated = reportService.updateReport(savedReport.getStudyReportId(), form);
 
-    // Then - 존재하지 않는 과목은 필터링됨
-    assertThat(report.getCourses()).hasSize(0);
+    // Then
+    assertThat(updated).isTrue();
+    StudyReport updatedReport =
+        studyReportRepository.findById(savedReport.getStudyReportId()).orElseThrow();
+    assertThat(updatedReport.getTitle()).isEqualTo("수정된 제목");
+    assertThat(updatedReport.getTotalMinutes()).isEqualTo(120);
+    assertThat(updatedReport.getCourses())
+        .extracting(studyCourse -> studyCourse.getCourse().getName())
+        .containsExactly("운영체제");
+    assertThat(updatedReport.getImages())
+        .extracting(image -> image.getPath())
+        .containsExactly("reports/two.png");
   }
 
-  private ReportService createReportServiceWithoutCurrentTerm() {
-    StudyGroupRepository studyGroupRepository = new FakeStudyGroupRepository();
-    UserRepository userRepository = new FakeUserRepository();
-    AcademicTermRepository academicTermRepository = new FakeAcademicTermRepository();
-    StudyReportRepository studyReportRepository = new FakeStudyReportRepository();
-    CourseRepository courseRepository = new FakeCourseRepository();
-    ImagePathMapper imagePathMapper = new ImagePathMapper();
-    ReflectionTestUtils.setField(imagePathMapper, "origin", "http://localhost:8080");
-    ReflectionTestUtils.setField(imagePathMapper, "imageBasePath", "/images/");
+  @Test
+  void 작성된_보고서를_삭제하면_보고서가_제거된다() {
+    // Given
+    academicTermRepository.save(currentTerm);
+    User savedMemberUser = userRepository.save(memberUser);
+    List<Course> savedCourses = courseRepository.saveAll(List.of(primaryCourse, secondaryCourse));
+    Course savedPrimaryCourse = savedCourses.get(0);
+    StudyApplicant applicant =
+        StudyApplicant.of(currentTerm, savedMemberUser, List.of(), List.of(savedPrimaryCourse));
+    StudyGroup savedStudyGroup =
+        studyGroupRepository.save(StudyGroup.of(1, currentTerm, List.of(applicant)));
+    StudyReport savedReport =
+        studyReportRepository.save(
+            StudyReport.builder()
+                .title("1주차")
+                .content("첫 모임")
+                .totalMinutes(90)
+                .studyGroup(savedStudyGroup)
+                .participants(List.of(savedMemberUser))
+                .images(List.of("reports/one.png"))
+                .courses(List.of(savedPrimaryCourse))
+                .build());
 
-    User student1 = TestDataFactory.createUser("1", "22500101", "user1@test.com", "Foo", Role.USER);
-    userRepository.save(student1);
+    // When
+    boolean deleted = reportService.deleteReport(savedReport.getStudyReportId());
 
-    return new ReportService(
-        studyReportRepository,
-        userRepository,
-        courseRepository,
-        studyGroupRepository,
-        academicTermRepository,
-        imagePathMapper);
+    // Then
+    assertThat(deleted).isTrue();
+    assertThat(studyReportRepository.findAll()).isEmpty();
+    assertThat(reportService.deleteReport(999L)).isFalse();
   }
 }

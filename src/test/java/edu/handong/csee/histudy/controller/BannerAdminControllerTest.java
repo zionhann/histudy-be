@@ -167,6 +167,34 @@ class BannerAdminControllerTest {
         .andExpect(jsonPath("$.id").value(2L));
   }
 
+  @Test
+  void 관리자가_배너삭제시_성공() throws Exception {
+    // Given
+    Claims claims = mock(Claims.class);
+    when(claims.get("rol", String.class)).thenReturn(Role.ADMIN.name());
+
+    // When & Then
+    mockMvc
+        .perform(delete("/api/admin/banners/{bannerId}", 2L).requestAttr("claims", claims))
+        .andExpect(status().isOk());
+
+    verify(bannerService).deleteBanner(2L);
+  }
+
+  @Test
+  void 비관리자가_배너삭제시_실패() throws Exception {
+    // Given
+    Claims claims = mock(Claims.class);
+    when(claims.get("rol", String.class)).thenReturn(Role.USER.name());
+
+    // When & Then
+    mockMvc
+        .perform(delete("/api/admin/banners/{bannerId}", 2L).requestAttr("claims", claims))
+        .andExpect(status().isForbidden());
+
+    verifyNoInteractions(bannerService);
+  }
+
   private BannerDto.AdminBannerInfo createAdminBannerInfo(Long bannerId) {
     Banner banner =
         Banner.builder()

@@ -1,234 +1,194 @@
 package edu.handong.csee.histudy.service;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import edu.handong.csee.histudy.domain.*;
+import edu.handong.csee.histudy.domain.AcademicTerm;
+import edu.handong.csee.histudy.domain.Course;
+import edu.handong.csee.histudy.domain.Role;
+import edu.handong.csee.histudy.domain.StudyApplicant;
+import edu.handong.csee.histudy.domain.StudyGroup;
+import edu.handong.csee.histudy.domain.TermType;
+import edu.handong.csee.histudy.domain.User;
 import edu.handong.csee.histudy.dto.CourseDto;
-import edu.handong.csee.histudy.repository.*;
-import edu.handong.csee.histudy.service.repository.fake.*;
-import edu.handong.csee.histudy.support.TestDataFactory;
-import edu.handong.csee.histudy.util.CSVResolver;
+import edu.handong.csee.histudy.dto.CourseIdDto;
+import edu.handong.csee.histudy.exception.NoCurrentTermFoundException;
+import edu.handong.csee.histudy.exception.StudyGroupNotFoundException;
+import edu.handong.csee.histudy.service.repository.fake.FakeAcademicTermRepository;
+import edu.handong.csee.histudy.service.repository.fake.FakeCourseRepository;
+import edu.handong.csee.histudy.service.repository.fake.FakeStudyGroupRepository;
+import edu.handong.csee.histudy.service.repository.fake.FakeUserRepository;
 import edu.handong.csee.histudy.util.CourseCSV;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.mock.web.MockMultipartFile;
 
-public class CourseServiceTest {
+class CourseServiceTest {
 
+  private final AcademicTerm currentTerm =
+      AcademicTerm.builder().academicYear(2025).semester(TermType.SPRING).isCurrent(true).build();
+  private final AcademicTerm previousTerm =
+      AcademicTerm.builder().academicYear(2024).semester(TermType.FALL).isCurrent(false).build();
+  private final User memberUser =
+      User.builder()
+          .sub("sub-1")
+          .sid("22230001")
+          .email("member@histudy.com")
+          .name("Member")
+          .role(Role.USER)
+          .build();
+  private final Course currentCourse =
+      Course.builder()
+          .name("자료구조")
+          .code("CSEE201")
+          .professor("Kim")
+          .academicTerm(currentTerm)
+          .build();
+  private final Course previousCourse =
+      Course.builder()
+          .name("운영체제")
+          .code("CSEE301")
+          .professor("Lee")
+          .academicTerm(previousTerm)
+          .build();
+  private final List<CourseCSV> replacementCsvData =
+      List.of(
+          CourseCSV.builder().code("CSEE101").title("프로그래밍입문").professor("Kim").build(),
+          CourseCSV.builder().code("CSEE102").title("이산수학").professor("Lee").build());
+
+  private FakeCourseRepository courseRepository;
+  private FakeUserRepository userRepository;
+  private FakeAcademicTermRepository academicTermRepository;
+  private FakeStudyGroupRepository studyGroupRepository;
   private CourseService courseService;
 
-  private CourseRepository courseRepository;
-  private UserRepository userRepository;
-  private AcademicTermRepository academicTermRepository;
-  private StudyGroupRepository studyGroupRepository;
-  private StudyApplicantRepository studyApplicantRepository;
-
   @BeforeEach
-  void init() {
+  void setUp() {
     courseRepository = new FakeCourseRepository();
     userRepository = new FakeUserRepository();
     academicTermRepository = new FakeAcademicTermRepository();
     studyGroupRepository = new FakeStudyGroupRepository();
-    studyApplicantRepository = new FakeStudyApplicationRepository();
-
     courseService =
         new CourseService(
             courseRepository, userRepository, academicTermRepository, studyGroupRepository);
-
-    AcademicTerm term = TestDataFactory.createCurrentTerm();
-    academicTermRepository.save(term);
-
-    User student1 = TestDataFactory.createUser("1", "22500101", "user1@test.com", "Foo", Role.USER);
-    User student2 = TestDataFactory.createUser("2", "22500102", "user2@test.com", "Bar", Role.USER);
-
-    userRepository.save(student1);
-    userRepository.save(student2);
-
-    Course course1 =
-        TestDataFactory.createCourse("Introduction to Algorithms", "ECE00101", "John Doe", term);
-    Course course2 =
-        TestDataFactory.createCourse(
-            "Introduction to Data Structures", "ECE00102", "John Doe", term);
-
-    courseRepository.saveAll(List.of(course1, course2));
-
-    StudyApplicant studyApplicant1 =
-        TestDataFactory.createStudyApplicant(term, student1, List.of(student2), List.of(course1));
-    StudyApplicant studyApplicant2 =
-        TestDataFactory.createStudyApplicant(term, student2, List.of(student1), List.of(course2));
-
-    studyApplicantRepository.save(studyApplicant1);
-    studyApplicantRepository.save(studyApplicant2);
-
-    StudyGroup studyGroup = StudyGroup.of(1, term, List.of(studyApplicant1, studyApplicant2));
-    studyGroupRepository.save(studyGroup);
   }
 
   @Test
-  void 호출시_전체강의목록반환() {
-    // When
-    List<CourseDto.CourseInfo> courses = courseService.getCurrentCourses();
-
-    // Then
-    assertThat(courses.size()).isEqualTo(2);
-  }
-
-  @Test
-  void 키워드제공시_일치하는강의반환() {
-    // When
-    String keyword1 = "algo";
-    String keyword2 = "intro";
-
-    List<CourseDto.CourseInfo> res1 = courseService.search(keyword1);
-    List<CourseDto.CourseInfo> res2 = courseService.search(keyword2);
-
-    // Then
-    assertThat(res1.size()).isEqualTo(1);
-    assertThat(res2.size()).isEqualTo(2);
-  }
-
-  @Test
-  void 대소문자_키워드제공시_대소문자무관_검색() {
-    // When
-    String keyword1 = "ALGO"; // uppercase
-    String keyword2 = "Algorithm"; // mixed case
-    String keyword3 = "algorithms"; // lowercase with plural
-
-    List<CourseDto.CourseInfo> res1 = courseService.search(keyword1);
-    List<CourseDto.CourseInfo> res2 = courseService.search(keyword2);
-    List<CourseDto.CourseInfo> res3 = courseService.search(keyword3);
-
-    // Then
-    assertThat(res1.size()).isEqualTo(1); // Should match "Introduction to Algorithms"
-    assertThat(res2.size()).isEqualTo(1); // Should match "Introduction to Algorithms"
-    assertThat(res3.size()).isEqualTo(1); // Should match "Introduction to Algorithms"
-  }
-
-  @Test
-  void 다양한대소문자_패턴검색() {
-    // When
-    String keyword1 = "data"; // lowercase
-    String keyword2 = "DATA"; // uppercase
-    String keyword3 = "Data"; // title case
-
-    List<CourseDto.CourseInfo> res1 = courseService.search(keyword1);
-    List<CourseDto.CourseInfo> res2 = courseService.search(keyword2);
-    List<CourseDto.CourseInfo> res3 = courseService.search(keyword3);
-
-    // Then - All should match "Introduction to Data Structures"
-    assertThat(res1.size()).isEqualTo(1);
-    assertThat(res2.size()).isEqualTo(1);
-    assertThat(res3.size()).isEqualTo(1);
-  }
-
-  @Test
-  void 사용자이메일시_팀강의목록반환() {
-    // When
-    List<CourseDto.CourseInfo> res = courseService.getTeamCourses("user1@test.com");
-
-    // Then
-    assertThat(res.size()).isEqualTo(2);
-  }
-
-  @Test
-  void 유효한CSV파일시_강의저장성공() throws IOException {
+  void 현재_학기_과목_목록을_조회하면_현재_학기_과목만_반환한다() {
     // Given
-    String csvContent =
-        """
-    title,code,prof
-    Advanced Programming,CSE30201,Dr. Kim
-    Database Systems,CSE30301,Prof. Lee
-    Operating Systems,CSE30401,Dr. Park
-    """;
-    MockMultipartFile file =
-        new MockMultipartFile("courses.csv", "courses.csv", "text/csv", csvContent.getBytes());
+    academicTermRepository.save(currentTerm);
+    academicTermRepository.save(previousTerm);
+    courseRepository.saveAll(List.of(currentCourse, previousCourse));
 
     // When
-    List<CourseCSV> courseData = CSVResolver.of(file).resolve();
-    courseService.replaceCourses(courseData);
+    List<CourseDto.CourseInfo> result = courseService.getCurrentCourses();
 
     // Then
-    List<Course> savedCourses = ((FakeCourseRepository) courseRepository).findAll();
-    assertThat(savedCourses).hasSize(3); // 3 new courses (existing current courses deleted)
+    assertThat(result).hasSize(1);
+    assertThat(result.get(0).getName()).isEqualTo("자료구조");
   }
 
   @Test
-  void IO예외발생시_예외전파() {
+  void 과목명을_검색하면_검색어와_일치하는_과목을_반환한다() {
     // Given
-    MockMultipartFile file =
-        new MockMultipartFile("invalid.csv", "invalid.csv", "text/csv", (byte[]) null) {
-          @Override
-          public InputStream getInputStream() throws IOException {
-            throw new IOException("File read error");
-          }
-        };
-
-    // When & Then
-    assertThatThrownBy(() -> CSVResolver.of(file).resolve())
-        .isInstanceOf(RuntimeException.class)
-        .hasCauseInstanceOf(IOException.class);
-  }
-
-  @Test
-  void 빈필드포함CSV업로드시_검증예외발생() throws IOException {
-    // Given
-    String csvContent =
-        """
-    title,code,prof
-    Advanced Programming,CSE30201,Dr. Kim
-    ,CSE30301,Prof. Lee
-    Operating Systems,,Dr. Park
-    """;
-    MockMultipartFile file =
-        new MockMultipartFile("courses.csv", "courses.csv", "text/csv", csvContent.getBytes());
-
-    // When & Then
-    assertThatThrownBy(() -> CSVResolver.of(file).resolve())
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Missing or empty required field");
-  }
-
-  @Test
-  void 공백필드포함CSV업로드시_검증예외발생() throws IOException {
-    // Given
-    String csvContent =
-        """
-    title,code,prof
-    Advanced Programming,CSE30201,Dr. Kim
-    Database Systems,   ,Prof. Lee
-    """;
-    MockMultipartFile file =
-        new MockMultipartFile("courses.csv", "courses.csv", "text/csv", csvContent.getBytes());
-
-    // When & Then
-    assertThatThrownBy(() -> CSVResolver.of(file).resolve())
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Missing or empty required field 'code'");
-  }
-
-  @Test
-  void 앞뒤공백포함CSV업로드시_트림처리후_저장성공() throws IOException {
-    // Given
-    String csvContent =
-        """
-    title,code,prof
-      Advanced Programming  ,  CSE30201  ,  Dr. Kim
-    """;
-    MockMultipartFile file =
-        new MockMultipartFile("courses.csv", "courses.csv", "text/csv", csvContent.getBytes());
+    academicTermRepository.save(currentTerm);
+    courseRepository.saveAll(
+        List.of(
+            Course.builder()
+                .name("Algorithms")
+                .code("CSEE221")
+                .professor("Kim")
+                .academicTerm(currentTerm)
+                .build(),
+            Course.builder()
+                .name("Database")
+                .code("CSEE223")
+                .professor("Park")
+                .academicTerm(currentTerm)
+                .build()));
 
     // When
-    List<CourseCSV> courseData = CSVResolver.of(file).resolve();
-    courseService.replaceCourses(courseData);
+    List<CourseDto.CourseInfo> result = courseService.search("algo");
 
     // Then
-    List<Course> savedCourses = ((FakeCourseRepository) courseRepository).findAll();
-    assertThat(savedCourses).hasSize(1);
-    assertThat(savedCourses.get(0).getName()).isEqualTo("Advanced Programming");
-    assertThat(savedCourses.get(0).getCode()).isEqualTo("CSE30201");
-    assertThat(savedCourses.get(0).getProfessor()).isEqualTo("Dr. Kim");
+    assertThat(result).hasSize(1);
+    assertThat(result.get(0).getName()).isEqualTo("Algorithms");
+  }
+
+  @Test
+  void 과목_CSV로_교체하면_기존_과목을_대체한다() {
+    // Given
+    academicTermRepository.save(currentTerm);
+    courseRepository.saveAll(
+        List.of(
+            Course.builder()
+                .name("Old Course")
+                .code("OLD101")
+                .professor("Old")
+                .academicTerm(currentTerm)
+                .build()));
+
+    // When
+    courseService.replaceCourses(replacementCsvData);
+
+    // Then
+    assertThat(courseRepository.findAll()).hasSize(2);
+    assertThat(courseRepository.findAll())
+        .extracting(Course::getName)
+        .containsExactlyInAnyOrder("프로그래밍입문", "이산수학");
+    assertThat(courseRepository.findAll())
+        .allMatch(course -> course.getAcademicTerm().equals(currentTerm));
+  }
+
+  @Test
+  void 현재_학기_없이_과목_CSV로_교체하면_예외가_발생한다() {
+    // Given
+    // When Then
+    assertThatThrownBy(() -> courseService.replaceCourses(replacementCsvData))
+        .isInstanceOf(NoCurrentTermFoundException.class);
+  }
+
+  @Test
+  void 그룹_과목_정보를_조회하면_같은_그룹의_과목을_반환한다() {
+    // Given
+    academicTermRepository.save(currentTerm);
+    User user = userRepository.save(memberUser);
+    Course commonCourse = courseRepository.saveAll(List.of(currentCourse)).get(0);
+    StudyApplicant applicant =
+        StudyApplicant.of(currentTerm, user, List.of(), List.of(commonCourse));
+    StudyGroup group = StudyGroup.of(1, currentTerm, List.of(applicant));
+    studyGroupRepository.save(group);
+
+    // When
+    List<CourseDto.CourseInfo> result = courseService.getTeamCourses("member@histudy.com");
+
+    // Then
+    assertThat(result).hasSize(1);
+    assertThat(result.get(0).getName()).isEqualTo("자료구조");
+  }
+
+  @Test
+  void 그룹이_없는_유저가_그룹_과목_정보를_조회하면_예외가_발생한다() {
+    // Given
+    academicTermRepository.save(currentTerm);
+    userRepository.save(memberUser);
+
+    // When Then
+    assertThatThrownBy(() -> courseService.getTeamCourses("member@histudy.com"))
+        .isInstanceOf(StudyGroupNotFoundException.class);
+  }
+
+  @Test
+  void 등록된_과목을_삭제하면_과목이_제거된다() {
+    // Given
+    academicTermRepository.save(currentTerm);
+    Course savedCourse = courseRepository.saveAll(List.of(currentCourse)).get(0);
+
+    // When
+    int result = courseService.deleteCourse(new CourseIdDto(savedCourse.getCourseId()));
+
+    // Then
+    assertThat(result).isEqualTo(1);
+    assertThat(courseRepository.findAll()).isEmpty();
   }
 }

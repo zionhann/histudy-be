@@ -15,6 +15,9 @@ public class FakeStudyReportRepository implements StudyReportRepository {
 
   private final List<StudyReport> store = new ArrayList<>();
   private Long sequence = 1L;
+  private Long imageSequence = 1L;
+  private Long participantSequence = 1L;
+  private Long courseSequence = 1L;
 
   @Override
   public List<StudyReport> findAllByStudyGroupOrderByCreatedDateDesc(StudyGroup studyGroup) {
@@ -38,7 +41,39 @@ public class FakeStudyReportRepository implements StudyReportRepository {
   public StudyReport save(StudyReport report) {
     if (report.getStudyReportId() == null) {
       ReflectionTestUtils.setField(report, "studyReportId", sequence++);
+      ReflectionTestUtils.setField(report, "createdDate", LocalDateTime.now());
     }
+    report
+        .getImages()
+        .forEach(
+            image -> {
+              if (image.getReportImageId() == null) {
+                ReflectionTestUtils.setField(image, "reportImageId", imageSequence++);
+                ReflectionTestUtils.setField(image, "createdDate", LocalDateTime.now());
+              }
+              ReflectionTestUtils.setField(image, "lastModifiedDate", LocalDateTime.now());
+            });
+    report
+        .getParticipants()
+        .forEach(
+            participant -> {
+              if (ReflectionTestUtils.getField(participant, "studyParticipantId") == null) {
+                ReflectionTestUtils.setField(
+                    participant, "studyParticipantId", participantSequence++);
+                ReflectionTestUtils.setField(participant, "createdDate", LocalDateTime.now());
+              }
+              ReflectionTestUtils.setField(participant, "lastModifiedDate", LocalDateTime.now());
+            });
+    report
+        .getCourses()
+        .forEach(
+            studyCourse -> {
+              if (ReflectionTestUtils.getField(studyCourse, "studyCourseId") == null) {
+                ReflectionTestUtils.setField(studyCourse, "studyCourseId", courseSequence++);
+                ReflectionTestUtils.setField(studyCourse, "createdDate", LocalDateTime.now());
+              }
+              ReflectionTestUtils.setField(studyCourse, "lastModifiedDate", LocalDateTime.now());
+            });
     ReflectionTestUtils.setField(report, "lastModifiedDate", LocalDateTime.now());
     store.removeIf(existing -> existing.getStudyReportId().equals(report.getStudyReportId()));
     store.add(report);
@@ -68,5 +103,9 @@ public class FakeStudyReportRepository implements StudyReportRepository {
         .filter(report -> report.getStudyGroup().getAcademicTerm().equals(academicTerm))
         .mapToLong(StudyReport::getTotalMinutes)
         .sum();
+  }
+
+  public List<StudyReport> findAll() {
+    return new ArrayList<>(store);
   }
 }
