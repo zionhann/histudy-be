@@ -34,6 +34,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @WebMvcTest(TeamController.class)
 class TeamControllerTest {
@@ -262,6 +263,25 @@ class TeamControllerTest {
         .andExpect(status().isOk())
         .andExpect(content().contentType("application/json"))
         .andExpect(jsonPath("$.imagePath").value(imagePath));
+  }
+
+  @Test
+  void 그룹원이_용량초과_보고서이미지업로드시_실패() throws Exception {
+    Claims claims = memberClaims("member@test.com");
+
+    MockMultipartFile image =
+        new MockMultipartFile("image", "test.jpg", "image/jpeg", "test image content".getBytes());
+
+    when(imageService.getImagePaths(anyString(), any(), any(Optional.class)))
+        .thenThrow(new MaxUploadSizeExceededException(5 * 1024 * 1024));
+
+    mockMvc
+        .perform(multipart("/api/team/reports/image").file(image).requestAttr("claims", claims))
+        .andExpect(status().isPayloadTooLarge())
+        .andExpect(content().contentType("application/json"))
+        .andExpect(jsonPath("$.code").value(413))
+        .andExpect(jsonPath("$.error").value("Payload Too Large"))
+        .andExpect(jsonPath("$.message").value("업로드 가능한 파일 용량을 초과했습니다."));
   }
 
   @Test
