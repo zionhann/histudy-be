@@ -12,8 +12,11 @@ import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.dto.BannerDto;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
 import edu.handong.csee.histudy.service.BannerService;
+import edu.handong.csee.histudy.service.DeleteBannerCommand;
 import edu.handong.csee.histudy.service.DiscordService;
 import edu.handong.csee.histudy.service.JwtService;
+import edu.handong.csee.histudy.service.ReorderBannersCommand;
+import edu.handong.csee.histudy.service.UpdateBannerCommand;
 import io.jsonwebtoken.Claims;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -114,7 +117,7 @@ class BannerAdminControllerTest {
                 .content(objectMapper.writeValueAsString(form)))
         .andExpect(status().isOk());
 
-    verify(bannerService).reorderBanners(any(BannerReorderForm.class));
+    verify(bannerService).reorderBanners(any(ReorderBannersCommand.class));
   }
 
   @Test
@@ -146,7 +149,7 @@ class BannerAdminControllerTest {
         new MockMultipartFile("image", "banner2.png", "image/png", "banner-2".getBytes());
     BannerDto.AdminBannerInfo info = createAdminBannerInfo(2L);
 
-    when(bannerService.updateBanner(eq(2L), any())).thenReturn(info);
+    when(bannerService.updateBanner(any(UpdateBannerCommand.class))).thenReturn(info);
 
     MockHttpServletRequestBuilder requestBuilder =
         multipart("/api/admin/banners/{bannerId}", 2L)
@@ -178,7 +181,7 @@ class BannerAdminControllerTest {
         .perform(delete("/api/admin/banners/{bannerId}", 2L).requestAttr("claims", claims))
         .andExpect(status().isOk());
 
-    verify(bannerService).deleteBanner(2L);
+    verify(bannerService).deleteBanner(any(DeleteBannerCommand.class));
   }
 
   @Test

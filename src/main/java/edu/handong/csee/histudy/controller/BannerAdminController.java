@@ -6,6 +6,10 @@ import edu.handong.csee.histudy.domain.Role;
 import edu.handong.csee.histudy.dto.BannerDto;
 import edu.handong.csee.histudy.exception.ForbiddenException;
 import edu.handong.csee.histudy.service.BannerService;
+import edu.handong.csee.histudy.service.CreateBannerCommand;
+import edu.handong.csee.histudy.service.DeleteBannerCommand;
+import edu.handong.csee.histudy.service.ReorderBannersCommand;
+import edu.handong.csee.histudy.service.UpdateBannerCommand;
 import io.jsonwebtoken.Claims;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +35,7 @@ public class BannerAdminController {
   public ResponseEntity<BannerDto.AdminBannerInfo> createBanner(
       @ModelAttribute BannerForm form, @RequestAttribute Claims claims) {
     requireAdmin(claims);
-    BannerDto.AdminBannerInfo created = bannerService.createBanner(form);
+    BannerDto.AdminBannerInfo created = bannerService.createBanner(CreateBannerCommand.from(form));
     return ResponseEntity.status(HttpStatus.CREATED).body(created);
   }
 
@@ -41,7 +45,8 @@ public class BannerAdminController {
       @ModelAttribute BannerForm form,
       @RequestAttribute Claims claims) {
     requireAdmin(claims);
-    BannerDto.AdminBannerInfo updated = bannerService.updateBanner(bannerId, form);
+    BannerDto.AdminBannerInfo updated =
+        bannerService.updateBanner(UpdateBannerCommand.from(bannerId, form));
     return ResponseEntity.ok(updated);
   }
 
@@ -49,7 +54,7 @@ public class BannerAdminController {
   public ResponseEntity<Void> reorderBanners(
       @RequestBody BannerReorderForm form, @RequestAttribute Claims claims) {
     requireAdmin(claims);
-    bannerService.reorderBanners(form);
+    bannerService.reorderBanners(ReorderBannersCommand.from(form));
     return ResponseEntity.ok().build();
   }
 
@@ -57,7 +62,7 @@ public class BannerAdminController {
   public ResponseEntity<Void> deleteBanner(
       @PathVariable Long bannerId, @RequestAttribute Claims claims) {
     requireAdmin(claims);
-    bannerService.deleteBanner(bannerId);
+    bannerService.deleteBanner(new DeleteBannerCommand(bannerId));
     return ResponseEntity.ok().build();
   }
 

@@ -20,6 +20,7 @@ import javax.imageio.ImageIO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -76,10 +77,16 @@ class BannerServiceTest {
   void setUp() {
     bannerRepository = new FakeBannerRepository();
     ImagePathMapper imagePathMapper = new ImagePathMapper();
+    ApplicationEventPublisher eventPublisher = event -> {};
+    BannerImageStorage bannerImageStorage = new BannerImageStorage(eventPublisher);
+    BannerDisplayOrderManager bannerDisplayOrderManager =
+        new BannerDisplayOrderManager(bannerRepository);
     ReflectionTestUtils.setField(imagePathMapper, "origin", "https://histudy.handong.edu");
     ReflectionTestUtils.setField(imagePathMapper, "imageBasePath", "/images");
-    bannerService = new BannerService(bannerRepository, imagePathMapper);
-    ReflectionTestUtils.setField(bannerService, "imageBaseLocation", tempDir.toString() + "/");
+    ReflectionTestUtils.setField(bannerImageStorage, "imageBaseLocation", tempDir.toString() + "/");
+    bannerService =
+        new BannerService(
+            bannerRepository, imagePathMapper, bannerImageStorage, bannerDisplayOrderManager);
   }
 
   @Test
@@ -124,13 +131,14 @@ class BannerServiceTest {
             new MockMultipartFile("image", "banner.png", "image/png", bannerPngBytes));
 
     // When
-    BannerDto.AdminBannerInfo result = bannerService.createBanner(form);
+    BannerDto.AdminBannerInfo result = bannerService.createBanner(CreateBannerCommand.from(form));
 
     // Then
     assertThat(result.getLabel()).isEqualTo("Spring Banner");
     assertThat(result.getDisplayOrder()).isEqualTo(2);
     assertThat(bannerRepository.findAll()).hasSize(2);
-    Path storedImage = tempDir.resolve(result.getImageUrl().replace("https://histudy.handong.edu/images/", ""));
+    Path storedImage =
+        tempDir.resolve(result.getImageUrl().replace("https://histudy.handong.edu/images/", ""));
     assertThat(Files.exists(storedImage)).isTrue();
   }
 
@@ -140,7 +148,7 @@ class BannerServiceTest {
     BannerForm form = new BannerForm("Banner", "https://example.com/banner", true, null);
 
     // When Then
-    assertThatThrownBy(() -> bannerService.createBanner(form))
+    assertThatThrownBy(() -> bannerService.createBanner(CreateBannerCommand.from(form)))
         .isInstanceOf(MissingParameterException.class);
   }
 
@@ -149,17 +157,20 @@ class BannerServiceTest {
     // Given
     BannerDto.AdminBannerInfo created =
         bannerService.createBanner(
-            new BannerForm(
-                "Original",
-                "https://example.com/original",
-                true,
-                new MockMultipartFile("image", "banner.png", "image/png", bannerPngBytes)));
+            CreateBannerCommand.from(
+                new BannerForm(
+                    "Original",
+                    "https://example.com/original",
+                    true,
+                    new MockMultipartFile("image", "banner.png", "image/png", bannerPngBytes))));
     String originalImageUrl = created.getImageUrl();
 
     // When
     BannerDto.AdminBannerInfo updated =
         bannerService.updateBanner(
-            created.getId(), new BannerForm("Updated", "https://example.com/updated", false, null));
+            UpdateBannerCommand.from(
+                created.getId(),
+                new BannerForm("Updated", "https://example.com/updated", false, null)));
 
     // Then
     assertThat(updated.getLabel()).isEqualTo("Updated");
@@ -178,6 +189,42 @@ class BannerServiceTest {
   }
 
   @Test
+  void 배너_이미지를_업데이트하면_이미지경로를_교체한다() throws Exception {
+    // Given
+    BannerDto.AdminBannerInfo created =
+        bannerService.createBanner(
+            CreateBannerCommand.from(
+                new BannerForm(
+                    "Original",
+                    "https://example.com/original",
+                    true,
+                    new MockMultipartFile("image", "banner.png", "image/png", bannerPngBytes))));
+    String originalImageUrl = created.getImageUrl();
+
+    // When
+    BannerDto.AdminBannerInfo updated =
+        bannerService.updateBanner(
+            UpdateBannerCommand.from(
+                created.getId(),
+                new BannerForm(
+                    null,
+                    null,
+                    null,
+                    new MockMultipartFile(
+                        "image", "banner-next.png", "image/png", bannerPngBytes))));
+
+    // Then
+    assertThat(updated.getImageUrl()).isNotEqualTo(originalImageUrl);
+    Banner persisted =
+        bannerRepository
+            .findById(created.getId())
+            .orElseThrow(() -> new AssertionError("updated banner should remain in repository"));
+    assertThat(persisted.getImagePath())
+        .isEqualTo(updated.getImageUrl().replace("https://histudy.handong.edu/images/", ""));
+    assertThat(Files.exists(tempDir.resolve(persisted.getImagePath()))).isTrue();
+  }
+
+  @Test
   void 배너_순서를_재배치하면_노출순서가_재정렬된다() {
     // Given
     Banner first = bannerRepository.save(firstBanner);
@@ -185,7 +232,8 @@ class BannerServiceTest {
 
     // When
     bannerService.reorderBanners(
-        new BannerReorderForm(List.of(second.getBannerId(), first.getBannerId())));
+        ReorderBannersCommand.from(
+            new BannerReorderForm(List.of(second.getBannerId(), first.getBannerId()))));
 
     // Then
     assertThat(bannerRepository.findAllByOrderByDisplayOrderAsc())
@@ -205,7 +253,8 @@ class BannerServiceTest {
     assertThatThrownBy(
             () ->
                 bannerService.reorderBanners(
-                    new BannerReorderForm(List.of(first.getBannerId(), 999L))))
+                    ReorderBannersCommand.from(
+                        new BannerReorderForm(List.of(first.getBannerId(), 999L)))))
         .isInstanceOf(MissingParameterException.class);
   }
 
@@ -216,7 +265,7 @@ class BannerServiceTest {
     Banner second = bannerRepository.save(secondBanner);
 
     // When
-    bannerService.deleteBanner(first.getBannerId());
+    bannerService.deleteBanner(new DeleteBannerCommand(first.getBannerId()));
 
     // Then
     assertThat(bannerRepository.findAll()).hasSize(1);
@@ -229,17 +278,19 @@ class BannerServiceTest {
     // Given
 
     // When Then
-    assertThatThrownBy(() -> bannerService.deleteBanner(999L))
+    assertThatThrownBy(() -> bannerService.deleteBanner(new DeleteBannerCommand(999L)))
         .isInstanceOf(BannerNotFoundException.class);
   }
 
   @Test
   void 존재하지_않는_배너를_업데이트하면_예외가_발생한다() {
     // Given
-    BannerForm form = new BannerForm("Updated", "https://example.com/updated", true, null);
+    UpdateBannerCommand command =
+        UpdateBannerCommand.from(
+            999L, new BannerForm("Updated", "https://example.com/updated", true, null));
 
     // When Then
-    assertThatThrownBy(() -> bannerService.updateBanner(999L, form))
+    assertThatThrownBy(() -> bannerService.updateBanner(command))
         .isInstanceOf(BannerNotFoundException.class);
   }
 

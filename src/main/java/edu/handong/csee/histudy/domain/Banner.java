@@ -4,36 +4,34 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
+@Table(name = "banner")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Banner extends BaseTime {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "banner_id")
   private Long bannerId;
 
-  @Column(nullable = false)
+  @Column(name = "label")
   private String label;
 
-  @Column(nullable = false)
+  @Column(name = "image_path")
   private String imagePath;
 
+  @Column(name = "redirect_url")
   private String redirectUrl;
 
-  @Column(nullable = false)
+  @Column(name = "active")
   private boolean active;
 
-  @Column(nullable = false)
+  @Column(name = "display_order")
   private int displayOrder;
 
   @Builder
   public Banner(
-      String label,
-      String imagePath,
-      String redirectUrl,
-      boolean active,
-      int displayOrder) {
+      String label, String imagePath, String redirectUrl, boolean active, int displayOrder) {
     this.label = label;
     this.imagePath = imagePath;
     this.redirectUrl = redirectUrl;
@@ -41,23 +39,28 @@ public class Banner extends BaseTime {
     this.displayOrder = displayOrder;
   }
 
-  public void updateLabel(String label) {
+  public static Banner create(
+      String label, String imagePath, String redirectUrl, boolean active, int displayOrder) {
+    return Banner.builder()
+        .label(label)
+        .imagePath(imagePath)
+        .redirectUrl(redirectUrl)
+        .active(active)
+        .displayOrder(displayOrder)
+        .build();
+  }
+
+  public void update(String label, String redirectUrl, boolean active) {
     this.label = label;
-  }
-
-  public void updateImagePath(String imagePath) {
-    this.imagePath = imagePath;
-  }
-
-  public void updateRedirectUrl(String redirectUrl) {
     this.redirectUrl = redirectUrl;
-  }
-
-  public void updateActive(boolean active) {
     this.active = active;
   }
 
-  public void updateDisplayOrder(int displayOrder) {
+  public void replaceImage(String imagePath) {
+    this.imagePath = imagePath;
+  }
+
+  public void changeDisplayOrder(int displayOrder) {
     this.displayOrder = displayOrder;
   }
 }
