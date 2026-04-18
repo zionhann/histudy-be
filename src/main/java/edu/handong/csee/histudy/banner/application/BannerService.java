@@ -1,9 +1,15 @@
-package edu.handong.csee.histudy.service;
+package edu.handong.csee.histudy.banner.application;
 
-import edu.handong.csee.histudy.domain.Banner;
-import edu.handong.csee.histudy.dto.BannerDto;
+import edu.handong.csee.histudy.banner.adapter.in.response.AdminBannerResponse;
+import edu.handong.csee.histudy.banner.adapter.in.response.PublicBannerResponse;
+import edu.handong.csee.histudy.banner.adapter.out.storage.BannerImageStorage;
+import edu.handong.csee.histudy.banner.application.command.CreateBannerCommand;
+import edu.handong.csee.histudy.banner.application.command.DeleteBannerCommand;
+import edu.handong.csee.histudy.banner.application.command.ReorderBannersCommand;
+import edu.handong.csee.histudy.banner.application.command.UpdateBannerCommand;
+import edu.handong.csee.histudy.banner.application.port.BannerRepository;
+import edu.handong.csee.histudy.banner.domain.Banner;
 import edu.handong.csee.histudy.exception.BannerNotFoundException;
-import edu.handong.csee.histudy.repository.BannerRepository;
 import edu.handong.csee.histudy.util.ImagePathMapper;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -21,21 +27,21 @@ public class BannerService {
   private final BannerDisplayOrderManager bannerDisplayOrderManager;
 
   @Transactional(readOnly = true)
-  public List<BannerDto.AdminBannerInfo> getAdminBanners() {
+  public List<AdminBannerResponse> getAdminBanners() {
     return bannerRepository.findAllByOrderByDisplayOrderAsc().stream()
-        .map(this::toAdminBannerInfo)
+        .map(this::toAdminBannerResponse)
         .toList();
   }
 
   @Transactional(readOnly = true)
-  public List<BannerDto.PublicBannerInfo> getPublicBanners() {
+  public List<PublicBannerResponse> getPublicBanners() {
     return bannerRepository.findAllByActiveTrueOrderByDisplayOrderAsc().stream()
-        .map(this::toPublicBannerInfo)
+        .map(this::toPublicBannerResponse)
         .toList();
   }
 
   @Transactional
-  public BannerDto.AdminBannerInfo createBanner(CreateBannerCommand command) {
+  public AdminBannerResponse createBanner(CreateBannerCommand command) {
     String imagePath = bannerImageStorage.store(command.image(), command.label());
     bannerImageStorage.deleteAfterRollback(imagePath);
 
@@ -47,11 +53,11 @@ public class BannerService {
             command.active(),
             bannerDisplayOrderManager.getNextDisplayOrder());
 
-    return toAdminBannerInfo(bannerRepository.save(banner));
+    return toAdminBannerResponse(bannerRepository.save(banner));
   }
 
   @Transactional
-  public BannerDto.AdminBannerInfo updateBanner(UpdateBannerCommand command) {
+  public AdminBannerResponse updateBanner(UpdateBannerCommand command) {
     Banner banner = findBanner(command.bannerId());
     MultipartFile image = command.image();
 
@@ -64,7 +70,7 @@ public class BannerService {
       replaceBannerImage(banner, image);
     }
 
-    return toAdminBannerInfo(banner);
+    return toAdminBannerResponse(banner);
   }
 
   @Transactional
@@ -92,13 +98,11 @@ public class BannerService {
     return bannerRepository.findById(bannerId).orElseThrow(BannerNotFoundException::new);
   }
 
-  private BannerDto.AdminBannerInfo toAdminBannerInfo(Banner banner) {
-    return new BannerDto.AdminBannerInfo(
-        banner, imagePathMapper.getFullPath(banner.getImagePath()));
+  private AdminBannerResponse toAdminBannerResponse(Banner banner) {
+    return new AdminBannerResponse(banner, imagePathMapper.getFullPath(banner.getImagePath()));
   }
 
-  private BannerDto.PublicBannerInfo toPublicBannerInfo(Banner banner) {
-    return new BannerDto.PublicBannerInfo(
-        banner, imagePathMapper.getFullPath(banner.getImagePath()));
+  private PublicBannerResponse toPublicBannerResponse(Banner banner) {
+    return new PublicBannerResponse(banner, imagePathMapper.getFullPath(banner.getImagePath()));
   }
 }

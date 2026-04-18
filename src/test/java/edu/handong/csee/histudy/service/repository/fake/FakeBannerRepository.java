@@ -1,7 +1,7 @@
 package edu.handong.csee.histudy.service.repository.fake;
 
-import edu.handong.csee.histudy.domain.Banner;
-import edu.handong.csee.histudy.repository.BannerRepository;
+import edu.handong.csee.histudy.banner.application.port.BannerRepository;
+import edu.handong.csee.histudy.banner.domain.Banner;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;

@@ -1,4 +1,4 @@
-package edu.handong.csee.histudy.controller.form;
+package edu.handong.csee.histudy.banner.adapter.in.request;
 
 import java.util.List;
 import lombok.AccessLevel;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class BannerReorderForm {
+public class ReorderBannersRequest {
 
   private List<Long> orderedIds;
 }

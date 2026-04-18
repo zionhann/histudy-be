@@ -2,6 +2,7 @@ package edu.handong.csee.histudy.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import edu.handong.csee.histudy.banner.adapter.out.storage.BannerImageStorage;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;

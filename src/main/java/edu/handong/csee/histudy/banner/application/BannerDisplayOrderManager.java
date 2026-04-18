@@ -1,8 +1,9 @@
-package edu.handong.csee.histudy.service;
+package edu.handong.csee.histudy.banner.application;
 
-import edu.handong.csee.histudy.domain.Banner;
+import edu.handong.csee.histudy.banner.application.command.ReorderBannersCommand;
+import edu.handong.csee.histudy.banner.application.port.BannerRepository;
+import edu.handong.csee.histudy.banner.domain.Banner;
 import edu.handong.csee.histudy.exception.MissingParameterException;
-import edu.handong.csee.histudy.repository.BannerRepository;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;

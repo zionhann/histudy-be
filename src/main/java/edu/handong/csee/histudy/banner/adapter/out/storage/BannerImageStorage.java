@@ -1,8 +1,10 @@
-package edu.handong.csee.histudy.service;
+package edu.handong.csee.histudy.banner.adapter.out.storage;
 
 import static edu.handong.csee.histudy.util.ImageDirectories.BANNER;
 import static org.springframework.util.ResourceUtils.isUrl;
 
+import edu.handong.csee.histudy.banner.adapter.out.storage.event.BannerImageDeleteAfterCommitEvent;
+import edu.handong.csee.histudy.banner.adapter.out.storage.event.BannerImageDeleteAfterRollbackEvent;
 import edu.handong.csee.histudy.exception.FileTransferException;
 import edu.handong.csee.histudy.exception.MissingParameterException;
 import edu.handong.csee.histudy.util.Utils;
@@ -138,7 +140,7 @@ public class BannerImageStorage {
     }
   }
 
-  void deleteQuietly(String imagePath) {
+  public void deleteQuietly(String imagePath) {
     try {
       delete(imagePath);
     } catch (RuntimeException ignored) {

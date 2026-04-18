@@ -1,6 +1,6 @@
-package edu.handong.csee.histudy.repository.jpa;
+package edu.handong.csee.histudy.banner.adapter.out;
 
-import edu.handong.csee.histudy.domain.Banner;
+import edu.handong.csee.histudy.banner.domain.Banner;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,6 +1,6 @@
-package edu.handong.csee.histudy.service;
+package edu.handong.csee.histudy.banner.application.command;
 
-import edu.handong.csee.histudy.controller.form.BannerForm;
+import edu.handong.csee.histudy.banner.adapter.in.request.CreateBannerRequest;
 import edu.handong.csee.histudy.exception.MissingParameterException;
 import java.net.URI;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,15 +20,15 @@ public record CreateBannerCommand(
     }
   }
 
-  public static CreateBannerCommand from(BannerForm form) {
-    if (form == null) {
+  public static CreateBannerCommand from(CreateBannerRequest request) {
+    if (request == null) {
       throw new MissingParameterException("요청 본문이 비어 있습니다.");
     }
     return new CreateBannerCommand(
-        form.getLabel(),
-        form.getRedirectUrl(),
-        form.getActive() == null || form.getActive(),
-        form.getImage());
+        request.getLabel(),
+        request.getRedirectUrl(),
+        request.getActive() == null || request.getActive(),
+        request.getImage());
   }
 
   private static String normalizeRequiredLabel(String label) {

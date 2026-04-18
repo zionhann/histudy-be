@@ -1,4 +1,4 @@
-package edu.handong.csee.histudy.controller.form;
+package edu.handong.csee.histudy.banner.adapter.in.request;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 @AllArgsConstructor
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class BannerForm {
+public class CreateBannerRequest {
 
   private String label;
 

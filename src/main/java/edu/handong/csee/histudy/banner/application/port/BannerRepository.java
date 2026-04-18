@@ -1,6 +1,6 @@
-package edu.handong.csee.histudy.repository;
+package edu.handong.csee.histudy.banner.application.port;
 
-import edu.handong.csee.histudy.domain.Banner;
+import edu.handong.csee.histudy.banner.domain.Banner;
 import java.util.List;
 import java.util.Optional;
 

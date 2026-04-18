@@ -1,5 +1,8 @@
-package edu.handong.csee.histudy.service;
+package edu.handong.csee.histudy.banner.adapter.out.storage.listener;
 
+import edu.handong.csee.histudy.banner.adapter.out.storage.BannerImageStorage;
+import edu.handong.csee.histudy.banner.adapter.out.storage.event.BannerImageDeleteAfterCommitEvent;
+import edu.handong.csee.histudy.banner.adapter.out.storage.event.BannerImageDeleteAfterRollbackEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;

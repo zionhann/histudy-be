@@ -1,4 +1,4 @@
-package edu.handong.csee.histudy.service;
+package edu.handong.csee.histudy.banner.application.command;
 
 import edu.handong.csee.histudy.exception.MissingParameterException;
 

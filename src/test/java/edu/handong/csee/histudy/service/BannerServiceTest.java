@@ -3,10 +3,19 @@ package edu.handong.csee.histudy.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import edu.handong.csee.histudy.controller.form.BannerForm;
-import edu.handong.csee.histudy.controller.form.BannerReorderForm;
-import edu.handong.csee.histudy.domain.Banner;
-import edu.handong.csee.histudy.dto.BannerDto;
+import edu.handong.csee.histudy.banner.adapter.in.request.CreateBannerRequest;
+import edu.handong.csee.histudy.banner.adapter.in.request.ReorderBannersRequest;
+import edu.handong.csee.histudy.banner.adapter.in.request.UpdateBannerRequest;
+import edu.handong.csee.histudy.banner.adapter.in.response.AdminBannerResponse;
+import edu.handong.csee.histudy.banner.adapter.in.response.PublicBannerResponse;
+import edu.handong.csee.histudy.banner.adapter.out.storage.BannerImageStorage;
+import edu.handong.csee.histudy.banner.application.BannerDisplayOrderManager;
+import edu.handong.csee.histudy.banner.application.BannerService;
+import edu.handong.csee.histudy.banner.application.command.CreateBannerCommand;
+import edu.handong.csee.histudy.banner.application.command.DeleteBannerCommand;
+import edu.handong.csee.histudy.banner.application.command.ReorderBannersCommand;
+import edu.handong.csee.histudy.banner.application.command.UpdateBannerCommand;
+import edu.handong.csee.histudy.banner.domain.Banner;
 import edu.handong.csee.histudy.exception.BannerNotFoundException;
 import edu.handong.csee.histudy.exception.MissingParameterException;
 import edu.handong.csee.histudy.service.repository.fake.FakeBannerRepository;
@@ -96,13 +105,11 @@ class BannerServiceTest {
     bannerRepository.save(firstBanner);
 
     // When
-    List<BannerDto.AdminBannerInfo> result = bannerService.getAdminBanners();
+    List<AdminBannerResponse> result = bannerService.getAdminBanners();
 
     // Then
     assertThat(result).hasSize(2);
-    assertThat(result)
-        .extracting(BannerDto.AdminBannerInfo::getLabel)
-        .containsExactly("First", "Second");
+    assertThat(result).extracting(AdminBannerResponse::getLabel).containsExactly("First", "Second");
   }
 
   @Test
@@ -112,7 +119,7 @@ class BannerServiceTest {
     bannerRepository.save(hiddenBanner);
 
     // When
-    List<BannerDto.PublicBannerInfo> result = bannerService.getPublicBanners();
+    List<PublicBannerResponse> result = bannerService.getPublicBanners();
 
     // Then
     assertThat(result).hasSize(1);
@@ -123,15 +130,15 @@ class BannerServiceTest {
   void 새로운_배너를_등록하면_다음_노출순서로_저장된다() throws Exception {
     // Given
     bannerRepository.save(existingBanner);
-    BannerForm form =
-        new BannerForm(
+    CreateBannerRequest form =
+        new CreateBannerRequest(
             "  Spring Banner  ",
             "https://example.com/banner",
             true,
             new MockMultipartFile("image", "banner.png", "image/png", bannerPngBytes));
 
     // When
-    BannerDto.AdminBannerInfo result = bannerService.createBanner(CreateBannerCommand.from(form));
+    AdminBannerResponse result = bannerService.createBanner(CreateBannerCommand.from(form));
 
     // Then
     assertThat(result.getLabel()).isEqualTo("Spring Banner");
@@ -145,7 +152,8 @@ class BannerServiceTest {
   @Test
   void 이미지_없이_배너를_등록하면_예외가_발생한다() {
     // Given
-    BannerForm form = new BannerForm("Banner", "https://example.com/banner", true, null);
+    CreateBannerRequest form =
+        new CreateBannerRequest("Banner", "https://example.com/banner", true, null);
 
     // When Then
     assertThatThrownBy(() -> bannerService.createBanner(CreateBannerCommand.from(form)))
@@ -155,10 +163,10 @@ class BannerServiceTest {
   @Test
   void 배너_정보를_업데이트하면_텍스트정보를_변경한다() throws Exception {
     // Given
-    BannerDto.AdminBannerInfo created =
+    AdminBannerResponse created =
         bannerService.createBanner(
             CreateBannerCommand.from(
-                new BannerForm(
+                new CreateBannerRequest(
                     "Original",
                     "https://example.com/original",
                     true,
@@ -166,11 +174,11 @@ class BannerServiceTest {
     String originalImageUrl = created.getImageUrl();
 
     // When
-    BannerDto.AdminBannerInfo updated =
+    AdminBannerResponse updated =
         bannerService.updateBanner(
             UpdateBannerCommand.from(
                 created.getId(),
-                new BannerForm("Updated", "https://example.com/updated", false, null)));
+                new UpdateBannerRequest("Updated", "https://example.com/updated", false, null)));
 
     // Then
     assertThat(updated.getLabel()).isEqualTo("Updated");
@@ -191,10 +199,10 @@ class BannerServiceTest {
   @Test
   void 배너_이미지를_업데이트하면_이미지경로를_교체한다() throws Exception {
     // Given
-    BannerDto.AdminBannerInfo created =
+    AdminBannerResponse created =
         bannerService.createBanner(
             CreateBannerCommand.from(
-                new BannerForm(
+                new CreateBannerRequest(
                     "Original",
                     "https://example.com/original",
                     true,
@@ -202,11 +210,11 @@ class BannerServiceTest {
     String originalImageUrl = created.getImageUrl();
 
     // When
-    BannerDto.AdminBannerInfo updated =
+    AdminBannerResponse updated =
         bannerService.updateBanner(
             UpdateBannerCommand.from(
                 created.getId(),
-                new BannerForm(
+                new UpdateBannerRequest(
                     null,
                     null,
                     null,
@@ -233,7 +241,7 @@ class BannerServiceTest {
     // When
     bannerService.reorderBanners(
         ReorderBannersCommand.from(
-            new BannerReorderForm(List.of(second.getBannerId(), first.getBannerId()))));
+            new ReorderBannersRequest(List.of(second.getBannerId(), first.getBannerId()))));
 
     // Then
     assertThat(bannerRepository.findAllByOrderByDisplayOrderAsc())
@@ -254,7 +262,7 @@ class BannerServiceTest {
             () ->
                 bannerService.reorderBanners(
                     ReorderBannersCommand.from(
-                        new BannerReorderForm(List.of(first.getBannerId(), 999L)))))
+                        new ReorderBannersRequest(List.of(first.getBannerId(), 999L)))))
         .isInstanceOf(MissingParameterException.class);
   }
 
@@ -287,7 +295,7 @@ class BannerServiceTest {
     // Given
     UpdateBannerCommand command =
         UpdateBannerCommand.from(
-            999L, new BannerForm("Updated", "https://example.com/updated", true, null));
+            999L, new UpdateBannerRequest("Updated", "https://example.com/updated", true, null));
 
     // When Then
     assertThatThrownBy(() -> bannerService.updateBanner(command))

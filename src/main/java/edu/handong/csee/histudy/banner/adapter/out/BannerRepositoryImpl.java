@@ -1,8 +1,7 @@
-package edu.handong.csee.histudy.repository.impl;
+package edu.handong.csee.histudy.banner.adapter.out;
 
-import edu.handong.csee.histudy.domain.Banner;
-import edu.handong.csee.histudy.repository.BannerRepository;
-import edu.handong.csee.histudy.repository.jpa.JpaBannerRepository;
+import edu.handong.csee.histudy.banner.application.port.BannerRepository;
+import edu.handong.csee.histudy.banner.domain.Banner;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;

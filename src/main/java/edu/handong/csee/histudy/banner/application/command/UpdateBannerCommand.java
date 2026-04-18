@@ -1,6 +1,6 @@
-package edu.handong.csee.histudy.service;
+package edu.handong.csee.histudy.banner.application.command;
 
-import edu.handong.csee.histudy.controller.form.BannerForm;
+import edu.handong.csee.histudy.banner.adapter.in.request.UpdateBannerRequest;
 import edu.handong.csee.histudy.exception.MissingParameterException;
 import java.net.URI;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,12 +25,16 @@ public record UpdateBannerCommand(
     }
   }
 
-  public static UpdateBannerCommand from(Long bannerId, BannerForm form) {
-    if (form == null) {
+  public static UpdateBannerCommand from(Long bannerId, UpdateBannerRequest request) {
+    if (request == null) {
       throw new MissingParameterException("요청 본문이 비어 있습니다.");
     }
     return new UpdateBannerCommand(
-        bannerId, form.getLabel(), form.getRedirectUrl(), form.getActive(), form.getImage());
+        bannerId,
+        request.getLabel(),
+        request.getRedirectUrl(),
+        request.getActive(),
+        request.getImage());
   }
 
   public boolean hasImage() {

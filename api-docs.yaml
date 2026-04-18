@@ -64,7 +64,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/PublicBannerInfo'
+                  $ref: '#/components/schemas/PublicBannerResponse'
 
   # ===================
   # Authentication APIs
@@ -520,7 +520,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/AdminBannerInfo'
+                  $ref: '#/components/schemas/AdminBannerResponse'
     post:
       tags:
         - 관리자 API
@@ -555,7 +555,7 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/AdminBannerInfo'
+                $ref: '#/components/schemas/AdminBannerResponse'
         '400':
           description: 잘못된 요청(필수값 누락/파일 형식/파일 크기)
   /api/admin/banners/{bannerId}:
@@ -596,7 +596,7 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: '#/components/schemas/AdminBannerInfo'
+                $ref: '#/components/schemas/AdminBannerResponse'
         '404':
           description: 배너를 찾을 수 없습니다.
     delete:
@@ -626,7 +626,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BannerReorderForm'
+              $ref: '#/components/schemas/ReorderBannersRequest'
         required: true
       responses:
         '200':
@@ -838,7 +838,7 @@ components:
           description: List of course added to apply form
           items:
             $ref: '#/components/schemas/CourseInfo'
-    BannerReorderForm:
+    ReorderBannersRequest:
       type: object
       required:
         - orderedIds
@@ -849,7 +849,7 @@ components:
           items:
             type: integer
             format: int64
-    AdminBannerInfo:
+    AdminBannerResponse:
       type: object
       properties:
         id:
@@ -878,7 +878,7 @@ components:
           format: int32
           description: 표시 순서 (오름차순 노출)
           example: 1
-    PublicBannerInfo:
+    PublicBannerResponse:
       type: object
       properties:
         id:

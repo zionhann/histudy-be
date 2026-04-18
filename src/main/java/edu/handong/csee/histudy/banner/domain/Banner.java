@@ -1,5 +1,6 @@
-package edu.handong.csee.histudy.domain;
+package edu.handong.csee.histudy.banner.domain;
 
+import edu.handong.csee.histudy.domain.BaseTime;
 import jakarta.persistence.*;
 import lombok.*;
 

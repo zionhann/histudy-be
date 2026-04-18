@@ -6,6 +6,5 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @Configuration
 @EnableJpaAuditing
-@EntityScan(basePackages = "edu.handong.csee.histudy.domain")
-public class JpaConfig {
-}
+@EntityScan(basePackages = "edu.handong.csee.histudy")
+public class JpaConfig {}

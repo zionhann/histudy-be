@@ -6,17 +6,19 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.handong.csee.histudy.controller.form.BannerReorderForm;
-import edu.handong.csee.histudy.domain.Banner;
+import edu.handong.csee.histudy.banner.adapter.in.BannerController;
+import edu.handong.csee.histudy.banner.adapter.in.request.ReorderBannersRequest;
+import edu.handong.csee.histudy.banner.adapter.in.response.AdminBannerResponse;
+import edu.handong.csee.histudy.banner.adapter.in.response.PublicBannerResponse;
+import edu.handong.csee.histudy.banner.application.BannerService;
+import edu.handong.csee.histudy.banner.application.command.DeleteBannerCommand;
+import edu.handong.csee.histudy.banner.application.command.ReorderBannersCommand;
+import edu.handong.csee.histudy.banner.application.command.UpdateBannerCommand;
+import edu.handong.csee.histudy.banner.domain.Banner;
 import edu.handong.csee.histudy.domain.Role;
-import edu.handong.csee.histudy.dto.BannerDto;
 import edu.handong.csee.histudy.interceptor.AuthenticationInterceptor;
-import edu.handong.csee.histudy.service.BannerService;
-import edu.handong.csee.histudy.service.DeleteBannerCommand;
 import edu.handong.csee.histudy.service.DiscordService;
 import edu.handong.csee.histudy.service.JwtService;
-import edu.handong.csee.histudy.service.ReorderBannersCommand;
-import edu.handong.csee.histudy.service.UpdateBannerCommand;
 import io.jsonwebtoken.Claims;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,8 +33,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@WebMvcTest(BannerAdminController.class)
-class BannerAdminControllerTest {
+@WebMvcTest(BannerController.class)
+class BannerControllerTest {
 
   private MockMvc mockMvc;
 
@@ -51,10 +53,21 @@ class BannerAdminControllerTest {
     when(authenticationInterceptor.preHandle(any(), any(), any())).thenReturn(true);
 
     mockMvc =
-        MockMvcBuilders.standaloneSetup(new BannerAdminController(bannerService))
+        MockMvcBuilders.standaloneSetup(new BannerController(bannerService))
             .setControllerAdvice(new ExceptionController(discordService))
             .addInterceptors(authenticationInterceptor)
             .build();
+  }
+
+  @Test
+  void 공개배너목록조회시_성공() throws Exception {
+    PublicBannerResponse info = mock(PublicBannerResponse.class);
+    when(bannerService.getPublicBanners()).thenReturn(List.of(info));
+
+    mockMvc
+        .perform(get("/api/public/banners"))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType("application/json"));
   }
 
   @Test
@@ -63,7 +76,7 @@ class BannerAdminControllerTest {
     Claims claims = mock(Claims.class);
     when(claims.get("rol", String.class)).thenReturn(Role.ADMIN.name());
 
-    BannerDto.AdminBannerInfo info = createAdminBannerInfo(1L);
+    AdminBannerResponse info = createAdminBannerInfo(1L);
     when(bannerService.getAdminBanners()).thenReturn(List.of(info));
 
     // When & Then
@@ -82,7 +95,7 @@ class BannerAdminControllerTest {
 
     MockMultipartFile image =
         new MockMultipartFile("image", "banner.png", "image/png", "banner".getBytes());
-    BannerDto.AdminBannerInfo info = createAdminBannerInfo(1L);
+    AdminBannerResponse info = createAdminBannerInfo(1L);
 
     when(bannerService.createBanner(any())).thenReturn(info);
 
@@ -106,7 +119,7 @@ class BannerAdminControllerTest {
     Claims claims = mock(Claims.class);
     when(claims.get("rol", String.class)).thenReturn(Role.ADMIN.name());
 
-    BannerReorderForm form = new BannerReorderForm(List.of(2L, 1L));
+    ReorderBannersRequest form = new ReorderBannersRequest(List.of(2L, 1L));
 
     // When & Then
     mockMvc
@@ -147,7 +160,7 @@ class BannerAdminControllerTest {
 
     MockMultipartFile image =
         new MockMultipartFile("image", "banner2.png", "image/png", "banner-2".getBytes());
-    BannerDto.AdminBannerInfo info = createAdminBannerInfo(2L);
+    AdminBannerResponse info = createAdminBannerInfo(2L);
 
     when(bannerService.updateBanner(any(UpdateBannerCommand.class))).thenReturn(info);
 
@@ -198,7 +211,7 @@ class BannerAdminControllerTest {
     verifyNoInteractions(bannerService);
   }
 
-  private BannerDto.AdminBannerInfo createAdminBannerInfo(Long bannerId) {
+  private AdminBannerResponse createAdminBannerInfo(Long bannerId) {
     Banner banner =
         Banner.builder()
             .label("label")
@@ -208,6 +221,6 @@ class BannerAdminControllerTest {
             .displayOrder(1)
             .build();
     ReflectionTestUtils.setField(banner, "bannerId", bannerId);
-    return new BannerDto.AdminBannerInfo(banner, "http://localhost:8080/images/banner/test.png");
+    return new AdminBannerResponse(banner, "http://localhost:8080/images/banner/test.png");
   }
 }
