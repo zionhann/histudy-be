@@ -1,5 +1,6 @@
 package edu.handong.csee.histudy.banner.adapter.in.request;
 
+import edu.handong.csee.histudy.banner.application.command.UpdateBannerCommand;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,4 +19,8 @@ public class UpdateBannerRequest {
   private Boolean active;
 
   private MultipartFile image;
+
+  public UpdateBannerCommand toCommand(Long bannerId) {
+    return new UpdateBannerCommand(bannerId, label, redirectUrl, active, image);
+  }
 }

@@ -1,6 +1,5 @@
 package edu.handong.csee.histudy.banner.application.command;
 
-import edu.handong.csee.histudy.banner.adapter.in.request.UpdateBannerRequest;
 import edu.handong.csee.histudy.exception.MissingParameterException;
 import java.net.URI;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,18 +22,6 @@ public record UpdateBannerCommand(
     if (label == null && redirectUrl == null && active == null && !hasImage(image)) {
       throw new MissingParameterException(MESSAGE_MISSING_UPDATE_PAYLOAD);
     }
-  }
-
-  public static UpdateBannerCommand from(Long bannerId, UpdateBannerRequest request) {
-    if (request == null) {
-      throw new MissingParameterException("요청 본문이 비어 있습니다.");
-    }
-    return new UpdateBannerCommand(
-        bannerId,
-        request.getLabel(),
-        request.getRedirectUrl(),
-        request.getActive(),
-        request.getImage());
   }
 
   public boolean hasImage() {
@@ -77,7 +64,8 @@ public record UpdateBannerCommand(
     try {
       URI uri = URI.create(normalized);
       String scheme = uri.getScheme();
-      if (!uri.isAbsolute() || scheme == null) {
+      String host = uri.getHost();
+      if (!uri.isAbsolute() || scheme == null || host == null || host.isBlank()) {
         throw new IllegalArgumentException();
       }
       if (!scheme.equalsIgnoreCase("http") && !scheme.equalsIgnoreCase("https")) {

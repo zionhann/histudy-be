@@ -1,6 +1,5 @@
 package edu.handong.csee.histudy.banner.application.command;
 
-import edu.handong.csee.histudy.banner.adapter.in.request.CreateBannerRequest;
 import edu.handong.csee.histudy.exception.MissingParameterException;
 import java.net.URI;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,17 +17,6 @@ public record CreateBannerCommand(
     if (image == null || image.isEmpty()) {
       throw new MissingParameterException(MESSAGE_MISSING_IMAGE);
     }
-  }
-
-  public static CreateBannerCommand from(CreateBannerRequest request) {
-    if (request == null) {
-      throw new MissingParameterException("요청 본문이 비어 있습니다.");
-    }
-    return new CreateBannerCommand(
-        request.getLabel(),
-        request.getRedirectUrl(),
-        request.getActive() == null || request.getActive(),
-        request.getImage());
   }
 
   private static String normalizeRequiredLabel(String label) {
@@ -51,7 +39,8 @@ public record CreateBannerCommand(
     try {
       URI uri = URI.create(normalized);
       String scheme = uri.getScheme();
-      if (!uri.isAbsolute() || scheme == null) {
+      String host = uri.getHost();
+      if (!uri.isAbsolute() || scheme == null || host == null || host.isBlank()) {
         throw new IllegalArgumentException();
       }
       if (!scheme.equalsIgnoreCase("http") && !scheme.equalsIgnoreCase("https")) {

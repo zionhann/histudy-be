@@ -1,5 +1,6 @@
 package edu.handong.csee.histudy.banner.adapter.in.request;
 
+import edu.handong.csee.histudy.banner.application.command.CreateBannerCommand;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,4 +19,8 @@ public class CreateBannerRequest {
   private Boolean active;
 
   private MultipartFile image;
+
+  public CreateBannerCommand toCommand() {
+    return new CreateBannerCommand(label, redirectUrl, active == null || active, image);
+  }
 }

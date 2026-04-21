@@ -20,6 +20,11 @@ public class FakeBannerRepository implements BannerRepository {
   }
 
   @Override
+  public List<Banner> findAllByOrderByDisplayOrderAscForUpdate() {
+    return findAllByOrderByDisplayOrderAsc();
+  }
+
+  @Override
   public List<Banner> findAllByActiveTrueOrderByDisplayOrderAsc() {
     return store.stream()
         .filter(Banner::isActive)
@@ -52,6 +57,11 @@ public class FakeBannerRepository implements BannerRepository {
   @Override
   public Optional<Banner> findTopByOrderByDisplayOrderDesc() {
     return store.stream().max(Comparator.comparingInt(Banner::getDisplayOrder));
+  }
+
+  @Override
+  public Optional<Banner> findTopByOrderByDisplayOrderDescForUpdate() {
+    return findTopByOrderByDisplayOrderDesc();
   }
 
   @Override

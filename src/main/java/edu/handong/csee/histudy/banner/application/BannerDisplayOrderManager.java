@@ -6,11 +6,13 @@ import edu.handong.csee.histudy.banner.domain.Banner;
 import edu.handong.csee.histudy.exception.MissingParameterException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
@@ -23,17 +25,19 @@ public class BannerDisplayOrderManager {
 
   private final BannerRepository bannerRepository;
 
+  @Transactional
   public int getNextDisplayOrder() {
     return bannerRepository
-            .findTopByOrderByDisplayOrderDesc()
+            .findTopByOrderByDisplayOrderDescForUpdate()
             .map(Banner::getDisplayOrder)
             .orElse(0)
         + 1;
   }
 
+  @Transactional
   public void reorder(ReorderBannersCommand command) {
     List<Long> orderedIds = command.orderedIds();
-    List<Banner> banners = bannerRepository.findAllByOrderByDisplayOrderAsc();
+    List<Banner> banners = bannerRepository.findAllByOrderByDisplayOrderAscForUpdate();
 
     if (banners.isEmpty()) {
       if (orderedIds.isEmpty()) {
@@ -44,15 +48,19 @@ public class BannerDisplayOrderManager {
 
     validateReorderPayload(orderedIds, banners);
 
+    Map<Long, Banner> bannersById =
+        banners.stream().collect(Collectors.toMap(Banner::getBannerId, banner -> banner));
+
     for (int i = 0; i < orderedIds.size(); i++) {
-      findBannerById(banners, orderedIds.get(i)).changeDisplayOrder(i + 1);
+      findBannerById(bannersById, orderedIds.get(i)).changeDisplayOrder(i + 1);
     }
 
     bannerRepository.saveAll(banners);
   }
 
+  @Transactional
   public void normalize() {
-    List<Banner> banners = bannerRepository.findAllByOrderByDisplayOrderAsc();
+    List<Banner> banners = bannerRepository.findAllByOrderByDisplayOrderAscForUpdate();
     if (banners.isEmpty()) {
       return;
     }
@@ -83,10 +91,11 @@ public class BannerDisplayOrderManager {
     }
   }
 
-  private Banner findBannerById(List<Banner> banners, Long bannerId) {
-    return banners.stream()
-        .filter(banner -> banner.getBannerId().equals(bannerId))
-        .findFirst()
-        .orElseThrow(() -> new MissingParameterException(MESSAGE_REORDER_INVALID_IDS));
+  private Banner findBannerById(Map<Long, Banner> bannersById, Long bannerId) {
+    Banner banner = bannersById.get(bannerId);
+    if (banner == null) {
+      throw new MissingParameterException(MESSAGE_REORDER_INVALID_IDS);
+    }
+    return banner;
   }
 }

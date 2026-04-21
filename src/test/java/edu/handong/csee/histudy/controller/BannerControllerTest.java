@@ -61,13 +61,20 @@ class BannerControllerTest {
 
   @Test
   void 공개배너목록조회시_성공() throws Exception {
-    PublicBannerResponse info = mock(PublicBannerResponse.class);
+    // Given
+    PublicBannerResponse info = createPublicBannerResponse(1L);
     when(bannerService.getPublicBanners()).thenReturn(List.of(info));
 
+    // When & Then
     mockMvc
         .perform(get("/api/public/banners"))
         .andExpect(status().isOk())
-        .andExpect(content().contentType("application/json"));
+        .andExpect(content().contentType("application/json"))
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$.length()").value(1))
+        .andExpect(jsonPath("$[0].id").value(1L))
+        .andExpect(jsonPath("$[0].imageUrl").value("https://histudy.handong.edu/images/banner/test.png"))
+        .andExpect(jsonPath("$[0].redirectUrl").value("https://example.com"));
   }
 
   @Test
@@ -222,5 +229,18 @@ class BannerControllerTest {
             .build();
     ReflectionTestUtils.setField(banner, "bannerId", bannerId);
     return new AdminBannerResponse(banner, "http://localhost:8080/images/banner/test.png");
+  }
+
+  private PublicBannerResponse createPublicBannerResponse(Long bannerId) {
+    Banner banner =
+        Banner.builder()
+            .label("label")
+            .imagePath("banner/test.png")
+            .redirectUrl("https://example.com")
+            .active(true)
+            .displayOrder(1)
+            .build();
+    ReflectionTestUtils.setField(banner, "bannerId", bannerId);
+    return new PublicBannerResponse(banner, "https://histudy.handong.edu/images/banner/test.png");
   }
 }

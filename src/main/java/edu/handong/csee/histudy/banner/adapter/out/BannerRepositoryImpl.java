@@ -19,6 +19,11 @@ public class BannerRepositoryImpl implements BannerRepository {
   }
 
   @Override
+  public List<Banner> findAllByOrderByDisplayOrderAscForUpdate() {
+    return repository.findAllForUpdateOrderByDisplayOrderAsc();
+  }
+
+  @Override
   public List<Banner> findAllByActiveTrueOrderByDisplayOrderAsc() {
     return repository.findAllByActiveTrueOrderByDisplayOrderAsc();
   }
@@ -41,6 +46,11 @@ public class BannerRepositoryImpl implements BannerRepository {
   @Override
   public Optional<Banner> findTopByOrderByDisplayOrderDesc() {
     return repository.findTopByOrderByDisplayOrderDesc();
+  }
+
+  @Override
+  public Optional<Banner> findTopByOrderByDisplayOrderDescForUpdate() {
+    return repository.findAllForUpdateOrderByDisplayOrderDesc().stream().findFirst();
   }
 
   @Override

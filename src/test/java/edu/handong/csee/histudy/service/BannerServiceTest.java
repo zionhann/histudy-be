@@ -3,12 +3,11 @@ package edu.handong.csee.histudy.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import edu.handong.csee.histudy.banner.adapter.in.request.CreateBannerRequest;
-import edu.handong.csee.histudy.banner.adapter.in.request.ReorderBannersRequest;
-import edu.handong.csee.histudy.banner.adapter.in.request.UpdateBannerRequest;
 import edu.handong.csee.histudy.banner.adapter.in.response.AdminBannerResponse;
 import edu.handong.csee.histudy.banner.adapter.in.response.PublicBannerResponse;
 import edu.handong.csee.histudy.banner.adapter.out.storage.BannerImageStorage;
+import edu.handong.csee.histudy.banner.adapter.out.storage.event.BannerImageDeleteAfterCommitEvent;
+import edu.handong.csee.histudy.banner.adapter.out.storage.event.BannerImageDeleteAfterRollbackEvent;
 import edu.handong.csee.histudy.banner.application.BannerDisplayOrderManager;
 import edu.handong.csee.histudy.banner.application.BannerService;
 import edu.handong.csee.histudy.banner.application.command.CreateBannerCommand;
@@ -24,12 +23,12 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -80,13 +79,14 @@ class BannerServiceTest {
           .build();
 
   private FakeBannerRepository bannerRepository;
+  private CapturingApplicationEventPublisher eventPublisher;
   private BannerService bannerService;
 
   @BeforeEach
   void setUp() {
     bannerRepository = new FakeBannerRepository();
     ImagePathMapper imagePathMapper = new ImagePathMapper();
-    ApplicationEventPublisher eventPublisher = event -> {};
+    eventPublisher = new CapturingApplicationEventPublisher();
     BannerImageStorage bannerImageStorage = new BannerImageStorage(eventPublisher);
     BannerDisplayOrderManager bannerDisplayOrderManager =
         new BannerDisplayOrderManager(bannerRepository);
@@ -130,15 +130,13 @@ class BannerServiceTest {
   void 새로운_배너를_등록하면_다음_노출순서로_저장된다() throws Exception {
     // Given
     bannerRepository.save(existingBanner);
-    CreateBannerRequest form =
-        new CreateBannerRequest(
-            "  Spring Banner  ",
-            "https://example.com/banner",
-            true,
-            new MockMultipartFile("image", "banner.png", "image/png", bannerPngBytes));
+    MockMultipartFile image =
+        new MockMultipartFile("image", "banner.png", "image/png", bannerPngBytes);
 
     // When
-    AdminBannerResponse result = bannerService.createBanner(CreateBannerCommand.from(form));
+    AdminBannerResponse result =
+        bannerService.createBanner(
+            new CreateBannerCommand("  Spring Banner  ", "https://example.com/banner", true, image));
 
     // Then
     assertThat(result.getLabel()).isEqualTo("Spring Banner");
@@ -147,16 +145,19 @@ class BannerServiceTest {
     Path storedImage =
         tempDir.resolve(result.getImageUrl().replace("https://histudy.handong.edu/images/", ""));
     assertThat(Files.exists(storedImage)).isTrue();
+    assertThat(eventPublisher.publishedEvents)
+        .singleElement()
+        .isInstanceOf(BannerImageDeleteAfterRollbackEvent.class);
   }
 
   @Test
   void 이미지_없이_배너를_등록하면_예외가_발생한다() {
     // Given
-    CreateBannerRequest form =
-        new CreateBannerRequest("Banner", "https://example.com/banner", true, null);
-
     // When Then
-    assertThatThrownBy(() -> bannerService.createBanner(CreateBannerCommand.from(form)))
+    assertThatThrownBy(
+            () ->
+                bannerService.createBanner(
+                    new CreateBannerCommand("Banner", "https://example.com/banner", true, null)))
         .isInstanceOf(MissingParameterException.class);
   }
 
@@ -165,20 +166,18 @@ class BannerServiceTest {
     // Given
     AdminBannerResponse created =
         bannerService.createBanner(
-            CreateBannerCommand.from(
-                new CreateBannerRequest(
-                    "Original",
-                    "https://example.com/original",
-                    true,
-                    new MockMultipartFile("image", "banner.png", "image/png", bannerPngBytes))));
+            new CreateBannerCommand(
+                "Original",
+                "https://example.com/original",
+                true,
+                new MockMultipartFile("image", "banner.png", "image/png", bannerPngBytes)));
     String originalImageUrl = created.getImageUrl();
 
     // When
     AdminBannerResponse updated =
         bannerService.updateBanner(
-            UpdateBannerCommand.from(
-                created.getId(),
-                new UpdateBannerRequest("Updated", "https://example.com/updated", false, null)));
+            new UpdateBannerCommand(
+                created.getId(), "Updated", "https://example.com/updated", false, null));
 
     // Then
     assertThat(updated.getLabel()).isEqualTo("Updated");
@@ -201,25 +200,22 @@ class BannerServiceTest {
     // Given
     AdminBannerResponse created =
         bannerService.createBanner(
-            CreateBannerCommand.from(
-                new CreateBannerRequest(
-                    "Original",
-                    "https://example.com/original",
-                    true,
-                    new MockMultipartFile("image", "banner.png", "image/png", bannerPngBytes))));
+            new CreateBannerCommand(
+                "Original",
+                "https://example.com/original",
+                true,
+                new MockMultipartFile("image", "banner.png", "image/png", bannerPngBytes)));
     String originalImageUrl = created.getImageUrl();
 
     // When
     AdminBannerResponse updated =
         bannerService.updateBanner(
-            UpdateBannerCommand.from(
+            new UpdateBannerCommand(
                 created.getId(),
-                new UpdateBannerRequest(
-                    null,
-                    null,
-                    null,
-                    new MockMultipartFile(
-                        "image", "banner-next.png", "image/png", bannerPngBytes))));
+                null,
+                null,
+                null,
+                new MockMultipartFile("image", "banner-next.png", "image/png", bannerPngBytes)));
 
     // Then
     assertThat(updated.getImageUrl()).isNotEqualTo(originalImageUrl);
@@ -230,6 +226,12 @@ class BannerServiceTest {
     assertThat(persisted.getImagePath())
         .isEqualTo(updated.getImageUrl().replace("https://histudy.handong.edu/images/", ""));
     assertThat(Files.exists(tempDir.resolve(persisted.getImagePath()))).isTrue();
+    assertThat(eventPublisher.publishedEvents)
+        .filteredOn(BannerImageDeleteAfterCommitEvent.class::isInstance)
+        .hasSize(1);
+    assertThat(eventPublisher.publishedEvents)
+        .filteredOn(BannerImageDeleteAfterRollbackEvent.class::isInstance)
+        .hasSize(2);
   }
 
   @Test
@@ -240,8 +242,7 @@ class BannerServiceTest {
 
     // When
     bannerService.reorderBanners(
-        ReorderBannersCommand.from(
-            new ReorderBannersRequest(List.of(second.getBannerId(), first.getBannerId()))));
+        new ReorderBannersCommand(List.of(second.getBannerId(), first.getBannerId())));
 
     // Then
     assertThat(bannerRepository.findAllByOrderByDisplayOrderAsc())
@@ -261,8 +262,7 @@ class BannerServiceTest {
     assertThatThrownBy(
             () ->
                 bannerService.reorderBanners(
-                    ReorderBannersCommand.from(
-                        new ReorderBannersRequest(List.of(first.getBannerId(), 999L)))))
+                    new ReorderBannersCommand(List.of(first.getBannerId(), 999L))))
         .isInstanceOf(MissingParameterException.class);
   }
 
@@ -279,6 +279,11 @@ class BannerServiceTest {
     assertThat(bannerRepository.findAll()).hasSize(1);
     assertThat(bannerRepository.findAll().get(0).getBannerId()).isEqualTo(second.getBannerId());
     assertThat(bannerRepository.findAll().get(0).getDisplayOrder()).isEqualTo(1);
+    assertThat(eventPublisher.publishedEvents)
+        .anyMatch(
+            event ->
+                event instanceof BannerImageDeleteAfterCommitEvent deleteAfterCommitEvent
+                    && deleteAfterCommitEvent.imagePath().equals("banner/first.png"));
   }
 
   @Test
@@ -294,12 +299,32 @@ class BannerServiceTest {
   void 존재하지_않는_배너를_업데이트하면_예외가_발생한다() {
     // Given
     UpdateBannerCommand command =
-        UpdateBannerCommand.from(
-            999L, new UpdateBannerRequest("Updated", "https://example.com/updated", true, null));
+        new UpdateBannerCommand(999L, "Updated", "https://example.com/updated", true, null);
 
     // When Then
     assertThatThrownBy(() -> bannerService.updateBanner(command))
         .isInstanceOf(BannerNotFoundException.class);
+  }
+
+  @Test
+  void host가_없는_redirectUrl로_배너를_등록하면_예외가_발생한다() {
+    // Given When Then
+    assertThatThrownBy(
+            () ->
+                new CreateBannerCommand(
+                    "Banner",
+                    "https:example.com",
+                    true,
+                    new MockMultipartFile("image", "banner.png", "image/png", bannerPngBytes)))
+        .isInstanceOf(MissingParameterException.class);
+  }
+
+  @Test
+  void host가_없는_redirectUrl로_배너를_수정하면_예외가_발생한다() {
+    // Given When Then
+    assertThatThrownBy(
+            () -> new UpdateBannerCommand(1L, null, "https:example.com", null, null))
+        .isInstanceOf(MissingParameterException.class);
   }
 
   private byte[] createBannerPngBytes() {
@@ -310,6 +335,17 @@ class BannerServiceTest {
       return outputStream.toByteArray();
     } catch (Exception e) {
       throw new IllegalStateException("failed to create banner image fixture", e);
+    }
+  }
+
+  private static final class CapturingApplicationEventPublisher
+      implements org.springframework.context.ApplicationEventPublisher {
+
+    private final List<Object> publishedEvents = new ArrayList<>();
+
+    @Override
+    public void publishEvent(Object event) {
+      publishedEvents.add(event);
     }
   }
 }

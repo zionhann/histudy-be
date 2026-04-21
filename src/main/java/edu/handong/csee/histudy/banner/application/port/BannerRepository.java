@@ -8,6 +8,8 @@ public interface BannerRepository {
 
   List<Banner> findAllByOrderByDisplayOrderAsc();
 
+  List<Banner> findAllByOrderByDisplayOrderAscForUpdate();
+
   List<Banner> findAllByActiveTrueOrderByDisplayOrderAsc();
 
   List<Banner> saveAll(List<Banner> banners);
@@ -17,6 +19,8 @@ public interface BannerRepository {
   Optional<Banner> findById(Long id);
 
   Optional<Banner> findTopByOrderByDisplayOrderDesc();
+
+  Optional<Banner> findTopByOrderByDisplayOrderDescForUpdate();
 
   void delete(Banner banner);
 }

@@ -27,8 +27,8 @@ public class BannerController {
   private final BannerService bannerService;
 
   @GetMapping("/api/public/banners")
-  public List<PublicBannerResponse> getPublicBanners() {
-    return bannerService.getPublicBanners();
+  public ResponseEntity<List<PublicBannerResponse>> getPublicBanners() {
+    return ResponseEntity.ok(bannerService.getPublicBanners());
   }
 
   @GetMapping("/api/admin/banners")
@@ -41,7 +41,7 @@ public class BannerController {
   public ResponseEntity<AdminBannerResponse> createBanner(
       @ModelAttribute CreateBannerRequest request, @RequestAttribute Claims claims) {
     requireAdmin(claims);
-    AdminBannerResponse created = bannerService.createBanner(CreateBannerCommand.from(request));
+    AdminBannerResponse created = bannerService.createBanner(request.toCommand());
     return ResponseEntity.status(HttpStatus.CREATED).body(created);
   }
 
@@ -53,8 +53,7 @@ public class BannerController {
       @ModelAttribute UpdateBannerRequest request,
       @RequestAttribute Claims claims) {
     requireAdmin(claims);
-    AdminBannerResponse updated =
-        bannerService.updateBanner(UpdateBannerCommand.from(bannerId, request));
+    AdminBannerResponse updated = bannerService.updateBanner(request.toCommand(bannerId));
     return ResponseEntity.ok(updated);
   }
 
@@ -62,7 +61,7 @@ public class BannerController {
   public ResponseEntity<Void> reorderBanners(
       @RequestBody ReorderBannersRequest request, @RequestAttribute Claims claims) {
     requireAdmin(claims);
-    bannerService.reorderBanners(ReorderBannersCommand.from(request));
+    bannerService.reorderBanners(request.toCommand());
     return ResponseEntity.ok().build();
   }
 
@@ -75,7 +74,7 @@ public class BannerController {
   }
 
   private void requireAdmin(Claims claims) {
-    if (!Role.isAuthorized(claims, Role.ADMIN)) {
+    if (claims == null || !Role.isAuthorized(claims, Role.ADMIN)) {
       throw new ForbiddenException();
     }
   }

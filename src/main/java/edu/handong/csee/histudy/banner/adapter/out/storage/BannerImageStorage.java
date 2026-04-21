@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 import javax.imageio.ImageIO;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,8 @@ import org.springframework.web.multipart.MultipartFile;
 public class BannerImageStorage {
 
   private static final long MAX_IMAGE_SIZE_BYTES = 5L * 1024 * 1024;
+  private static final Set<String> ALLOWED_IMAGE_EXTENSIONS =
+      Set.of("jpg", "jpeg", "png", "gif", "webp", "svg", "avif", "bmp", "tiff");
   private static final String IMAGE_NAME_FALLBACK_LABEL = "image";
   private static final String MESSAGE_MAX_FILE_SIZE = "이미지 파일 크기는 5MB 이하여야 합니다.";
   private static final String MESSAGE_IMAGE_ONLY = "이미지 파일만 업로드할 수 있습니다.";
@@ -102,7 +105,7 @@ public class BannerImageStorage {
     }
 
     String extension = sanitizedFilename.substring(extensionStart + 1).toLowerCase(Locale.ROOT);
-    if (!extension.matches("[a-z0-9]{1,10}")) {
+    if (!ALLOWED_IMAGE_EXTENSIONS.contains(extension)) {
       return ".img";
     }
 
