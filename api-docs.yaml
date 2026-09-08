@@ -2,6 +2,10 @@ openapi: 3.0.1
 info:
   title: OpenAPI definition
   version: v1.3.2
+  description: |
+    모든 API 요청은 선택적인 `X-Request-ID` 헤더를 받을 수 있습니다. 서버는 유효한 요청 ID를
+    그대로 사용하고, 없거나 유효하지 않으면 새 ID를 발급합니다. 응답의 `X-Request-ID` 헤더와
+    오류 응답의 `requestId` 필드는 서버 로그와 요청을 연결할 때 사용합니다.
 servers:
   - url: http://localhost:8080
     description: local
@@ -891,6 +895,23 @@ paths:
           description: 학기 ID를 찾을 수 없습니다.
 
 components:
+  parameters:
+    RequestId:
+      name: X-Request-ID
+      in: header
+      required: false
+      description: 서버 로그와 요청을 연결하기 위한 선택적 요청 식별자
+      schema:
+        type: string
+        maxLength: 64
+        pattern: '[A-Za-z0-9][A-Za-z0-9._-]{0,63}'
+  headers:
+    RequestId:
+      description: 서버가 사용한 요청 식별자
+      schema:
+        type: string
+        maxLength: 64
+        pattern: '[A-Za-z0-9][A-Za-z0-9._-]{0,63}'
   schemas:
     ApplyFormV2:
       type: object

@@ -23,8 +23,10 @@ import org.springframework.web.context.request.ServletWebRequest;
 class ExceptionControllerTest {
 
   private static final String REQUEST_ID = "request-123";
+  private static final String REQUEST_ID_MDC_KEY = "request_id";
 
   private DiscordService discordService;
+
   private ExceptionController exceptionController;
   private ListAppender<ILoggingEvent> logAppender;
 
@@ -34,7 +36,7 @@ class ExceptionControllerTest {
     exceptionController = new ExceptionController(discordService);
 
     Logger logger = (Logger) LoggerFactory.getLogger(ExceptionController.class);
-    logAppender = new ListAppender<>();
+    logAppender = new PreparingListAppender<>();
     logAppender.start();
     logger.addAppender(logAppender);
   }
@@ -47,13 +49,16 @@ class ExceptionControllerTest {
   }
 
   @Test
-  void unhandledExceptionIncludesRequestIdAndLogsTypeWithoutRawMessage() {
-    MDC.put("request_id", REQUEST_ID);
+  void 처리되지_않은_예외가_발생하면_requestId와_예외_유형을_로그에_남기고_원문을_노출하지_않는다() {
+    // given
+    MDC.put(REQUEST_ID_MDC_KEY, REQUEST_ID);
     RuntimeException exception = new IllegalStateException("secret-token-value");
     ServletWebRequest request = webRequest();
 
+    // when
     ResponseEntity<?> response = exceptionController.runtimeException(exception, request);
 
+    // then
     assertThat(response.getBody()).isInstanceOf(ExceptionResponse.class);
     ExceptionResponse body = (ExceptionResponse) response.getBody();
     assertThat(body.getRequestId()).isEqualTo(REQUEST_ID);
@@ -72,12 +77,15 @@ class ExceptionControllerTest {
   }
 
   @Test
-  void unauthorizedExceptionDoesNotExposeParserMessageAndLogsFailure() {
-    MDC.put("request_id", REQUEST_ID);
+  void 인증_예외가_발생하면_파서_메시지_대신_안전한_메시지를_응답하고_실패를_기록한다() {
+    // given
+    MDC.put(REQUEST_ID_MDC_KEY, REQUEST_ID);
     JwtException exception = new JwtException("token-parser-details");
 
+    // when
     ResponseEntity<?> response = exceptionController.handleUnauthorized(exception, webRequest());
 
+    // then
     ExceptionResponse body = (ExceptionResponse) response.getBody();
     assertThat(body.getMessage()).isEqualTo("인증 정보가 유효하지 않습니다.");
     assertThat(body.getRequestId()).isEqualTo(REQUEST_ID);
@@ -92,12 +100,15 @@ class ExceptionControllerTest {
   }
 
   @Test
-  void forbiddenExceptionLogsAuthorizationDenialWithRequestId() {
-    MDC.put("request_id", REQUEST_ID);
+  void 권한_예외가_발생하면_requestId와_거부_유형을_기록한다() {
+    // given
+    MDC.put(REQUEST_ID_MDC_KEY, REQUEST_ID);
 
+    // when
     ResponseEntity<?> response =
         exceptionController.handleForbidden(new ForbiddenException(), webRequest());
 
+    // then
     ExceptionResponse body = (ExceptionResponse) response.getBody();
     assertThat(body.getRequestId()).isEqualTo(REQUEST_ID);
     assertThat(logAppender.list)
@@ -110,11 +121,14 @@ class ExceptionControllerTest {
   }
 
   @Test
-  void missingWebRequestStillReturnsAnErrorResponseWithGeneratedRequestId() {
+  void WebRequest가_없어도_예외_응답에_새_requestId를_발급한다() {
+    // given
     RuntimeException exception = new IllegalStateException("failure");
 
+    // when
     ResponseEntity<?> response = exceptionController.runtimeException(exception, null);
 
+    // then
     ExceptionResponse body = (ExceptionResponse) response.getBody();
     assertThat(body.getRequestId()).isNotBlank().matches("[0-9a-f-]{36}");
     verify(discordService).notifyException(exception, null);
@@ -122,5 +136,16 @@ class ExceptionControllerTest {
 
   private ServletWebRequest webRequest() {
     return new ServletWebRequest(new MockHttpServletRequest("GET", "/api/test"));
+  }
+
+  private static class PreparingListAppender<E> extends ListAppender<E> {
+
+    @Override
+    protected void append(E eventObject) {
+      if (eventObject instanceof ILoggingEvent) {
+        ((ILoggingEvent) eventObject).prepareForDeferredProcessing();
+      }
+      super.append(eventObject);
+    }
   }
 }
