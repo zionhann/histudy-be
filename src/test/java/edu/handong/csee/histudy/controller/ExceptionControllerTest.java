@@ -109,6 +109,17 @@ class ExceptionControllerTest {
                     .contains("exception_type=ForbiddenException"));
   }
 
+  @Test
+  void missingWebRequestStillReturnsAnErrorResponseWithGeneratedRequestId() {
+    RuntimeException exception = new IllegalStateException("failure");
+
+    ResponseEntity<?> response = exceptionController.runtimeException(exception, null);
+
+    ExceptionResponse body = (ExceptionResponse) response.getBody();
+    assertThat(body.getRequestId()).isNotBlank().matches("[0-9a-f-]{36}");
+    verify(discordService).notifyException(exception, null);
+  }
+
   private ServletWebRequest webRequest() {
     return new ServletWebRequest(new MockHttpServletRequest("GET", "/api/test"));
   }

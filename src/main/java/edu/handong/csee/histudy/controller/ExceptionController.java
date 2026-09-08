@@ -153,6 +153,10 @@ public class ExceptionController {
       return requestId;
     }
 
+    if (request == null) {
+      return UUID.randomUUID().toString();
+    }
+
     String requestHeaderId = request.getHeader(REQUEST_ID_HEADER);
     if (isValidRequestId(requestHeaderId)) {
       return requestHeaderId;
