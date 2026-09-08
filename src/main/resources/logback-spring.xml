@@ -7,11 +7,13 @@
               value="${LOGBACK_ROLLINGPOLICY_MAX_HISTORY:-30}"/>
     <property name="LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE"
               value="${LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE:-100MB}"/>
+    <property name="LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP"
+              value="${LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP:-2GB}"/>
     <property name="ROOT_LOG_LEVEL" value="${ROOT_LOG_LEVEL:-INFO}"/>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%-40.40(%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} [%thread]) [%-5level] [%-40.40logger{36}] - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} [%thread] [%-5level] [%-40.40logger{36}] - %msg%n</pattern>
         </encoder>
     </appender>
 
@@ -21,10 +23,10 @@
             <fileNamePattern>${LOG_PATH}/histudy-be.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
             <maxHistory>${LOGBACK_ROLLINGPOLICY_MAX_HISTORY}</maxHistory>
             <maxFileSize>${LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE}</maxFileSize>
-            <totalSizeCap>2GB</totalSizeCap>
+            <totalSizeCap>${LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP}</totalSizeCap>
         </rollingPolicy>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%-40.40(%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} [%thread]) [%-5level] [%-40.40logger{36}] - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} [%thread] [%-5level] [%-40.40logger{36}] - %msg%n</pattern>
         </encoder>
     </appender>
 
