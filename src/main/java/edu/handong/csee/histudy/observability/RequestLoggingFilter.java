@@ -36,15 +36,18 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
       filterChain.doFilter(request, response);
       status = response.getStatus();
     } finally {
-      log.info(
-          "http_request request_id={} method={} path={} route={} status={} duration_ms={}",
-          requestId,
-          request.getMethod(),
-          request.getRequestURI(),
-          resolveRoute(request),
-          status,
-          elapsedMilliseconds(startedAt));
-      MDC.remove(REQUEST_ID_MDC_KEY);
+      try {
+        log.info(
+            "http_request request_id={} method={} path={} route={} status={} duration_ms={}",
+            requestId,
+            request.getMethod(),
+            request.getRequestURI(),
+            resolveRoute(request),
+            status,
+            elapsedMilliseconds(startedAt));
+      } finally {
+        MDC.remove(REQUEST_ID_MDC_KEY);
+      }
     }
   }
 
