@@ -137,9 +137,12 @@ class RequestLoggingFilterTest {
     String requestId = initialResponse.getHeader(REQUEST_ID_HEADER);
     MockHttpServletResponse errorResponse = new MockHttpServletResponse();
     request.setDispatcherType(DispatcherType.ERROR);
+    FilterChain errorDispatchChain =
+        (servletRequest, servletResponse) ->
+            assertThat(MDC.get(REQUEST_ID_MDC_KEY)).isEqualTo(requestId);
 
     // when
-    filter.doFilter(request, errorResponse, new MockFilterChain());
+    filter.doFilter(request, errorResponse, errorDispatchChain);
 
     // then
     assertThat(errorResponse.getHeader(REQUEST_ID_HEADER)).isEqualTo(requestId);

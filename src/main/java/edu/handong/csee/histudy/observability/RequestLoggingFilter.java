@@ -10,12 +10,10 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerMapping;
 
 @Slf4j
-@Component
 public class RequestLoggingFilter extends OncePerRequestFilter {
 
   private static final String REQUEST_ID_HEADER = "X-Request-ID";
@@ -39,10 +37,10 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
     boolean errorDispatch = request.getDispatcherType() == DispatcherType.ERROR;
     request.setAttribute(REQUEST_ID_ATTRIBUTE, requestId);
     MDC.put(REQUEST_ID_MDC_KEY, requestId);
-    response.setHeader(REQUEST_ID_HEADER, requestId);
 
     int status = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
     try {
+      response.setHeader(REQUEST_ID_HEADER, requestId);
       filterChain.doFilter(request, response);
       status = response.getStatus();
     } catch (IOException | ServletException | RuntimeException exception) {

@@ -23,7 +23,7 @@
 
 기본 요청 흐름은 다음과 같습니다.
 
-`RequestLoggingFilter -> WebConfig/AuthenticationInterceptor -> controller -> service -> repository -> domain`
+`RequestLoggingFilter -> DispatcherServlet -> AuthenticationInterceptor -> controller -> service -> repository -> domain`
 
 매칭 유스케이스는 점진적 모듈화가 적용된 첫 경로로 다음과 같이 흐릅니다.
 
