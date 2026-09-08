@@ -16,14 +16,14 @@
 - `domain`: JPA 엔티티와 엔티티에 가까운 도메인 동작
 - `matching/application`: 매칭 유스케이스의 트랜잭션과 저장소 조율
 - `matching/domain`: 저장소나 Spring에 의존하지 않는 친구·과목 우선 매칭 규칙
-- `config`, `interceptor`, `jwt`: 인증과 요청 파이프라인 구성
+- `config`, `interceptor`, `jwt`, `observability`: 요청 ID·MDC 로깅과 인증 파이프라인 구성
 - `exception`, `util`: 공통 예외와 유틸리티
 
 ## 요청 흐름
 
 기본 요청 흐름은 다음과 같습니다.
 
-`controller -> service -> repository -> domain`
+`RequestLoggingFilter -> WebConfig/AuthenticationInterceptor -> controller -> service -> repository -> domain`
 
 매칭 유스케이스는 점진적 모듈화가 적용된 첫 경로로 다음과 같이 흐릅니다.
 
@@ -62,6 +62,13 @@
 - `WebConfig`: `AuthenticationInterceptor` 등록
 - `AuthenticationInterceptor`: `JwtService`로 Bearer 토큰을 검증하고 요청에 `Claims` 저장
 - 컨트롤러: 엔드포인트별 `Role.isAuthorized(...)` 검사 수행
+
+요청 로깅은 `RequestLoggingFilter`가 담당합니다.
+
+- `X-Request-ID`를 검증하거나 새로 발급하고 응답 헤더에 반환합니다.
+- 요청 처리 중에는 `request_id`를 MDC에 넣어 애플리케이션 로그와 연결합니다.
+- 요청 완료 시 method, path, route, status, duration을 기록하고 MDC를 정리합니다.
+- 요청 본문과 인증 토큰은 공통 요청 로그에 기록하지 않습니다.
 
 인증 포함/제외 경로는 `application.yml`의 다음 설정으로 제어됩니다.
 
