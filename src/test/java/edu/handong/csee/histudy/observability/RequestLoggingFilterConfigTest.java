@@ -6,6 +6,7 @@ import jakarta.servlet.DispatcherType;
 import java.util.EnumSet;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.core.Ordered;
 
 class RequestLoggingFilterConfigTest {
 
@@ -24,5 +25,6 @@ class RequestLoggingFilterConfigTest {
     assertThat(registration.determineDispatcherTypes())
         .containsExactlyInAnyOrderElementsOf(
             EnumSet.of(DispatcherType.REQUEST, DispatcherType.ERROR));
+    assertThat(registration.getOrder()).isEqualTo(Ordered.HIGHEST_PRECEDENCE);
   }
 }
