@@ -48,8 +48,7 @@ public class DiscordService {
             "discord_notification_failed request_id={} error_id={} exception_type={}",
             requestId,
             errorId,
-            notificationFailure.getClass().getSimpleName(),
-            notificationFailure);
+            notificationFailure.getClass().getSimpleName());
       }
     }
   }

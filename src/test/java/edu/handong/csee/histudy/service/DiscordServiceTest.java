@@ -99,10 +99,7 @@ class DiscordServiceTest {
                   .doesNotContain("webhook-secret")
                   .doesNotContain("secret-token-value")
                   .doesNotContain("/api/users/42");
-              assertThat(event.getThrowableProxy()).isNotNull();
-              assertThat(event.getThrowableProxy().getClassName())
-                  .isEqualTo(RuntimeException.class.getName());
-              assertThat(event.getThrowableProxy().getMessage()).isEqualTo("webhook-secret");
+              assertThat(event.getThrowableProxy()).isNull();
             });
   }
 
