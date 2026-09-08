@@ -4,8 +4,8 @@ info:
   version: v1.3.2
   description: |
     모든 API 요청은 선택적인 `X-Request-ID` 헤더를 받을 수 있습니다. 서버는 유효한 요청 ID를
-    그대로 사용하고, 없거나 유효하지 않으면 새 ID를 발급합니다. 응답의 `X-Request-ID` 헤더와
-    오류 응답의 `requestId` 필드는 서버 로그와 요청을 연결할 때 사용합니다.
+    그대로 사용하고, 없거나 유효하지 않으면 새 ID를 발급합니다. 응답의 `X-Request-ID` 헤더는
+    서버 로그와 요청을 연결할 때 사용합니다.
 servers:
   - url: http://localhost:8080
     description: local
@@ -18,6 +18,8 @@ paths:
   # Public APIs
   # ===================
   /api/public/teams:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     get:
       security: [ ]
       tags:
@@ -26,12 +28,17 @@ paths:
       operationId: getTeams
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/TeamRankDto'
   /api/public/activity:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     get:
       security: [ ]
       tags:
@@ -48,12 +55,17 @@ paths:
           description: Activity term filter (all or current)
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ActivityMetricsDto'
   /api/public/banners:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     get:
       security: [ ]
       tags:
@@ -62,6 +74,9 @@ paths:
       operationId: getPublicBanners
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
@@ -74,6 +89,8 @@ paths:
   # Authentication APIs
   # ===================
   /api/auth/login:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     get:
       security: [ ]
       tags:
@@ -88,12 +105,17 @@ paths:
             type: string
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/UserLogin'
   /api/auth/token:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     post:
       security: [ ]
       tags:
@@ -108,6 +130,9 @@ paths:
         required: true
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
@@ -118,6 +143,8 @@ paths:
   # User Management APIs
   # ===================
   /api/users:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     get:
       tags:
         - 일반 사용자 API
@@ -132,6 +159,9 @@ paths:
             type: string
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
@@ -151,12 +181,17 @@ paths:
         required: true
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/UserLogin'
   /api/v2/users:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     get:
       tags:
         - 일반 사용자 API
@@ -171,12 +206,17 @@ paths:
             type: string
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/UserDto'
   /api/users/me:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     get:
       tags:
         - 일반 사용자 API
@@ -184,12 +224,17 @@ paths:
       operationId: getMyInfo
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/UserMe'
   /api/users/me/forms:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     get:
       tags:
         - 일반 사용자 API
@@ -197,6 +242,9 @@ paths:
       operationId: getMyApplicationForm
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
@@ -204,6 +252,8 @@ paths:
                 $ref: '#/components/schemas/ApplyFormDto'
       deprecated: true
   /api/v2/users/me/forms:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     get:
       tags:
         - 일반 사용자 API
@@ -211,6 +261,9 @@ paths:
       operationId: getMyApplicationFormWithMasking
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
@@ -221,6 +274,8 @@ paths:
   # Study Application APIs
   # ===================
   /api/forms:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     post:
       tags:
         - 스터디 신청 API
@@ -234,6 +289,9 @@ paths:
         required: true
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
@@ -241,6 +299,8 @@ paths:
                 $ref: '#/components/schemas/ApplyFormDto'
       deprecated: true
   /api/v2/forms:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     post:
       tags:
         - 스터디 신청 API
@@ -254,6 +314,9 @@ paths:
         required: true
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
@@ -264,6 +327,8 @@ paths:
   # Course Management APIs
   # ===================
   /api/courses:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     get:
       tags:
         - 강의 관리 API
@@ -277,6 +342,9 @@ paths:
             type: string
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
@@ -300,28 +368,45 @@ paths:
                   format: binary
       responses:
         '201':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: 현재 학기의 강의 목록을 교체했습니다.
         '400':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: CSV 확장자, 헤더 또는 데이터 형식이 올바르지 않습니다.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExceptionResponse'
         '403':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: 관리자 권한이 없습니다.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExceptionResponse'
         '406':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: 업로드 파일이 비어 있습니다.
         '409':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: 현재 학기 강의가 신청, 그룹 또는 리포트에서 사용 중입니다.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExceptionResponse'
   /api/courses/delete:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     post:
       tags:
         - 강의 관리 API
@@ -335,6 +420,9 @@ paths:
         required: true
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
@@ -343,6 +431,8 @@ paths:
                 format: int32
 
   /api/courses/{courseId}:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     delete:
       tags:
         - 강의 관리 API
@@ -358,20 +448,32 @@ paths:
             format: int64
       responses:
         '204':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: No Content
         '403':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: Forbidden
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExceptionResponse'
         '404':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: Course not found in the current academic term
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExceptionResponse'
         '409':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: Course is referenced by an application, group, or report
           content:
             application/json:
@@ -382,6 +484,8 @@ paths:
   # Study Group/Team APIs
   # ===================
   /api/team/users:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     get:
       tags:
         - 스터디 그룹 API
@@ -389,6 +493,9 @@ paths:
       operationId: getTeamUsers
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
@@ -397,6 +504,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/UserMeWithMasking'
   /api/team/courses:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     get:
       tags:
         - 스터디 그룹 API
@@ -404,12 +513,17 @@ paths:
       operationId: getTeamCourses
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/CourseDto'
   /api/team/reports:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     get:
       tags:
         - 스터디 그룹 API
@@ -417,6 +531,9 @@ paths:
       operationId: getMyGroupReports
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
@@ -435,12 +552,17 @@ paths:
         required: true
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ReportInfo'
   /api/team/reports/{reportId}:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     get:
       tags:
         - 스터디 그룹 API
@@ -456,12 +578,18 @@ paths:
             format: int64
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ReportInfo'
         '404':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: 보고서가 없거나 그룹 멤버가 접근할 수 없는 보고서입니다.
     delete:
       tags:
@@ -478,12 +606,18 @@ paths:
           example: 1
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
               schema:
                 type: string
         '404':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: 보고서가 없거나 현재 그룹의 보고서가 아닙니다.
     patch:
       tags:
@@ -506,14 +640,22 @@ paths:
         required: true
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
               schema:
                 type: string
         '404':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: 보고서가 없거나 현재 그룹의 보고서가 아닙니다.
   /api/team/reports/image:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     post:
       tags:
         - 스터디 그룹 API
@@ -533,12 +675,17 @@ paths:
                   format: binary
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             application/json:
               example:
                 imagePath: /path/to/image.png
   /api/team/reports/{reportIdOr}/image:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     post:
       tags:
         - 스터디 그룹 API
@@ -564,18 +711,26 @@ paths:
                   format: binary
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             application/json:
               example:
                 imagePath: /path/to/image.png
         '404':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: 보고서가 없거나 현재 그룹의 보고서가 아닙니다.
 
   # ===================
   # Admin APIs
   # ===================
   /api/admin/banners:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     get:
       tags:
         - 관리자 API
@@ -583,6 +738,9 @@ paths:
       operationId: getAdminBanners
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
@@ -620,14 +778,22 @@ paths:
                   description: 이미지 파일 (최대 5MB)
       responses:
         '201':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: Created
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/AdminBannerInfo'
         '400':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: 잘못된 요청(필수값 누락/파일 형식/파일 크기)
   /api/admin/banners/{bannerId}:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     patch:
       tags:
         - 관리자 API
@@ -661,12 +827,18 @@ paths:
                   description: 이미지 파일 (최대 5MB)
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/AdminBannerInfo'
         '404':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: 배너를 찾을 수 없습니다.
     delete:
       tags:
@@ -682,10 +854,18 @@ paths:
             format: int64
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
         '404':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: 배너를 찾을 수 없습니다.
   /api/admin/banners/reorder:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     patch:
       tags:
         - 관리자 API
@@ -699,10 +879,18 @@ paths:
         required: true
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
         '400':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: 유효하지 않은 순서 목록
   /api/admin/allUsers:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     get:
       tags:
         - 관리자 API
@@ -710,6 +898,9 @@ paths:
       operationId: getAppliedUsers
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
@@ -718,6 +909,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/UserInfo'
   /api/admin/users/unassigned:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     get:
       tags:
         - 관리자 API
@@ -725,6 +918,9 @@ paths:
       operationId: unassignedUser
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
@@ -733,6 +929,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/UserInfo'
   /api/admin/unmatched-users:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     get:
       tags:
         - 관리자 API
@@ -740,6 +938,9 @@ paths:
       operationId: getUnmatchedUsers
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
@@ -748,6 +949,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/UserInfo'
   /api/admin/edit-user:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     post:
       tags:
         - 관리자 API
@@ -761,8 +964,13 @@ paths:
         required: true
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
   /api/admin/form:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     delete:
       tags:
         - 관리자 API
@@ -776,8 +984,13 @@ paths:
             type: string
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
   /api/admin/team-match:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     post:
       tags:
         - 관리자 API
@@ -785,8 +998,13 @@ paths:
       operationId: matchTeam
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
   /api/admin/manageGroup:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     get:
       tags:
         - 관리자 API
@@ -794,6 +1012,9 @@ paths:
       operationId: getTeams_1
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
@@ -802,6 +1023,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/TeamDto'
   /api/admin/groupReport/{id}:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     get:
       tags:
         - 관리자 API
@@ -817,12 +1040,17 @@ paths:
             format: int64
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/TeamReportDto'
   /api/admin/academicTerm:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     post:
       tags:
         - 관리자 API
@@ -836,10 +1064,19 @@ paths:
         required: true
       responses:
         '201':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: Created
         '400':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: 잘못된 요청(유효하지 않은 year/semester)
         '409':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: 이미 동일한 (year, semester)의 학기가 존재
     get:
       tags:
@@ -848,12 +1085,17 @@ paths:
       operationId: getAllAcademicTerms
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/AcademicTermDto'
   /api/admin/academicTerm/course-template:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     get:
       tags:
         - 관리자 API
@@ -863,6 +1105,8 @@ paths:
         '200':
           description: 예시 수업 1행이 포함된 UTF-8 CSV 업로드 양식 파일입니다. 업로드 전 예시 행을 삭제해야 합니다.
           headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
             Content-Disposition:
               schema:
                 type: string
@@ -873,8 +1117,13 @@ paths:
                 type: string
                 format: binary
         '403':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: 관리자 권한이 없습니다.
   /api/admin/academicTerm/{id}/current:
+    parameters:
+      - $ref: '#/components/parameters/RequestId'
     patch:
       tags:
         - 관리자 API
@@ -890,8 +1139,14 @@ paths:
           description: Academic term ID
       responses:
         '200':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: OK
         '404':
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestId'
           description: 학기 ID를 찾을 수 없습니다.
 
 components:
@@ -904,14 +1159,14 @@ components:
       schema:
         type: string
         maxLength: 64
-        pattern: '[A-Za-z0-9][A-Za-z0-9._-]{0,63}'
+        pattern: '^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$'
   headers:
     RequestId:
       description: 서버가 사용한 요청 식별자
       schema:
         type: string
         maxLength: 64
-        pattern: '[A-Za-z0-9][A-Za-z0-9._-]{0,63}'
+        pattern: '^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$'
   schemas:
     ApplyFormV2:
       type: object
