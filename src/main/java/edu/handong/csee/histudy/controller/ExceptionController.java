@@ -20,8 +20,11 @@ import edu.handong.csee.histudy.exception.UserAlreadyExistsException;
 import edu.handong.csee.histudy.exception.UserNotFoundException;
 import edu.handong.csee.histudy.service.DiscordService;
 import io.jsonwebtoken.JwtException;
+import java.util.UUID;
+import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -35,11 +38,27 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 @RequiredArgsConstructor
 public class ExceptionController {
 
+  private static final String REQUEST_ID_HEADER = "X-Request-ID";
+  private static final String REQUEST_ID_MDC_KEY = "request_id";
+  private static final Pattern REQUEST_ID_PATTERN =
+      Pattern.compile("[A-Za-z0-9][A-Za-z0-9._-]{0,63}");
+
   private final DiscordService discordService;
 
-  private ResponseEntity<ExceptionResponse> createErrorResponse(HttpStatus status, String message) {
+  private ResponseEntity<ExceptionResponse> createErrorResponse(
+      HttpStatus status, String message, WebRequest request) {
+    return createErrorResponse(status, message, resolveRequestId(request));
+  }
+
+  private ResponseEntity<ExceptionResponse> createErrorResponse(
+      HttpStatus status, String message, String requestId) {
     return ResponseEntity.status(status)
-        .body(ExceptionResponse.builder().status(status).message(message).build());
+        .body(
+            ExceptionResponse.builder()
+                .status(status)
+                .message(message)
+                .requestId(requestId)
+                .build());
   }
 
   @ExceptionHandler({
@@ -47,31 +66,44 @@ public class ExceptionController {
     MissingEmailException.class,
     MissingSubException.class
   })
-  public ResponseEntity<ExceptionResponse> handleBadRequest(Exception e) {
-    return createErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage());
+  public ResponseEntity<ExceptionResponse> handleBadRequest(Exception e, WebRequest request) {
+    return createErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage(), request);
   }
 
   @ExceptionHandler(HttpMessageNotReadableException.class)
   public ResponseEntity<ExceptionResponse> handleHttpMessageNotReadable(
-      HttpMessageNotReadableException e) {
-    return createErrorResponse(HttpStatus.BAD_REQUEST, "Invalid request format");
+      HttpMessageNotReadableException e, WebRequest request) {
+    return createErrorResponse(HttpStatus.BAD_REQUEST, "Invalid request format", request);
   }
 
   @ExceptionHandler(MaxUploadSizeExceededException.class)
   public ResponseEntity<ExceptionResponse> handleMaxUploadSizeExceeded(
-      MaxUploadSizeExceededException e) {
+      MaxUploadSizeExceededException e, WebRequest request) {
     return createErrorResponse(
-        HttpStatus.PAYLOAD_TOO_LARGE, "업로드 가능한 파일 용량을 초과했습니다.");
+        HttpStatus.PAYLOAD_TOO_LARGE, "업로드 가능한 파일 용량을 초과했습니다.", request);
   }
 
   @ExceptionHandler({JwtException.class, MissingTokenException.class})
-  public ResponseEntity<ExceptionResponse> handleUnauthorized(Exception e) {
-    return createErrorResponse(HttpStatus.UNAUTHORIZED, e.getMessage());
+  public ResponseEntity<ExceptionResponse> handleUnauthorized(Exception e, WebRequest request) {
+    String requestId = resolveRequestId(request);
+    log.warn(
+        "authentication_failed request_id={} exception_type={}",
+        requestId,
+        e.getClass().getSimpleName());
+    String message =
+        e instanceof MissingTokenException ? "토큰이 존재하지 않습니다." : "인증 정보가 유효하지 않습니다.";
+    return createErrorResponse(HttpStatus.UNAUTHORIZED, message, requestId);
   }
 
   @ExceptionHandler(ForbiddenException.class)
-  public ResponseEntity<ExceptionResponse> handleForbidden(ForbiddenException e) {
-    return createErrorResponse(HttpStatus.FORBIDDEN, e.getMessage());
+  public ResponseEntity<ExceptionResponse> handleForbidden(
+      ForbiddenException e, WebRequest request) {
+    String requestId = resolveRequestId(request);
+    log.warn(
+        "authorization_denied request_id={} exception_type={}",
+        requestId,
+        e.getClass().getSimpleName());
+    return createErrorResponse(HttpStatus.FORBIDDEN, "권한이 없습니다.", requestId);
   }
 
   @ExceptionHandler({
@@ -83,8 +115,8 @@ public class ExceptionController {
     NoCurrentTermFoundException.class,
     NoStudyApplicationFound.class
   })
-  public ResponseEntity<ExceptionResponse> handleNotFound(Exception e) {
-    return createErrorResponse(HttpStatus.NOT_FOUND, e.getMessage());
+  public ResponseEntity<ExceptionResponse> handleNotFound(Exception e, WebRequest request) {
+    return createErrorResponse(HttpStatus.NOT_FOUND, e.getMessage(), request);
   }
 
   @ExceptionHandler(UserNotFoundException.class)
@@ -98,14 +130,42 @@ public class ExceptionController {
     DuplicateAcademicTermException.class,
     UserAlreadyExistsException.class
   })
-  public ResponseEntity<ExceptionResponse> handleConflict(Exception e) {
-    return createErrorResponse(HttpStatus.CONFLICT, e.getMessage());
+  public ResponseEntity<ExceptionResponse> handleConflict(Exception e, WebRequest request) {
+    return createErrorResponse(HttpStatus.CONFLICT, e.getMessage(), request);
   }
 
   @ExceptionHandler(RuntimeException.class)
   public ResponseEntity<ExceptionResponse> runtimeException(Exception e, WebRequest request) {
-    log.error("Unhandled Exception Occurred", e);
+    String requestId = resolveRequestId(request);
+    log.error(
+        "unhandled_exception request_id={} exception_type={}",
+        requestId,
+        e.getClass().getSimpleName(),
+        e);
     discordService.notifyException(e, request);
-    return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다.");
+    return createErrorResponse(
+        HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다.", requestId);
+  }
+
+  private String resolveRequestId(WebRequest request) {
+    String requestId = MDC.get(REQUEST_ID_MDC_KEY);
+    if (isValidRequestId(requestId)) {
+      return requestId;
+    }
+
+    if (request == null) {
+      return UUID.randomUUID().toString();
+    }
+
+    String requestHeaderId = request.getHeader(REQUEST_ID_HEADER);
+    if (isValidRequestId(requestHeaderId)) {
+      return requestHeaderId;
+    }
+
+    return UUID.randomUUID().toString();
+  }
+
+  private boolean isValidRequestId(String requestId) {
+    return requestId != null && REQUEST_ID_PATTERN.matcher(requestId).matches();
   }
 }
