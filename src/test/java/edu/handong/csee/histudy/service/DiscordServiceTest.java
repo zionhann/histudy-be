@@ -90,13 +90,20 @@ class DiscordServiceTest {
     // then
     assertThat(logAppender.list)
         .anySatisfy(
-            event ->
-                assertThat(event.getFormattedMessage())
-                    .contains("discord_notification_failed")
-                    .contains("request_id=" + REQUEST_ID)
-                    .contains("error_id=" + ERROR_ID)
-                    .contains("exception_type=RuntimeException")
-                    .doesNotContain("webhook-secret"));
+            event -> {
+              assertThat(event.getFormattedMessage())
+                  .contains("discord_notification_failed")
+                  .contains("request_id=" + REQUEST_ID)
+                  .contains("error_id=" + ERROR_ID)
+                  .contains("exception_type=RuntimeException")
+                  .doesNotContain("webhook-secret")
+                  .doesNotContain("secret-token-value")
+                  .doesNotContain("/api/users/42");
+              assertThat(event.getThrowableProxy()).isNotNull();
+              assertThat(event.getThrowableProxy().getClassName())
+                  .isEqualTo(RuntimeException.class.getName());
+              assertThat(event.getThrowableProxy().getMessage()).isEqualTo("webhook-secret");
+            });
   }
 
   @Test
@@ -122,7 +129,9 @@ class DiscordServiceTest {
                     .contains("discord_notification_timeout")
                     .contains("request_id=" + REQUEST_ID)
                     .contains("error_id=" + ERROR_ID)
-                    .doesNotContain("webhook-secret"));
+                    .doesNotContain("webhook-secret")
+                    .doesNotContain("secret-token-value")
+                    .doesNotContain("/api/users/42"));
   }
 
   private static class PreparingListAppender<E> extends ListAppender<E> {

@@ -8,12 +8,12 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @NoArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ExceptionResponse {
     private Integer code;
     private String error;
     private String message;
     private String requestId;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String errorId;
 
     @Builder

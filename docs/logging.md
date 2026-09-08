@@ -36,7 +36,7 @@ HTTP 요청/응답 헤더와 예외 응답의 `requestId`에도 같은 식별자
 | `http_request` | `request_id`, `method`, `route`, `status`, `duration_ms`, `role` | `INFO` | 요청별 처리 결과와 4xx/5xx 집계 |
 | `authentication_failed` | `request_id`, `exception_type` | `WARN` | 인증 실패 보안 이벤트 |
 | `authorization_denied` | `request_id`, `exception_type` | `WARN` | 권한 거부 보안 이벤트 |
-| `unhandled_exception` | `request_id`, `error_id`, `exception_type` | `ERROR` | 5xx 진단과 내부 stack trace 연결 |
+| `unhandled_exception` | `request_id`, `error_id`, `exception_type` | `ERROR` | 컨트롤러 예외 진단과 내부 stack trace 연결 |
 | `discord_notification_failed` | `request_id`, `error_id`, `exception_type` | `ERROR` | 장애 알림 전송 실패 |
 | `discord_notification_timeout` | `request_id`, `error_id` | `WARN` | 장애 알림 webhook 시간 초과 |
 
@@ -45,8 +45,8 @@ HTTP 요청/응답 헤더와 예외 응답의 `requestId`에도 같은 식별자
 사용하고, 템플릿을 확인할 수 없으면 `UNKNOWN`으로 기록하여 원시 경로의 식별자를 피합니다.
 4xx는 `http_request`의 `status`로 집계하고 예외 stack trace를 남기지 않습니다.
 
-5xx의 `error_id`는 해당 응답·내부 로그·장애 알림을 연결하는 UUID입니다. 클라이언트 응답에는
-`requestId`와 `errorId`를 사용하고, 4xx 응답에는 `errorId`를 포함하지 않습니다.
+컨트롤러에서 처리되지 않은 예외의 `error_id`는 해당 응답·내부 로그·장애 알림을 연결하는 UUID입니다.
+클라이언트 응답에는 `requestId`와 `errorId`를 사용하고, 4xx 응답에는 `errorId`를 포함하지 않습니다.
 
 향후 도메인 감사 이벤트는 다음 필드만 확장해 사용합니다.
 
