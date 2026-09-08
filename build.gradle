@@ -55,6 +55,10 @@ dependencies {
 }
 
 tasks.named('test') {
+    dependsOn(tasks.named('bootJar'))
+    doFirst {
+        systemProperty 'bootJarPath', tasks.named('bootJar').get().archiveFile.get().asFile.absolutePath
+    }
     useJUnitPlatform {
         excludeTags 'perf'
     }

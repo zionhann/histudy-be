@@ -12,6 +12,7 @@
 
 - `docs/domain.md`: 용어, 엔티티, 불변 조건, 매칭 규칙, 프라이버시 규칙, 리포트/이미지 의미론
 - `docs/architecture.md`: 패키지 책임, 요청 흐름, 인증 모델, API 표면, 테스트 배치의 큰 구조
+- `docs/logging.md`: 로그 출력 위치, 보존 정책, 환경 변수, 요청 상관관계 ID 계약
 - `docs/test/user-story.md`: 테스트 대상 유저 스토리와 도메인별 인수 조건의 출발점
 - `docs/test/structure.md`: 테스트 파일 위치, 프로퍼티 배치, 테스트 메서드 네이밍과 작성 형식
 

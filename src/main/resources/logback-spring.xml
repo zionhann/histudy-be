@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration>
+
+<configuration>
+    <property name="LOG_PATH" value="${LOG_PATH:-/tmp/histudy-be}"/>
+    <property name="LOGBACK_ROLLINGPOLICY_MAX_HISTORY"
+              value="${LOGBACK_ROLLINGPOLICY_MAX_HISTORY:-30}"/>
+    <property name="LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE"
+              value="${LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE:-100MB}"/>
+    <property name="LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP"
+              value="${LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP:-2GB}"/>
+    <property name="ROOT_LOG_LEVEL" value="${ROOT_LOG_LEVEL:-INFO}"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} [%thread] [%-5level] [%-40.40logger{36}] [request_id=%X{request_id}] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/histudy-be.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/histudy-be.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxHistory>${LOGBACK_ROLLINGPOLICY_MAX_HISTORY}</maxHistory>
+            <maxFileSize>${LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE}</maxFileSize>
+            <totalSizeCap>${LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP}</totalSizeCap>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} [%thread] [%-5level] [%-40.40logger{36}] [request_id=%X{request_id}] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="${ROOT_LOG_LEVEL}">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>
