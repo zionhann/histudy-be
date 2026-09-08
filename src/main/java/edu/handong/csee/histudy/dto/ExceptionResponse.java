@@ -12,12 +12,14 @@ public class ExceptionResponse {
     private String error;
     private String message;
     private String trace;
+    private String requestId;
 
     @Builder
-    public ExceptionResponse(HttpStatus status, String message, String trace) {
+    public ExceptionResponse(HttpStatus status, String message, String trace, String requestId) {
         this.code = status.value();
         this.error = status.getReasonPhrase();
         this.message = message;
         this.trace = trace;
+        this.requestId = requestId;
     }
 }
