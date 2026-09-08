@@ -45,6 +45,7 @@ public class WebConfig implements WebMvcConfigurer {
         .addMapping("/**")
         .allowedOriginPatterns(clients)
         .allowedMethods("GET", "POST", "DELETE", "PATCH", "OPTIONS")
+        .exposedHeaders("X-Request-ID")
         .allowCredentials(true);
   }
 
